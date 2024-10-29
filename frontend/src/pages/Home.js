@@ -133,11 +133,16 @@ const Home = () => {
         </div>
     </div>
 </div>
+<div className="container">
+    <div className="row">
+        {books && books.map(book => (
+            <div key={book._id} className="col-md-4 col-sm-6 col-lg-3">
+                <BookDetail book={book} />
+            </div>
+        ))}
+    </div>
+</div>
 
-            {books && books.map(book => (
-                    <BookDetail key={book._id} book={book} />
-                ))}
-                <BookForm />
         </div>
         // <div classNameNameName="home">
         //     <div classNameNameName="books">
