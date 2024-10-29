@@ -13,31 +13,33 @@ const Input = ({ type, placeholder, attribute, blurFunction, showEyeIcon }) => {
     }
 
     return (
-        <div className="flex flex-col gap-[4px]" >
-
-            <div className="relative flex flex-col gap-[4px] " >
+        <div className="tw-flex tw-flex-col tw-gap-[4px]">
+            <div className="tw-relative tw-flex tw-flex-col tw-gap-[4px]">
                 <input
-                    autoComplete='off'
+                    autoComplete="off"
                     type={showPassword ? 'text' : type}
                     placeholder={placeholder}
                     name={attribute}
                     value={userFormData[attribute]}
                     onChange={handleChange}
                     onBlur={blurFunction}
-                    className='bg-inherit w-full text-textGray border-b-[1px] border-textGray p-[6px] outline-none pl-0  '
+                    className="tw-bg-inherit tw-w-full tw-text-black tw-border-b-[1px] tw-border-textGray tw-p-[6px] tw-outline-none tw-pl-0"
                     required
                 />
-                {
-                    showEyeIcon &&
-                    <button onClick={() => setShowPassword(pre => !pre)} className="absolute right-0 top-[50%] transform translate-y-[-50%] " > {showPassword ? <VisibilityOff /> : <RemoveRedEye />}  </button>
-                }
+                {showEyeIcon && (
+                    <button
+                        onClick={() => setShowPassword((pre) => !pre)}
+                        className="tw-absolute tw-right-0 tw-top-[50%] tw-transform tw-translate-y-[-50%]"
+                    >
+                        {showPassword ? <VisibilityOff /> : <RemoveRedEye />}
+                    </button>
+                )}
             </div>
-            {
-                validationMessage[attribute] &&
-                <p className="text-[12px] text-red " >{validationMessage[attribute]}</p>
-            }
-
+            {validationMessage[attribute] && (
+                <p className="tw-text-[12px] tw-text-red">{validationMessage[attribute]}</p>
+            )}
         </div>
+
     )
 
 }
