@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import SecureUpload from './pages/Upload';
 import Auth from './pages/Auth';
 import HomeAuth from './pages/HomeAuth';
+import Footer from './components/Footer';
 function App() {
   return (
     <div className="App">
@@ -34,6 +35,7 @@ function App() {
 
           </Routes>
         </div>
+        <Footer/>
       </BrowserRouter>
     </div>
   );

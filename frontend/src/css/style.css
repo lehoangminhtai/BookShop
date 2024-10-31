@@ -71,7 +71,7 @@
 
 .btn.border-secondary:hover {
     background: var(--bs-secondary) !important;
-    color: var(--bs-white) !important;
+    color: var(--bs-primary) !important;
 }
 
 /*** Topbar Start ***/
@@ -198,7 +198,7 @@
     height: 20px;
     border-radius: 48px;
     border: 1px solid var(--bs-white);
-    background: var(--bs-primary);
+    background: var(--bs-gray);
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -223,26 +223,27 @@
 /*** Hero Header end ***/
 
 
-/*** featurs Start ***/
-.featurs .featurs-item .featurs-icon {
+/*** features Start ***/
+.features .features-item .features-icon {
     position: relative;
     width: 120px;
     height: 120px;
 }
 
-.featurs .featurs-item .featurs-icon::after {
+
+.features .features-item .features-icon::after {
     content: "";
     width: 35px;
     height: 35px;
-    background: var(--bs-secondary);
+    background: var(--bs-primary);
     position: absolute;
     bottom: -10px;
     transform: translate(-50%);
     transform: rotate(45deg);
-    background: var(--bs-secondary);
+    background: var(--bs-primary);
     
 }
-/*** featurs End ***/
+/*** features End ***/
 
 
 /*** service Start ***/
@@ -462,14 +463,14 @@
 
 
 /*** Footer Start ***/
-.footer .footer-item .btn-link {
+.footer .footer-item .btn-link, .footer-item p {
     line-height: 35px;
-    color: rgba(255, 255, 255, .5);
+    color: gray;
     transition: 0.5s;
 }
 
 .footer .footer-item .btn-link:hover {
-    color: var(--bs-secondary) !important;
+    color: var(--bs-primary) !important;
 }
 
 .footer .footer-item p.mb-4 {

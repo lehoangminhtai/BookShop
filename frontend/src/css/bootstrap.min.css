@@ -18,8 +18,8 @@
     --bs-white: #fff;
     --bs-gray: #6c757d;
     --bs-gray-dark: #343a40;
-    --bs-primary: #81C408;
-    --bs-secondary: #FFB524;
+    --bs-primary: rgba(29, 78, 216);
+    --bs-secondary: #fff;
     --bs-success: #198754;
     --bs-info: #0dcaf0;
     --bs-warning: #ffc107;
@@ -3829,7 +3829,7 @@ fieldset:disabled .btn {
 
 .btn-link:disabled,
 .btn-link.disabled {
-    color: #6c757d
+   
 }
 
 .btn-lg,
@@ -8400,7 +8400,7 @@ fieldset:disabled .btn {
 }
 
 .bg-primary {
-    background-color: #81c408 !important
+    background-color: rgba(29, 78, 216) !important
 }
 
 .bg-secondary {
@@ -8486,11 +8486,11 @@ fieldset:disabled .btn {
 }
 
 .rounded-2 {
-    border-radius: 10px !important
+    border-radius: 20px !important
 }
 
 .rounded-3 {
-    border-radius: 10px !important
+    border-radius: 30px !important
 }
 
 .rounded-circle {

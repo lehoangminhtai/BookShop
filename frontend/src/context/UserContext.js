@@ -13,7 +13,7 @@ export const ContextProvider = ({ children }) => {
     const [userFormData, setUserFormData] = useState(initialUserState)
     const [errorObj, setErrorObj] = useState(initialErrorObj)
     const [showPassword, setShowPassword] = useState(false)
-    const [page, setPage] = useState('register')
+    const [page, setPage] = useState('login')
 
     return (
         <StateContext.Provider
