@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useBookContext } from "../hooks/useBookContext";
 import { fetchBook } from "../services/bookService";
+
+
 import '../css/bootstrap.min.css'
 import '../css/style.css'
 //Component
@@ -35,7 +37,7 @@ const Home = () => {
         { src: "https://placehold.co/64x64", alt: "Phiên Chợ Sách Cũ icon", label: "Phiên Chợ Sách Cũ" },
         { src: "https://placehold.co/64x64", alt: "Sản Phẩm Mới icon", label: "Sản Phẩm Mới" }
     ];
-
+   
 
     return (
         <div >
@@ -179,7 +181,7 @@ const Home = () => {
                 <div className="row">
                     {books && books.map(book => (
                         <div key={book._id} className="col-md-4 col-sm-6 col-lg-3">
-                            <BookDetail book={book} />
+                            <BookDetail  book={book} />
                         </div>
                     ))}
                 </div>
@@ -194,8 +196,8 @@ const Home = () => {
                                     <i class="fas fa-car-side fa-3x text-white"></i>
                                 </div>
                                 <div class="features-content text-center">
-                                    <h5>Free Shipping</h5>
-                                    <p class="mb-0">Free on order over $300</p>
+                                    <h5>Miễn phí vận chuyển</h5>
+                                    <p class="mb-0">Miễn phí với đơn trên 300.000đ</p>
                                 </div>
                             </div>
                         </div>
@@ -205,8 +207,8 @@ const Home = () => {
                                     <i class="fas fa-user-shield fa-3x text-white"></i>
                                 </div>
                                 <div class="features-content text-center">
-                                    <h5>Security Payment</h5>
-                                    <p class="mb-0">100% security payment</p>
+                                    <h5>Thanh toán bảo mật</h5>
+                                    <p class="mb-0">100% bảo mật thanh toán</p>
                                 </div>
                             </div>
                         </div>
@@ -216,8 +218,8 @@ const Home = () => {
                                     <i class="fas fa-exchange-alt fa-3x text-white"></i>
                                 </div>
                                 <div class="features-content text-center">
-                                    <h5>30 Day Return</h5>
-                                    <p class="mb-0">30 day money guarantee</p>
+                                    <h5>30 Ngày hoàn trả</h5>
+                                    <p class="mb-0">Đảm bảo hoàn tiền trong 30 ngày</p>
                                 </div>
                             </div>
                         </div>
@@ -227,8 +229,8 @@ const Home = () => {
                                     <i class="fa fa-phone-alt fa-3x text-white"></i>
                                 </div>
                                 <div class="features-content text-center">
-                                    <h5>24/7 Support</h5>
-                                    <p class="mb-0">Support every time fast</p>
+                                    <h5>Hỗ trợ 24/7</h5>
+                                    <p class="mb-0">Hỗ trợ mọi lúc nhanh chóng</p>
                                 </div>
                             </div>
                         </div>

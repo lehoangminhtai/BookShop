@@ -5,10 +5,13 @@ import SecureUpload from './pages/Upload';
 import Auth from './pages/Auth';
 import HomeAuth from './pages/HomeAuth';
 import Footer from './components/Footer';
+import ProductDetail from './pages/user/ProductDetail';
+import ScrollToTop from './components/ScrollToTop';
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
+        <ScrollToTop/>
         <Navbar />
         <div className="pages">
           <Routes>
@@ -32,7 +35,7 @@ function App() {
 
               element={<SecureUpload />}
             />
-
+               <Route path="/chi-tiet/:productId" element={<ProductDetail />} /> 
           </Routes>
         </div>
         <Footer/>
