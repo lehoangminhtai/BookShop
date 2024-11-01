@@ -106,7 +106,7 @@ const Navbar = () => {
                                     </div>
                                     <div className="d-flex m-3 me-0">
 
-                                        <a href="cart" className="position-relative me-4 my-auto">
+                                        <Link to={'cart'} className="position-relative me-4 my-auto">
                                         <i class="fa fa-shopping-cart fa-2x cart-nav" aria-hidden="true"></i>
                                             <span
                                                 className="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
@@ -115,11 +115,11 @@ const Navbar = () => {
                                                 3
                                             </span>
 
-                                        </a>
-                                        <a href="auth" className="my-auto">
+                                        </Link>
+                                        <Link to={'auth'} className="my-auto">
                                             {/* <i className="fas fa-user fa-2x"></i> */}
                                             <button type="button" class="btn btn-primary">Đăng nhập</button>
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             </nav>
