@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import ProductDetail from './pages/user/ProductDetail';
 import ScrollToTop from './components/ScrollToTop';
 import Sidebar from "./components/admin/AdSidebar";
+import Cart from './pages/user/Cart';
 
 function App() {
  
@@ -40,6 +41,7 @@ function App() {
             />
                <Route path="/chi-tiet/:productId" element={<ProductDetail />} /> 
                <Route path="/admin" element={<Sidebar />} /> 
+               <Route path="/cart" element={<Cart />} /> 
           </Routes>
         </div>
         <Footer/>

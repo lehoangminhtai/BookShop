@@ -62,7 +62,7 @@ const Footer = () => {
                         <p>Email: Example@gmail.com</p>
                         <p>Phone: +0123 4567 8910</p>
                         <p>Payment Accepted</p>
-                        <img src="img/payment.png" class="img-fluid" alt=""/>
+                        
                     </div>
                 </div>
             </div>

@@ -68,18 +68,18 @@ const ProductDetail = () => {
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
         // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-        const existingProduct = cart.find(item => item.id === product.id);
+        const existingProduct = cart.find(item => item.id === product._id);
         if (existingProduct) {
             // Nếu có, cập nhật số lượng sản phẩm trong giỏ hàng
             existingProduct.quantity += amount;
         } else {
             // Nếu không, thêm sản phẩm mới vào giỏ hàng
-            cart.push({ id: product.id, quantity: amount });
+            cart.push({ id: product._id, quantity: amount });
         }
 
         // Lưu giỏ hàng vào Local Storage
         localStorage.setItem('cart', JSON.stringify(cart));
-       
+        console.log('Current cart contents:', cart);
         setAmount(1);
     };
 
@@ -117,7 +117,7 @@ const ProductDetail = () => {
                     </div>
                     <div className="mt-3">
                         <button className="btn btn-outline-danger me-2" onClick={() => addToCart(bookDetail)}><i className="fas fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
-                        <button className="btn btn-danger w-50" onClick={getBook}>Mua ngay</button>
+                        <button className="btn btn-danger w-50" onClick={resetCart}>Mua ngay</button>
                     </div>
                    
                 </div>
