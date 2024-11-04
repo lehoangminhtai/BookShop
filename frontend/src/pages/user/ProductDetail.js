@@ -77,6 +77,7 @@ const ProductDetail = () => {
             cart.push({ id: product._id, quantity: amount });
         }
 
+        
         // Lưu giỏ hàng vào Local Storage
         localStorage.setItem('cart', JSON.stringify(cart));
         console.log('Current cart contents:', cart);
