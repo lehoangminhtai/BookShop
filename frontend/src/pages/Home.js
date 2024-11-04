@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useBookContext } from "../hooks/useBookContext";
-import { fetchBook } from "../services/bookService";
+import { fetchBooks } from "../services/bookService";
 
 
 import '../css/bootstrap.min.css'
@@ -15,7 +15,7 @@ const Home = () => {
     useEffect(() => {
         const getBooks = async () => {
             try {
-                const bookData = await fetchBook();
+                const bookData = await fetchBooks();
                 dispatch({ type: 'SET_BOOKS', payload: bookData })
             }
             catch (error) {

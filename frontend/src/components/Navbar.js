@@ -1,6 +1,7 @@
 import { useStateContext } from '../context/UserContext'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
 // import '../css/Navbar.scss'
 import '../css/bootstrap.min.css'
 import '../css/style.css'
@@ -8,18 +9,7 @@ const Navbar = () => {
 
     const navigate = useNavigate()
     const { user, setPage, setUserFormData, initialUserState, initialErrorObj, setErrorObj } = useStateContext()
-
-    const navigateToRegister = () => {
-        setPage('register')
-        setUserFormData(initialUserState)
-        setErrorObj(initialErrorObj)
-    }
-
-    const navigateToLogin = () => {
-        setPage('login')
-        setUserFormData(initialUserState)
-        setErrorObj(initialErrorObj)
-    }
+  
 
     return (
         <div className="navbar">
@@ -35,7 +25,7 @@ const Navbar = () => {
                                 <div class="top-link pe-2">
                                     <a href="#" class="text-white"><small class="text-white mx-2">Chính sách bảo mật</small>/</a>
                                     <a href="#" class="text-white"><small class="text-white mx-2">Điều khoản sử dụng</small></a>
-                                   
+
                                 </div>
                             </div>
                         </div>
@@ -56,13 +46,8 @@ const Navbar = () => {
                                     <div className="d-flex m-3 me-0">
 
                                         <a href="cart" className="position-relative me-4 my-auto">
-                                        <i class="fa fa-shopping-cart fa-2x cart-nav" aria-hidden="true"></i>
-                                            <span
-                                                className="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
-                                                style={{ top: '-5px', left: '15px', height: '20px', minWidth: '20px' }}
-                                            >
-                                                3
-                                            </span>
+                                            <i class="fa fa-shopping-cart fa-2x cart-nav" aria-hidden="true"></i>
+                                           
 
                                         </a>
                                         <a href="auth" className="my-auto">
@@ -86,7 +71,7 @@ const Navbar = () => {
                                 <div class="top-link pe-2">
                                     <a href="#" class="text-white"><small class="text-white mx-2">Chính sách bảo mật</small>/</a>
                                     <a href="#" class="text-white"><small class="text-white mx-2">Điều khoản sử dụng</small></a>
-                                   
+
                                 </div>
                             </div>
                         </div>
@@ -107,13 +92,8 @@ const Navbar = () => {
                                     <div className="d-flex m-3 me-0">
 
                                         <Link to={'cart'} className="position-relative me-4 my-auto">
-                                        <i class="fa fa-shopping-cart fa-2x cart-nav" aria-hidden="true"></i>
-                                            <span
-                                                className="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
-                                                style={{ top: '-5px', left: '15px', height: '20px', minWidth: '20px' }}
-                                            >
-                                                3
-                                            </span>
+                                            <i class="fa fa-shopping-cart fa-2x cart-nav" aria-hidden="true"></i>
+                                            
 
                                         </Link>
                                         <Link to={'auth'} className="my-auto">
