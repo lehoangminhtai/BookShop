@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes,useLocation } from 'react-router-dom'
 import Home from './pages/Home';
 import Navbar from './components/Navbar';
 import SecureUpload from './pages/Upload';
@@ -7,7 +7,10 @@ import HomeAuth from './pages/HomeAuth';
 import Footer from './components/Footer';
 import ProductDetail from './pages/user/ProductDetail';
 import ScrollToTop from './components/ScrollToTop';
+import Sidebar from "./components/admin/AdSidebar";
+
 function App() {
+ 
   return (
     <div className="App">
       <BrowserRouter>
@@ -36,6 +39,7 @@ function App() {
               element={<SecureUpload />}
             />
                <Route path="/chi-tiet/:productId" element={<ProductDetail />} /> 
+               <Route path="/admin" element={<Sidebar />} /> 
           </Routes>
         </div>
         <Footer/>
