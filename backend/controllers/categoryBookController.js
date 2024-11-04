@@ -12,6 +12,8 @@ const createCategoryBook = async (req,res) =>{
     }
 }
 
+
+
 const getCategoryBooks = async (req,res) =>{
     const categoryBooks = await CategoryBook.find({}).sort({createAt: -1});
     
