@@ -1,4 +1,5 @@
 import * as api from "../api/UserApi"
+
 import { REGISTER, LOGIN, LOGOUT, SEND_OTP, CHANGE_PASSWORD, START_LOADING, END_LOADING } from "../constants/Auth"
 
 const initialUserState = { name: '', email: '',phone:'', password: '',address:'', confirmPassword: '', registerOTP: '', forgetPasswordOTP: '' }
@@ -60,29 +61,30 @@ export const register = (userData, navigate, setErrorObj, setUserFormData) => as
 }
 
 
-export const login = (userData, navigate, setErrorObj, setUserFormData) => async (dispatch) => {
+export const login = (userData, navigate, setErrorObj, setUserFormData, redirectPath = '/') => async (dispatch) => {
     try {
-        dispatch({ type: START_LOADING })
+        dispatch({ type: START_LOADING });
 
-        const { data } = await api.login(userData)
+        const { data } = await api.login(userData);
         if (data.success) {
-            dispatch({ type: LOGIN, payload: data })
-            setErrorObj(initialErrorObj)
-            navigate('/')
-            setUserFormData(initialUserState)
-            window.location.reload()
-        }
-        else {
-            setErrorObj({ ...initialErrorObj, login: data.message })
+            dispatch({ type: LOGIN, payload: data });
+            setErrorObj(initialErrorObj);
+            setUserFormData(initialUserState);
+
+            // Sử dụng redirectPath nếu có, nếu không thì mặc định đến trang chủ
+            navigate(redirectPath, { replace: true });
+            window.location.reload();
+        } else {
+            setErrorObj({ ...initialErrorObj, login: data.message });
         }
 
-        dispatch({ type: END_LOADING })
+        dispatch({ type: END_LOADING });
     } catch (error) {
-        setErrorObj({ ...initialErrorObj, login: error.response.data.message })
-        console.log("error in login - user.js actions", error.response.data.message)
-        dispatch({ type: END_LOADING })
+        setErrorObj({ ...initialErrorObj, login: error.response?.data?.message || "Error logging in" });
+        console.log("error in login - user.js actions", error.response?.data?.message || error.message);
+        dispatch({ type: END_LOADING });
     }
-}
+};
 
 
 

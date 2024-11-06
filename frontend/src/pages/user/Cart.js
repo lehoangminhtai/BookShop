@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { fetchBook } from '../../services/bookService';
+import { useStateContext } from '../../context/UserContext'
+import { useNavigate } from "react-router-dom";
+
 
 const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
     const [products, setProducts] = useState({});
+    const {user} = useStateContext();
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Lấy giỏ hàng từ Local Storage
@@ -38,7 +43,11 @@ const Cart = () => {
     //         return total + (product ? product.price * item.quantity : 0);
     //     }, 0);
     // };
-   
+    
+    const checkOut = () =>{
+        navigate("/checkout");
+    }
+
     return (
         <div className="container py-5">
             <div className="row">
@@ -130,7 +139,7 @@ const Cart = () => {
                                 <span>Tổng số tiền (gồm VAT)</span>
                                 {/* <span className="text-danger fw-semibold">{getTotalPrice().toLocaleString()} đ</span> */}
                             </div>
-                            <button className="btn btn-danger w-100 mb-2">THANH TOÁN</button>
+                            <button className="btn btn-danger w-100 mb-2" onClick={checkOut}>THANH TOÁN</button>
                             <p className="text-muted small text-center">(Giảm giá trên web chỉ áp dụng cho bán lẻ)</p>
                         </div>
                     </div>

@@ -45,16 +45,16 @@ const Navbar = () => {
                                     </div>
                                     <div className="d-flex m-3 me-0">
 
-                                        <a href="cart" className="position-relative me-4 my-auto">
+                                        <Link to="/cart" className="position-relative me-4 my-auto">
                                             <i class="fa fa-shopping-cart fa-2x cart-nav" aria-hidden="true"></i>
                                            
 
-                                        </a>
-                                        <a href="auth" className="my-auto">
+                                        </Link>
+                                        <Link to="/auth" className="my-auto">
                                             {/* <i className="fas fa-user fa-2x"></i> */}
                                             <img src={user?.image} alt="avatar" className="rounded-circle img-fluid"
                                                 style={{ width: '40px', height: '40px', objectFit: 'cover', border: '2px solid black' }} />
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             </nav>
@@ -91,12 +91,12 @@ const Navbar = () => {
                                     </div>
                                     <div className="d-flex m-3 me-0">
 
-                                        <Link to={'cart'} className="position-relative me-4 my-auto">
+                                        <Link to={'/cart'} className="position-relative me-4 my-auto">
                                             <i class="fa fa-shopping-cart fa-2x cart-nav" aria-hidden="true"></i>
                                             
 
                                         </Link>
-                                        <Link to={'auth'} className="my-auto">
+                                        <Link to={'/auth'} className="my-auto">
                                             {/* <i className="fas fa-user fa-2x"></i> */}
                                             <button type="button" class="btn btn-primary">Đăng nhập</button>
                                         </Link>

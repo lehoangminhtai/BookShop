@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import ReactDOM from 'react-dom';
-
+import { useNavigate } from 'react-router-dom';
+import { useStateContext } from '../../context/UserContext'
 // Component UserInfo
 function UserInfo() {
     return (
@@ -108,6 +109,17 @@ function PaymentMethods() {
 }
 
 function Checkout() {
+
+    const {user} = useStateContext();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!user) {
+            // Lưu vị trí hiện tại
+            navigate('/auth?redirect=/checkout', { replace: true });
+        }
+    }, [user, navigate]);
+
     return (
         <div className="container mt-5">
             <div className="row">

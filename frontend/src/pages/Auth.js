@@ -3,12 +3,12 @@ import { CircularProgress } from '@mui/material'
 import { Person, VisibilityOff, RemoveRedEye } from '@mui/icons-material'
 import { useEffect, useState } from 'react'
 import Cookie from 'js-cookie'
+import { useNavigate, useLocation } from 'react-router-dom';
 import { login, register, sendRegisterOTP, sendForgetPasswordOTP, changePassword } from '../actions/UserAction'
 import { useDispatch, useSelector } from 'react-redux'
 import validator from 'email-validator'
 // import { motion } from 'framer-motion'
 import Input from '../components/Input'
-import { useNavigate } from 'react-router-dom'
 import '../css/user/Auth.scss'
 import React from 'react'
 
@@ -22,6 +22,9 @@ const Auth = () => {
   ////////////////////////////////////////////////////  Variables  ///////////////////////////////////////////////////////
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const location = useLocation();
+  const redirectPath = new URLSearchParams(location.search).get('redirect') || '/';
+
   const registerValidated = validationMessage.name == '' && validationMessage.email == '' && validationMessage.phone == '' && validationMessage.password == '' && validationMessage.confirmPassword == ''
   const loginValidated = validationMessage.email == '' && validationMessage.password == ''
   const changePasswordValidated = validationMessage.email == '' && validationMessage.password == ''
@@ -42,7 +45,7 @@ const Auth = () => {
     if (!loginValidated) return null                        // if email & password fields are empty then return null
     const { email, password } = userFormData
     const userData = { email, password }
-    dispatch(login(userData, navigate, setErrorObj, setUserFormData))
+    dispatch(login(userData, navigate, setErrorObj, setUserFormData, redirectPath))
   }
   const handleRegister = () => {
     if (!registerValidated) return null
