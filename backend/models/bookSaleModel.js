@@ -15,7 +15,18 @@ const bookSaleSchema = new Schema({
     price: {
         type: Number,
         required: true
+    },
+    discount: {
+        type: Number,
+        default: 0 
+    },
+    status: {
+        type: String,
+        enum: ['available', 'out_of_stock'],
+        default: 'available'
     }
+    
+    
 }, { timestamps: true });
 
 module.exports = mongoose.model('BookSale', bookSaleSchema);

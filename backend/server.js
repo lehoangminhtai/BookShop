@@ -10,8 +10,7 @@ const app = express()
 const bookRoutes = require('./routes/bookroute');
 const categoryBookRoutes = require('./routes/categoryBookRoute');
 const userRoutes = require('./routes/userRoute');
-//const imageRoute = require('./routes/image');
-//const signRoute = require('./routes/signupload');
+const bookSaleRoutes = require('./routes/bookSaleRoute');
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
@@ -34,9 +33,7 @@ app.use(cors({ origin: 'http://localhost:3000' }));
 app.use('/api/books', bookRoutes);
 app.use('/api/categoryBooks', categoryBookRoutes);
 app.use('/api/admin/users', userRoutes);
-//app.use('/api/image', imageRoute);
-//app.use('/api/sign-upload', signRoute);
-
+app.use('/api/bookSales', bookSaleRoutes);
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);

@@ -10,8 +10,27 @@ const ProductDetail = () => {
     const [amount, setAmount] = useState(1);
     const [expanded, setExpanded] = useState(false);
 
- 
+    const [bookSale, setBookSale] = useState({ price: 0, discount: 0 });
+    const priceDiscount = bookSale.price - (bookSale.price * (bookSale.discount / 100));
 
+  useEffect(() => {
+    const fetchBookSaleDetails = async () => {
+      const response = await fetch(`http://localhost:4000/api/bookSales/${productId}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setBookSale(data); // Cập nhật giá và trạng thái của sách từ bookSaleModel
+      }
+    };
+
+    fetchBookSaleDetails();
+  }, [productId]);
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  };
+
+    
     useEffect(() => {
         const getBookDetail = async () => {
             try {
@@ -137,9 +156,9 @@ const ProductDetail = () => {
                             <span className="ms-2">(0 đánh giá)</span>
                         </div>
                         <div className="d-flex align-items-center mb-3">
-                            <span className="fs-3 text-danger fw-bold">21.750 đ</span>
-                            <span className="ms-2 text-muted text-decoration-line-through">25.000 đ</span>
-                            <span className="ms-2 bg-danger text-white px-2 rounded">-13%</span>
+                            <span className="fs-3 text-danger fw-bold">{formatCurrency(priceDiscount)}</span>
+                            <span className="ms-2 text-muted text-decoration-line-through">{formatCurrency(bookSale.price)}</span>
+                            <span className="ms-2 bg-danger text-white px-2 rounded">{bookSale.discount} %</span>
                         </div>
                         <div className="bg-light p-3 rounded">
                             <h5>Thông tin vận chuyển</h5>

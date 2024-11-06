@@ -1,23 +1,33 @@
+import { useEffect, useState } from "react";
 import { useBookContext } from "../hooks/useBookContext";
 import { useNavigate } from 'react-router-dom';
 
 const BookDetail = ({ book }) => {
   const { dispatch } = useBookContext();
   const navigate = useNavigate();
+  const [bookSale, setBookSale] = useState({ price: 0, discount: 0, status: 'available' });
 
-  const handleClick = async () => {
-    const response = await fetch("/api/books/" + book._id, {
-      method: "DELETE",
-    });
-    const json = await response.json();
+  useEffect(() => {
+    const fetchBookSaleDetails = async () => {
+      const response = await fetch(`http://localhost:4000/api/bookSales/${book._id}`);
+      const data = await response.json();
 
-    if (response.ok) {
-      dispatch({ type: "DELETE_BOOK", payload: json });
-    }
+      if (response.ok) {
+        setBookSale(data); // Cập nhật giá, giảm giá và trạng thái từ bookSaleModel
+      }
+    };
+
+    fetchBookSaleDetails();
+  }, [book._id]);
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
   };
 
+  const priceDiscount = bookSale.price * (1 - bookSale.discount / 100);
+
   const handleProductClick = (id) => {
-    navigate(`/chi-tiet/${id}`);  // Chuyển hướng với ID của sách
+    navigate(`/chi-tiet/${id}`);
   };
 
   const handleAddToCart = () => {
@@ -28,9 +38,9 @@ const BookDetail = ({ book }) => {
     <div className="tw-w-full tw-max-w-sm tw-bg-white tw-border tw-border-gray-200 tw-rounded-lg tw-shadow tw-dark:bg-gray-800 tw-dark:border-gray-700" onClick={() => handleProductClick(book._id)}>
       <div>
         <img
-          src={book.images}  // Đảm bảo rằng book.images chứa đường dẫn đúng đến hình ảnh
+          src={book.images}
           alt={`Book image`}
-          className="tw-w-full tw-rounded-lg"  // Sử dụng tw-rounded-lg để có border radius cho tất cả các góc
+          className="tw-w-full tw-rounded-lg"
           style={{ objectFit: 'cover', height: '200px' }}
         />
       </div>
@@ -39,14 +49,19 @@ const BookDetail = ({ book }) => {
           {book.title}
         </h5>
         <p><strong>Tác giả:</strong> {book.author}</p>
+      
         <div className="tw-flex tw-items-center tw-mt-2.5 tw-mb-5"></div>
+        <div className="d-flex align-items-center mb-3">
+          <span className="fs-3 text-danger fw-bold">{formatCurrency(priceDiscount)}</span>
+          <span className="ms-2 text-muted text-decoration-line-through">{formatCurrency(bookSale.price)}</span>
+          <span className="ms-2 bg-danger text-white px-2 rounded">{bookSale.discount} %</span>
+        </div>
         <div className="tw-flex tw-items-center tw-justify-between">
-          <span className="tw-text-3xl tw-font-bold tw-text-gray-900 tw-dark:text-white">$599</span>
           <button
             className="tw-text-white tw-bg-blue-700 tw-hover:bg-blue-800 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-sm tw-px-5 tw-py-2.5 tw-text-center tw-dark:bg-blue-600 tw-dark:hover:bg-blue-700 tw-dark:focus:ring-blue-800"
             onClick={(event) => {
-              event.preventDefault(); // Ngăn không cho chuyển hướng mặc định của thẻ a
-              event.stopPropagation(); // Ngăn sự kiện lan truyền lên div cha
+              event.preventDefault();
+              event.stopPropagation();
               handleAddToCart();
             }}
           >
