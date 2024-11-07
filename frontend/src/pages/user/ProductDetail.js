@@ -1,6 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { fetchBook } from '../../services/bookService';
+import { useStateContext } from '../../context/UserContext'
+import { Link, useNavigate } from 'react-router-dom';
 
 const ProductDetail = () => {
     const { productId } = useParams();
@@ -9,6 +11,8 @@ const ProductDetail = () => {
     const [error, setError] = useState(null);
     const [amount, setAmount] = useState(1);
     const [expanded, setExpanded] = useState(false);
+    const {user} = useStateContext();
+    const navigate  = useNavigate();
 
     const [bookSale, setBookSale] = useState({ price: 0, discount: 0 });
     const priceDiscount = bookSale.price - (bookSale.price * (bookSale.discount / 100));
@@ -93,7 +97,7 @@ const ProductDetail = () => {
             existingProduct.quantity += amount;
         } else {
             // Nếu không, thêm sản phẩm mới vào giỏ hàng
-            cart.push({ id: product._id, quantity: amount });
+            cart.push({ id: product._id, quantity: amount,price:priceDiscount });
         }
 
         
@@ -104,11 +108,11 @@ const ProductDetail = () => {
     };
 
 
-
-    const resetCart = () => {
-        localStorage.removeItem('cart'); // Xóa giỏ hàng khỏi Local Storage
-        console.log("Giỏ hàng đã được reset về 0");
-    };
+    const handleCheckout = (product) =>{
+        addToCart(product)
+       navigate('/cart')
+        
+    }
 
     return (
         <div className="container mt-4">
@@ -137,7 +141,7 @@ const ProductDetail = () => {
                     </div>
                     <div className="mt-3">
                         <button className="btn btn-outline-danger me-2" onClick={() => addToCart(bookDetail)}><i className="fas fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
-                        <button className="btn btn-danger w-50" onClick={resetCart}>Mua ngay</button>
+                        <button className="btn btn-danger w-50" onClick={() => handleCheckout(bookDetail)}>Mua ngay</button>
                     </div>
                    
                 </div>
@@ -237,21 +241,28 @@ const ProductDetail = () => {
                             </div>
                             <div className="text-muted mt-2">(0 đánh giá)</div>
                         </div>
-                        <div className="w-50 ml-3">
+                        <div className="w-50 ml-1">
                             {['5 sao', '4 sao', '3 sao', '2 sao', '1 sao'].map((rating, index) => (
                                 <div key={index} className="d-flex align-items-center mb-1">
                                     <div className="w-25 text-muted">{rating}</div>
-                                    <div className="flex-grow-1 bg-light rounded mr-2" style={{ height: '10px' }}>
-                                        <div className="bg-warning" style={{ width: '0%' }}></div> {/* Chỉnh sửa width dựa trên tỉ lệ */}
+                                    <div className="flex-grow-1 bg-light rounded" style={{ height: '10px' }}>
+                                        <div className="bg-warning" style={{ width: '0%' }}></div> 
                                     </div>
                                     <div className="w-25 text-muted">0%</div>
                                 </div>
                             ))}
                         </div>
-                        <div className="w-25 ml-3">
-                            <div className="text-muted">
-                                Chỉ có thành viên mới có thể viết nhận xét. Vui lòng <a href="#" className="text-primary">đăng nhập</a> hoặc <a href="#" className="text-primary">đăng ký</a>.
-                            </div>
+                        <div className="w-25 ml-3 d-flex">
+                            {
+                                user ? (<div>
+                                     <button className="btn btn-danger w-100 " >Đánh giá</button>
+                                </div>)
+                                :( <div className="text-muted">
+                                    Chỉ có thành viên mới có thể viết nhận xét. Vui lòng <Link to="/auth" className="text-primary">đăng nhập</Link>.
+                                </div>)
+                                    
+                            }
+                           
                         </div>
                     </div>
                 </div>
