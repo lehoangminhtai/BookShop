@@ -54,7 +54,7 @@ const BookDetail = ({ book }) => {
         <div className="d-flex align-items-center mb-3">
           <span className="fs-3 text-danger fw-bold">{formatCurrency(priceDiscount)}</span>
           <span className="ms-2 text-muted text-decoration-line-through">{formatCurrency(bookSale.price)}</span>
-          <span className="ms-2 bg-danger text-white px-2 rounded">{bookSale.discount} %</span>
+          
         </div>
         <div className="tw-flex tw-items-center tw-justify-between">
           <button
