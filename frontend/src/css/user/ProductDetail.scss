@@ -1,0 +1,13 @@
+
+.tick-icon {
+    width: 24px;
+    height: 24px;
+    background-image: url('https://cdn-icons-png.flaticon.com/256/190/190411.png');
+    background-size: cover;
+  }
+  .modal-backdrop {
+    background-color: transparent !important; /* Làm nền lớp phủ trong suốt */
+  }
+body .modal-open{
+    padding-right: 0 !important;
+}

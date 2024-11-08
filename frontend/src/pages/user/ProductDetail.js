@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { fetchBook } from '../../services/bookService';
 import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
+import '../../css/user/ProductDetail.scss'
+import { Modal } from 'bootstrap'
 
 const ProductDetail = () => {
     const { productId } = useParams();
@@ -30,6 +32,7 @@ const ProductDetail = () => {
     fetchBookSaleDetails();
   }, [productId]);
 
+  
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
   };
@@ -105,9 +108,23 @@ const ProductDetail = () => {
         localStorage.setItem('cart', JSON.stringify(cart));
         console.log('Current cart contents:', cart);
         setAmount(1);
+        showModal();
     };
 
 
+    const showModal = () => {
+        const modal = new Modal(document.getElementById('notificationModal'));
+        modal.show();
+        setTimeout(() => {
+            modal.hide();
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+        }, 1000);
+    };
+
+   
     const handleCheckout = (product) =>{
         addToCart(product)
        navigate('/cart')
@@ -116,6 +133,23 @@ const ProductDetail = () => {
 
     return (
         <div className="container mt-4">
+        <div
+  className="modal fade"
+  id="notificationModal"
+  tabIndex="-1"
+  aria-labelledby="notificationModalLabel"
+  aria-hidden="true"
+>
+  <div className="modal-dialog modal-dialog-centered">
+    <div className="modal-content bg-dark text-white border-0">
+      <div className="modal-body d-flex justify-content-center align-items-center gap-2">
+        Sản phẩm đã được thêm vào giỏ hàng
+        <span className="tick-icon"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
             <div className="row">
                 <div className="col-md-4">
                     <div className="bg-white p-3 rounded shadow-sm d-flex justify-content-center align-items-center">
