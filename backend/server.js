@@ -11,6 +11,7 @@ const bookRoutes = require('./routes/bookroute');
 const categoryBookRoutes = require('./routes/categoryBookRoute');
 const userRoutes = require('./routes/userRoute');
 const bookSaleRoutes = require('./routes/bookSaleRoute');
+const cartRoutes = require('./routes/cartRoute')
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
@@ -34,6 +35,7 @@ app.use('/api/books', bookRoutes);
 app.use('/api/categoryBooks', categoryBookRoutes);
 app.use('/api/admin/users', userRoutes);
 app.use('/api/bookSales', bookSaleRoutes);
+app.use('/api/cart', cartRoutes);
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);
