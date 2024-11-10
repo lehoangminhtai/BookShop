@@ -3,8 +3,8 @@ import { CircularProgress } from '@mui/material'
 import { Person, VisibilityOff, RemoveRedEye } from '@mui/icons-material'
 import { useEffect, useState } from 'react'
 import Cookie from 'js-cookie'
-import { useNavigate, useLocation } from 'react-router-dom';
-import { login, register, sendRegisterOTP, sendForgetPasswordOTP, changePassword } from '../actions/UserAction'
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { login, logout, register, sendRegisterOTP, sendForgetPasswordOTP, changePassword } from '../actions/UserAction'
 import { useDispatch, useSelector } from 'react-redux'
 import validator from 'email-validator'
 // import { motion } from 'framer-motion'
@@ -17,7 +17,7 @@ const Auth = () => {
   const { user, page, setPage, initialErrorObj, errorObj, setErrorObj, userFormData, setUserFormData, initialUserState, validationMessage, setValidationMessage } = useStateContext()
   const { result, isLoading, isError, error } = useSelector(state => state.user)
 
-
+  const { users, setUser } = useStateContext()
 
   ////////////////////////////////////////////////////  Variables  ///////////////////////////////////////////////////////
   const navigate = useNavigate()
@@ -39,6 +39,11 @@ const Auth = () => {
   }, [errorObj])
 
 
+  useEffect(() => {
+    console.log(result, 'result')
+    Cookie.get('profile') && setUser(JSON.parse(Cookie.get('profile')))
+  }, [result, isLoading])
+
   ////////////////////////////////////////////////////   Functions  ///////////////////////////////////////////////////////
 
   const handleLogin = () => {
@@ -47,12 +52,17 @@ const Auth = () => {
     const userData = { email, password }
     dispatch(login(userData, navigate, setErrorObj, setUserFormData, redirectPath))
   }
+  const logoutFunc = () => {
+    dispatch(logout())
+    setUser(null)
+    navigate('/')
+  }
   const handleRegister = () => {
     if (!registerValidated) return null
     const { name, email, phone, password, address, registerOTP } = userFormData
     const userData = { name, email, phone, password, address, otp: registerOTP }
 
-    dispatch(register(userData, navigate, setErrorObj, setUserFormData))
+    dispatch(register(userData, navigate, setErrorObj, setUserFormData, redirectPath))
     console.log(errorObj.register)
 
   }
@@ -174,7 +184,23 @@ const Auth = () => {
                 ?
                 <div className="tw-flex tw-flex-col tw-justify-center tw-items-center tw-w-[22rem] tw-min-h-[10rem] tw-gap-[1rem] tw-rounded-[4px] tw-p-[1rem]">
                   <img src={user?.image} />
-                  <p className="">User Account: {user?.fullName}</p>
+                  <p className="">User Account: {user?._id}</p>
+                  {
+                    isLoading
+                      ?
+                      <CircularProgress style={{ color: '#feb931' }} className="w-[60px] h-[60px] text-orange " />
+                      :
+                      <div className="flex flex-col justify-center items-center " >
+                        {
+                          Cookie.get('profile')
+                            ?
+                            <button onClick={logoutFunc} className="capitalize text-[16px] rounded-[4px] bg-lightGray px-[16px] py-[8px] " >logout</button>
+                            :
+                            <button className="capitalize text-[16px] rounded-[4px] bg-lightGray px-[16px] py-[8px] " ><Link to='/auth'>login</Link></button>
+                        }
+
+                      </div>
+                  }
                 </div>
                 :
                 <div className="tw-flex tw-flex-col tw-justify-center tw-items-center tw-w-[60rem] tw-bg-lightGray tw-gap-[1rem]  tw-p-[1rem] ">
@@ -271,7 +297,7 @@ const Auth = () => {
                             type="checkbox"
                             className="tw-w-4 tw-h-4 tw-border tw-border-gray-300 tw-rounded tw-bg-gray-50 tw-focus:ring-3 tw-focus:ring-blue-300 tw-dark:bg-gray-700 tw-dark:border-gray-600 tw-dark:focus:ring-blue-600 tw-dark:ring-offset-gray-800"
                             required
-                           
+
                           />
                           <label
                             htmlFor="terms"

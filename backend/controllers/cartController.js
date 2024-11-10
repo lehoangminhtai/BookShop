@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const Cart = require('../models/cartModel');
-const CartItem = require('../models/cartModel');  // Model CartItem đã được định nghĩa trong cartModel
+const {Cart, CartItem} = require('../models/cartModel');
+
 
 // Tạo mới giỏ hàng cho người dùng
 const createCart = async (req, res) => {
@@ -45,7 +45,7 @@ const getCart = async (req, res) => {
 
 // Thêm sản phẩm vào giỏ hàng
 const addToCart = async (req, res) => {
-    const { userId, bookId, quantity } = req.body;
+    const { userId, bookId, quantity,price } = req.body;
 
     try {
         let cart = await Cart.findOne({ userId });
@@ -56,7 +56,7 @@ const addToCart = async (req, res) => {
 
         // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
         let cartItem = cart.cartItems.find(item => item.bookId.toString() === bookId);
-
+        
         if (cartItem) {
             // Nếu có, cập nhật số lượng
             cartItem.quantity += quantity;
@@ -64,7 +64,8 @@ const addToCart = async (req, res) => {
             // Nếu không có, thêm mới vào giỏ hàng
             const newCartItem = new CartItem({
                 bookId,
-                quantity
+                quantity,
+                price
             });
             cart.cartItems.push(newCartItem);
         }
@@ -78,7 +79,7 @@ const addToCart = async (req, res) => {
             cart
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message:error.message});
     }
 };
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchBook } from '../../services/bookService';
+import { getCart, updateCartItem, removeItemFromCart } from '../../services/cartService';
 import { useStateContext } from '../../context/UserContext'
 import { useNavigate } from "react-router-dom";
 
@@ -11,19 +12,33 @@ const Cart = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        setCartItems(cart);
-    }, []);
+        const fetchCartData = async () => {
+            if (user) {
+                const response = await getCart(user._id);
+                const cartData = response?.data?.cartItems || [];
+                console.log(cartData)
+                setCartItems(cartData);
+            } else {
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                console.log(cart)
+                setCartItems(cart);
+            }
+        };
+
+        fetchCartData();
+    }, [user]);
 
     useEffect(() => {
         const fetchAllProductDetails = async () => {
             const productsData = {};
             for (const item of cartItems) {
                 try {
-                    const book = await fetchBook(item.id);
-                    productsData[item.id] = book;
-                    if(item.quantity>=50)
-                        item.quantity=50;
+                    const bookId = item.bookId ? item.bookId._id : item.id;
+                    const book = await fetchBook(bookId);
+                    console.log(book)
+                    productsData[bookId] = book;
+                    if (item.quantity >= 50)
+                        item.quantity = 50;
                 } catch (error) {
                     console.error('Error fetching book:', error);
                 }
@@ -36,43 +51,75 @@ const Cart = () => {
         }
     }, [cartItems]);
 
-    const handleDeleteItemCart = (id) => {
-        const updatedCartItems = cartItems.filter(item => item.id !== id);
-        setCartItems(updatedCartItems);
+
+    const handleDeleteItemCart = (itemId) => {
+        const updatedCartItems = cartItems.filter(item => (item.bookId ? item.bookId._id : item.id) !== itemId);
+       if(user){
+            try{
+                removeItemFromCart(user._id,itemId);
+            }
+            catch(error){
+                console.error('Có lỗi khi xóa sản phẩm ra giỏ hàng', error);
+            }
+       }
+       else{
         localStorage.setItem('cart', JSON.stringify(updatedCartItems));
-        setSelectedItems(selectedItems.filter(itemId => itemId !== id));
+       }
+       
+
+        setCartItems(updatedCartItems);
+        setSelectedItems(selectedItems.filter(selectedId => selectedId !== itemId));
+
     };
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            setSelectedItems(cartItems.map(item => item.id));
+            setSelectedItems(cartItems.map(item => (item.bookId ? item.bookId._id : item.id)));
         } else {
             setSelectedItems([]);
         }
     };
 
-    const handleSelectItem = (id) => {
-        setSelectedItems(prev => prev.includes(id) ? prev.filter(itemId => itemId !== id) : [...prev, id]);
+    const handleSelectItem = (itemId) => {
+        setSelectedItems(prev => prev.includes(itemId) ? prev.filter(selectedId => selectedId !== itemId) : [...prev, itemId]);
     };
 
-    const handleQuantityChange = (id, delta) => {
+    const handleQuantityChange = async (itemId, delta) => {
         const updatedCartItems = cartItems.map(item => {
-            if (item.id === id) {
+            const currentItemId = item.bookId ? item.bookId._id : item.id;
+            if (currentItemId === itemId) {
                 const newQuantity = item.quantity + delta;
-                // Giới hạn tối đa là 50
                 return { ...item, quantity: Math.min(newQuantity, 50) };
             }
             return item;
         });
+       
+        if (!user) {
+            
+            localStorage.setItem('cart', JSON.stringify(updatedCartItems));
+        } else {
+           
+            try {
+               
+                const cartData = {
+                    userId: user._id,  
+                    bookId: itemId,   
+                    quantity: updatedCartItems.find(item => itemId === (item.bookId ? item.bookId._id : item.id)).quantity // Số lượng mới
+                };
+                await updateCartItem(cartData); 
+                
+            } catch (error) {
+                console.error('Có lỗi khi cập nhật giỏ hàng vào cơ sở dữ liệu:', error);
+            }
+
+        }
         setCartItems(updatedCartItems);
-        localStorage.setItem('cart', JSON.stringify(updatedCartItems));
     };
     
 
     const getTotalPrice = () => {
         return selectedItems.reduce((total, itemId) => {
-            const item = cartItems.find(item => item.id === itemId);
-            
+            const item = cartItems.find(item => (item.bookId ? item.bookId._id : item.id) === itemId);
             return total + (item ? item.price * item.quantity : 0);
         }, 0);
     };
@@ -94,10 +141,10 @@ const Cart = () => {
                             <h5 className="card-title fw-bold mb-3">Giỏ Hàng ({cartItems.length} sản phẩm)</h5>
                             <div className="d-flex align-items-center justify-content-between border-bottom pb-2 mb-4">
                                 <div className="form-check">
-                                    <input 
-                                        type="checkbox" 
-                                        className="form-check-input" 
-                                        id="selectAll" 
+                                    <input
+                                        type="checkbox"
+                                        className="form-check-input"
+                                        id="selectAll"
                                         checked={selectedItems.length === cartItems.length}
                                         onChange={handleSelectAll}
                                     />
@@ -112,15 +159,16 @@ const Cart = () => {
                             </div>
                             <div className='' style={{ height: "50vh", overflowY: "auto" }}>
                                 {cartItems.map(item => {
-                                    const product = products[item.id];
+                                    const itemId = item.bookId ? item.bookId._id : item.id;
+                                    const product = products[itemId];
                                     return (
-                                        <div key={item.id} className="row align-items-center pb-3">
+                                        <div key={itemId} className="row align-items-center pb-3">
                                             <div className="col-3 col-md-2 d-flex align-items-center">
-                                                <input 
-                                                    type="checkbox" 
-                                                    className="form-check-input me-1" 
-                                                    checked={selectedItems.includes(item.id)}
-                                                    onChange={() => handleSelectItem(item.id)}
+                                                <input
+                                                    type="checkbox"
+                                                    className="form-check-input me-1"
+                                                    checked={selectedItems.includes(itemId)}
+                                                    onChange={() => handleSelectItem(itemId)}
                                                 />
                                                 <img
                                                     src={product ? product.images : 'https://placehold.co/100x150'}
@@ -140,17 +188,17 @@ const Cart = () => {
                                             </div>
                                             <div className="col-12 col-md-4 d-flex align-items-center" style={{ marginTop: '10px' }}>
                                                 <div className="d-flex align-items-center me-4">
-                                                    <button 
+                                                    <button
                                                         className="btn btn-outline-secondary btn-sm px-2"
-                                                        onClick={() => handleQuantityChange(item.id, -1)}
+                                                        onClick={() => handleQuantityChange(itemId, -1)}
                                                         disabled={item.quantity <= 1}
                                                     >
                                                         -
                                                     </button>
                                                     <span className="mx-2 text-center" style={{ width: '30px', fontWeight: '500' }}>{item.quantity}</span>
-                                                    <button 
+                                                    <button
                                                         className="btn btn-outline-secondary btn-sm px-2"
-                                                        onClick={() => handleQuantityChange(item.id, 1)}
+                                                        onClick={() => handleQuantityChange(itemId, 1)}
                                                     >
                                                         +
                                                     </button>
@@ -158,7 +206,7 @@ const Cart = () => {
                                                 <span className="text-danger fw-semibold ms-4 text-center" style={{ width: '120px', fontSize: '16px' }}>
                                                     {formatCurrency(item.quantity * item.price)}
                                                 </span>
-                                                <button className="btn btn-link text-muted ms-3" onClick={() => handleDeleteItemCart(item.id)}>
+                                                <button className="btn btn-link text-muted ms-3" onClick={() => handleDeleteItemCart(itemId)}>
                                                     <i className="fas fa-trash-alt"></i>
                                                 </button>
                                             </div>
@@ -195,7 +243,25 @@ const Cart = () => {
                                 <span>Tổng số tiền (gồm VAT)</span>
                                 <span className="text-danger fw-semibold">{formatCurrency(getTotalPrice())}</span>
                             </div>
-                            <button className="btn btn-danger w-100 mb-2" onClick={checkOut}>THANH TOÁN</button>
+                            {(getTotalPrice() > 0) ? (
+                                <div>
+                                    <button className="btn btn-danger w-100 mb-2" onClick={checkOut}>THANH TOÁN</button>
+                                </div>
+                            ) : (
+                                <div>
+                                    <div>
+                                        <button
+                                            className="btn btn-danger w-100 mb-2"
+                                            onClick={checkOut}
+                                            disabled={getTotalPrice() <= 0}
+                                        >
+                                            THANH TOÁN
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+
                             <p className="text-muted small text-center">(Giảm giá trên web chỉ áp dụng cho bán lẻ)</p>
                         </div>
                     </div>

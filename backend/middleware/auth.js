@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken'
+const jwt = require('jsonwebtoken');
 
-export const auth = async (req, res, next) => {
+ const auth = async (req, res, next) => {
     try {
         if (!req.headers.auth_token) return res.status(401).json({ message: 'token not found' })
 
@@ -16,3 +16,4 @@ export const auth = async (req, res, next) => {
     }
     next()
 }
+module.exports = auth

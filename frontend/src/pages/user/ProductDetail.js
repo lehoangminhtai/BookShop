@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { fetchBook } from '../../services/bookService';
+import { addItemToCart } from '../../services/cartService';
 import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
 import '../../css/user/ProductDetail.scss'
@@ -13,31 +14,31 @@ const ProductDetail = () => {
     const [error, setError] = useState(null);
     const [amount, setAmount] = useState(1);
     const [expanded, setExpanded] = useState(false);
-    const {user} = useStateContext();
-    const navigate  = useNavigate();
+    const { user } = useStateContext();
+    const navigate = useNavigate();
 
     const [bookSale, setBookSale] = useState({ price: 0, discount: 0 });
     const priceDiscount = bookSale.price - (bookSale.price * (bookSale.discount / 100));
 
-  useEffect(() => {
-    const fetchBookSaleDetails = async () => {
-      const response = await fetch(`http://localhost:4000/api/bookSales/${productId}`);
-      const data = await response.json();
+    useEffect(() => {
+        const fetchBookSaleDetails = async () => {
+            const response = await fetch(`http://localhost:4000/api/bookSales/${productId}`);
+            const data = await response.json();
 
-      if (response.ok) {
-        setBookSale(data); // Cập nhật giá và trạng thái của sách từ bookSaleModel
-      }
+            if (response.ok) {
+                setBookSale(data); // Cập nhật giá và trạng thái của sách từ bookSaleModel
+            }
+        };
+
+        fetchBookSaleDetails();
+    }, [productId]);
+
+
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
 
-    fetchBookSaleDetails();
-  }, [productId]);
 
-  
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-  };
-
-    
     useEffect(() => {
         const getBookDetail = async () => {
             try {
@@ -89,24 +90,40 @@ const ProductDetail = () => {
     };
 
     const showMoreButton = isTextLong();
-    const addToCart = (product) => {
-        // Lấy giỏ hàng từ Local Storage
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-        const existingProduct = cart.find(item => item.id === product._id);
-        if (existingProduct) {
-            // Nếu có, cập nhật số lượng sản phẩm trong giỏ hàng
-            existingProduct.quantity += amount;
-        } else {
-            // Nếu không, thêm sản phẩm mới vào giỏ hàng
-            cart.push({ id: product._id, quantity: amount,price:priceDiscount });
+    const handleAddItemToCart = async (itemData) => {
+        try {
+            await addItemToCart(itemData);
         }
+        catch (error) {
+            console.log("lỗi, không thể thêm giỏ hàng", error)
+        }
+    }
 
-        
-        // Lưu giỏ hàng vào Local Storage
-        localStorage.setItem('cart', JSON.stringify(cart));
-        console.log('Current cart contents:', cart);
+    const addToCart = (product) => {
+        if (user) {
+            const itemData = { userId: user._id, bookId: product._id, quantity: amount, price: priceDiscount }
+            handleAddItemToCart(itemData);
+        }
+        else {
+
+
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+            const existingProduct = cart.find(item => item.id === product._id);
+            if (existingProduct) {
+                // Nếu có, cập nhật số lượng sản phẩm trong giỏ hàng
+                existingProduct.quantity += amount;
+            } else {
+                // Nếu không, thêm sản phẩm mới vào giỏ hàng
+                cart.push({ id: product._id, quantity: amount, price: priceDiscount });
+            }
+
+            // Lưu giỏ hàng vào Local Storage
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+       
         setAmount(1);
         showModal();
     };
@@ -124,31 +141,31 @@ const ProductDetail = () => {
         }, 1000);
     };
 
-   
-    const handleCheckout = (product) =>{
+
+    const handleCheckout = (product) => {
         addToCart(product)
-       navigate('/cart')
-        
+        navigate('/cart')
+
     }
 
     return (
         <div className="container mt-4">
-        <div
-  className="modal fade"
-  id="notificationModal"
-  tabIndex="-1"
-  aria-labelledby="notificationModalLabel"
-  aria-hidden="true"
->
-  <div className="modal-dialog modal-dialog-centered">
-    <div className="modal-content bg-dark text-white border-0">
-      <div className="modal-body d-flex justify-content-center align-items-center gap-2">
-        Sản phẩm đã được thêm vào giỏ hàng
-        <span className="tick-icon"></span>
-      </div>
-    </div>
-  </div>
-</div>
+            <div
+                className="modal fade"
+                id="notificationModal"
+                tabIndex="-1"
+                aria-labelledby="notificationModalLabel"
+                aria-hidden="true"
+            >
+                <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content bg-dark text-white border-0">
+                        <div className="modal-body d-flex justify-content-center align-items-center gap-2">
+                            Sản phẩm đã được thêm vào giỏ hàng
+                            <span className="tick-icon"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div className="row">
                 <div className="col-md-4">
@@ -177,7 +194,7 @@ const ProductDetail = () => {
                         <button className="btn btn-outline-danger me-2" onClick={() => addToCart(bookDetail)}><i className="fas fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
                         <button className="btn btn-danger w-50" onClick={() => handleCheckout(bookDetail)}>Mua ngay</button>
                     </div>
-                   
+
                 </div>
 
                 {/* Phần chi tiết sản phẩm với cuộn riêng */}
@@ -280,7 +297,7 @@ const ProductDetail = () => {
                                 <div key={index} className="d-flex align-items-center mb-1">
                                     <div className="w-25 text-muted">{rating}</div>
                                     <div className="flex-grow-1 bg-light rounded" style={{ height: '10px' }}>
-                                        <div className="bg-warning" style={{ width: '0%' }}></div> 
+                                        <div className="bg-warning" style={{ width: '0%' }}></div>
                                     </div>
                                     <div className="w-25 text-muted">0%</div>
                                 </div>
@@ -289,14 +306,14 @@ const ProductDetail = () => {
                         <div className="w-25 ml-3 d-flex">
                             {
                                 user ? (<div>
-                                     <button className="btn btn-danger w-100 " >Đánh giá</button>
+                                    <button className="btn btn-danger w-100 " >Đánh giá</button>
                                 </div>)
-                                :( <div className="text-muted">
-                                    Chỉ có thành viên mới có thể viết nhận xét. Vui lòng <Link to="/auth" className="text-primary">đăng nhập</Link>.
-                                </div>)
-                                    
+                                    : (<div className="text-muted">
+                                        Chỉ có thành viên mới có thể viết nhận xét. Vui lòng <Link to="/auth" className="text-primary">đăng nhập</Link>.
+                                    </div>)
+
                             }
-                           
+
                         </div>
                     </div>
                 </div>

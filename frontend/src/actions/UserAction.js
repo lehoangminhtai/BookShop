@@ -1,12 +1,9 @@
 import * as api from "../api/UserApi"
-
+import { createCartSer, addItemToCart } from "../services/cartService"
 import { REGISTER, LOGIN, LOGOUT, SEND_OTP, CHANGE_PASSWORD, START_LOADING, END_LOADING } from "../constants/Auth"
 
 const initialUserState = { name: '', email: '',phone:'', password: '',address:'', confirmPassword: '', registerOTP: '', forgetPasswordOTP: '' }
 const initialErrorObj = { login: '', register: '', sendRegisterOTP: '', sendForgetPasswordOTP: '', changePassword: '' }
-
-
-
 
 
 
@@ -35,7 +32,7 @@ export const sendRegisterOTP = (email, setErrorObj, setPage) => async (dispatch)
 
 
 
-export const register = (userData, navigate, setErrorObj, setUserFormData) => async (dispatch) => {
+export const register = (userData, navigate, setErrorObj, setUserFormData,redirectPath = '/') => async (dispatch) => {
     try {
         dispatch({ type: START_LOADING })
 
@@ -43,7 +40,9 @@ export const register = (userData, navigate, setErrorObj, setUserFormData) => as
         if (data.success) {
             dispatch({ type: REGISTER, payload: data })
             setErrorObj(initialErrorObj)
-            navigate('/')
+            createCartSer(data.result._id)
+            handleAddItemToCart(data.result._id);
+            navigate(redirectPath, { replace: true });
             setUserFormData(initialUserState)
             window.location.reload()
         }
@@ -70,8 +69,7 @@ export const login = (userData, navigate, setErrorObj, setUserFormData, redirect
             dispatch({ type: LOGIN, payload: data });
             setErrorObj(initialErrorObj);
             setUserFormData(initialUserState);
-
-            // Sử dụng redirectPath nếu có, nếu không thì mặc định đến trang chủ
+            handleAddItemToCart(data.result._id);
             navigate(redirectPath, { replace: true });
             window.location.reload();
         } else {
@@ -85,18 +83,6 @@ export const login = (userData, navigate, setErrorObj, setUserFormData, redirect
         dispatch({ type: END_LOADING });
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 export const sendForgetPasswordOTP = (email, setPage, setErrorObj) => async (dispatch) => {
@@ -120,17 +106,6 @@ export const sendForgetPasswordOTP = (email, setPage, setErrorObj) => async (dis
         dispatch({ type: END_LOADING })
     }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 export const changePassword = (userData, setPage, setErrorObj, setUserFormData) => async (dispatch) => {
@@ -162,11 +137,6 @@ export const changePassword = (userData, setPage, setErrorObj, setUserFormData) 
 
 
 
-
-
-
-
-
 export const logout = () => async (dispatch) => {
     try {
         dispatch({ type: START_LOADING })
@@ -178,4 +148,17 @@ export const logout = () => async (dispatch) => {
         console.log("error in logout - user.js actions", error.response.data.message)
         dispatch({ type: END_LOADING })
     }
+}
+
+const handleAddItemToCart = async (userId) => {
+   
+    const localCart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    
+    localCart.forEach(localItem => {
+       const itemData = {userId, bookId: localItem.id, quantity: localItem.quantity, price: localItem.price}
+       console.log(itemData)
+       addItemToCart(itemData);
+    });
+    localStorage.removeItem('cart');
 }
