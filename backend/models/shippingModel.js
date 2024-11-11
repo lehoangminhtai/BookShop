@@ -1,16 +1,27 @@
+// models/shippingModel.js
+
 const mongoose = require('mongoose');
 
-const Schema = mongoose.Schema;
-
-const shippingSchema = new Schema({
-    shippingName: {
-        type: String,
-        required: true
-    },
-    price: {
+const shippingSchema = new mongoose.Schema({
+   
+    shippingFee: {
         type: Number,
         required: true
-    }
+    },
+    provinces:[
+        {
+            provinceId:{
+                type: Number,
+                required: true,
+                unique: true
+            },
+            provinceName: {
+                type: String,
+                required: true,
+                unique: true
+            }
+        }
+    ]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Shipping', shippingSchema);
