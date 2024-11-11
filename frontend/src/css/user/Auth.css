@@ -1,0 +1,25 @@
+@charset "UTF-8";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.auth-container {
+  display: flex;
+  justify-content: center; /* Căn giữa theo chiều ngang */
+  align-items: center; /* Căn giữa theo chiều dọc */
+  margin-top: 50px;
+}
+
+/* Auth.scss */
+.error-message {
+  color: red;
+  font-size: 14px; /* tùy chọn */
+  margin-top: 4px; /* tùy chọn */
+}
+
+.tw-text-red {
+  color: red;
+}
+
+input:focus {
+  border-bottom: 1px solid #AAC7D8; /* Chỉ hiển thị border dưới khi focus */
+}/*# sourceMappingURL=Auth.css.map */

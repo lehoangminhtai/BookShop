@@ -12,6 +12,9 @@ const categoryBookRoutes = require('./routes/categoryBookRoute');
 const userRoutes = require('./routes/userRoute');
 const bookSaleRoutes = require('./routes/bookSaleRoute');
 const cartRoutes = require('./routes/cartRoute')
+const orderRoutes = require('./routes/orderRoute')
+const discountRoutes = require('./routes/discountRoute')
+const shippingRoutes = require('./routes/shippingRoute')
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
@@ -36,6 +39,9 @@ app.use('/api/categoryBooks', categoryBookRoutes);
 app.use('/api/admin/users', userRoutes);
 app.use('/api/bookSales', bookSaleRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/discounts', discountRoutes);
+app.use('/api/shipping', shippingRoutes);
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);

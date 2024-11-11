@@ -16,11 +16,9 @@ const Cart = () => {
             if (user) {
                 const response = await getCart(user._id);
                 const cartData = response?.data?.cartItems || [];
-                console.log(cartData)
                 setCartItems(cartData);
             } else {
                 const cart = JSON.parse(localStorage.getItem('cart')) || [];
-                console.log(cart)
                 setCartItems(cart);
             }
         };
@@ -35,7 +33,6 @@ const Cart = () => {
                 try {
                     const bookId = item.bookId ? item.bookId._id : item.id;
                     const book = await fetchBook(bookId);
-                    console.log(book)
                     productsData[bookId] = book;
                     if (item.quantity >= 50)
                         item.quantity = 50;
@@ -54,18 +51,18 @@ const Cart = () => {
 
     const handleDeleteItemCart = (itemId) => {
         const updatedCartItems = cartItems.filter(item => (item.bookId ? item.bookId._id : item.id) !== itemId);
-       if(user){
-            try{
-                removeItemFromCart(user._id,itemId);
+        if (user) {
+            try {
+                removeItemFromCart(user._id, itemId);
             }
-            catch(error){
+            catch (error) {
                 console.error('Có lỗi khi xóa sản phẩm ra giỏ hàng', error);
             }
-       }
-       else{
-        localStorage.setItem('cart', JSON.stringify(updatedCartItems));
-       }
-       
+        }
+        else {
+            localStorage.setItem('cart', JSON.stringify(updatedCartItems));
+        }
+
 
         setCartItems(updatedCartItems);
         setSelectedItems(selectedItems.filter(selectedId => selectedId !== itemId));
@@ -93,21 +90,21 @@ const Cart = () => {
             }
             return item;
         });
-       
+
         if (!user) {
-            
+
             localStorage.setItem('cart', JSON.stringify(updatedCartItems));
         } else {
-           
+
             try {
-               
+
                 const cartData = {
-                    userId: user._id,  
-                    bookId: itemId,   
+                    userId: user._id,
+                    bookId: itemId,
                     quantity: updatedCartItems.find(item => itemId === (item.bookId ? item.bookId._id : item.id)).quantity // Số lượng mới
                 };
-                await updateCartItem(cartData); 
-                
+                await updateCartItem(cartData);
+
             } catch (error) {
                 console.error('Có lỗi khi cập nhật giỏ hàng vào cơ sở dữ liệu:', error);
             }
@@ -115,7 +112,7 @@ const Cart = () => {
         }
         setCartItems(updatedCartItems);
     };
-    
+
 
     const getTotalPrice = () => {
         return selectedItems.reduce((total, itemId) => {
@@ -125,8 +122,16 @@ const Cart = () => {
     };
 
     const checkOut = () => {
+        
+        const itemsToCheckOut = cartItems.filter(item => 
+            selectedItems.includes(item.bookId ? item.bookId._id : item.id)
+        );
+    
+        localStorage.setItem('itemsPayment', JSON.stringify(itemsToCheckOut));
+        console.log(itemsToCheckOut)
         navigate("/checkout");
     };
+    
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
