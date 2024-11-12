@@ -1,16 +1,16 @@
 const Order = require('../models/orderModel');
 const Discount = require('../models/discountModel');
-
+const Payment = require('../models/paymentModel');
+const moment = require('moment');
 // Tạo đơn hàng mới
 
 exports.createOrder = async (req, res) => {
     try {
-        const { userId, address, itemsPayment, discountCode, shippingFee, totalPrice } = req.body;
+        const { userId, address, itemsPayment, discountCode, shippingFee, totalPrice,paymentMethod} = req.body;
 
         let discountAmount = 0;
         let discountId = null;
 
-        // Nếu có mã giảm giá, tìm mã giảm giá tương ứng trong hệ thống
         if (discountCode) {
             
             const discount = await Discount.findOne({
@@ -19,7 +19,6 @@ exports.createOrder = async (req, res) => {
                 dateExpire: { $gte: new Date() } // Kiểm tra nếu discountCode chưa hết hạn
             });
             
-            // Nếu tìm thấy mã giảm giá hợp lệ, tính toán giảm giá
             if (discount) {
                 if(totalPrice>=discount.minOfTotalPrice){
                 discountId = discount._id;
@@ -27,25 +26,34 @@ exports.createOrder = async (req, res) => {
                 }
             }
         }
-
        
         const finalAmount = totalPrice - discountAmount + shippingFee;
 
-       
         const newOrder = new Order({
             userId,
             address,
             itemsPayment,
             discountId, 
-            discountAmount,
             shippingFee,
             totalPrice,
             finalAmount
         });
 
-        await newOrder.save();
+        const response = await newOrder.save();
+        if(response)
+        {
 
-        res.status(201).json({ success: true, data: newOrder });
+            const payment = new Payment({
+                transactionId: `${paymentMethod}_${moment().format('YYMMDD')}_${response._id}`,
+                orderId: response._id,
+                userId: userId,
+                paymentMethod: paymentMethod,
+                finalAmount: finalAmount,
+            });
+            await payment.save();
+            res.status(201).json({ success: true, data: newOrder, payment });
+        }
+        
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

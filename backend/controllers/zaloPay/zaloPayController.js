@@ -5,6 +5,8 @@ const qs = require('qs');
 const { publicLink } = require('./config');
 const Order = require('../../models/orderModel');
 const OrderController = require('../orderController');
+const Payment = require('../../models/paymentModel')
+const PaymentController = require('../paymentController')
 
 const config = {
     app_id: '2553',
@@ -12,67 +14,70 @@ const config = {
     key2: 'kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz',
     endpoint: 'https://sb-openapi.zalopay.vn/v2/create',
 };
-
-
 exports.payment = async (req, res) => {
-
     const { orderId } = req.body
-    const orderBook = await Order.findById(orderId)
+     const orderBook = await Order.findById(orderId)
     if (!orderBook) {
         return res.status(404).json({ message: 'Order not found' });
-    }
+     }
+
+    const payment = await Payment.findOne({orderId:orderId})
+    if(!payment){
+        return res.status(404).json({ message: 'Order not found' });
+     }
+    const embed_data = {
+        //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
+        redirecturl: 'http://localhost:3000',
+      };
     
-        const embed_data = {
-            //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
-            redirecturl: 'http://localhost:3000',
-        };
 
+      const transID = Math.floor(Math.random() * 1000000);
+    
+      const order = {
+        app_id: config.app_id,
+        app_trans_id: `${moment().format('YYMMDD')}_ZaloPay_${transID}`, // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
+        app_user: orderBook.userId,
+        app_time: Date.now(), // miliseconds
+        item: JSON.stringify(orderBook.itemsPayment),
+        embed_data: JSON.stringify(embed_data),
+        amount: payment.finalAmount,
+        //khi thanh toán xong, zalopay server sẽ POST đến url này để thông báo cho server của mình
+        //Chú ý: cần dùng ngrok để public url thì Zalopay Server mới call đến được
+        callback_url: `${publicLink}/api/zalopay/callback/${payment.transactionId}`,
+        description: `Lazada - Payment for the order #${orderBook.itemsPayment.bookId}`,
+        bank_code: '',
 
-        const items = orderBook.itemsPayment;
-
-        const order = {
-            app_id: config.app_id,
-            app_trans_id: `ZaloPay_${moment().format('YYMMDD')}_${orderId}`, // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
-            app_user: orderBook.userId,
-            app_time: Date.now(), // miliseconds
-            item: JSON.stringify(items),
-            embed_data: JSON.stringify(embed_data),
-            amount: orderBook.finalAmount,
-            //khi thanh toán xong, zalopay server sẽ POST đến url này để thông báo cho server của mình
-            //Chú ý: cần dùng ngrok để public url thì Zalopay Server mới call đến được
-            callback_url: `${publicLink}/api/zalopay/callback`,
-            description: `BookShop - Payment for the order #${orderId}`,
-            bank_code: '',
-        };
-
-        // appid|app_trans_id|appuser|amount|apptime|embeddata|item
-        const data =
-            config.app_id +
-            '|' +
-            order.app_trans_id +
-            '|' +
-            order.app_user +
-            '|' +
-            order.amount +
-            '|' +
-            order.app_time +
-            '|' +
-            order.embed_data +
-            '|' +
-            order.item;
-        order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
-
-        try {
-            const result = await axios.post(config.endpoint, null, { params: order });
-            return res.status(200).json(result.data);
-        } catch (error) {
-            console.log(error);
-        }
+      };
+    
+      // appid|app_trans_id|appuser|amount|apptime|embeddata|item
+      const data =
+        config.app_id +
+        '|' +
+        order.app_trans_id +
+        '|' +
+        order.app_user +
+        '|' +
+        order.amount +
+        '|' +
+        order.app_time +
+        '|' +
+        order.embed_data +
+        '|' +
+        order.item;
+      order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
+    
+      try {
+        const result = await axios.post(config.endpoint, null, { params: order });
+    
+        return res.status(200).json(result.data);
+      } catch (error) {
+        console.log(error);
+      }
 }
 
 exports.callback = async (req, res) => {
+    const {transactionId} = req.params
     let result = {};
-    console.log(req.body);
     try {
         let dataStr = req.body.data;
         let reqMac = req.body.mac;
@@ -92,12 +97,18 @@ exports.callback = async (req, res) => {
                 "update order's status = success where app_trans_id =",
                 dataJson['app_trans_id'],
             );
+            await PaymentController.updatePaymentStatus(
+                { params: { transactionId: transactionId }, body: { paymentStatus: 'success',finalAmount: 0 } },
+                {
+                    status: (code) => ({ json: (message) => console.log('Update response:', message) }),
+                }
+            );
 
             result.return_code = 1;
             result.return_message = 'success';
         }
     } catch (ex) {
-        console.log('lỗi:::' + ex.message);
+        console.log('lỗi:' + ex.message);
         result.return_code = 0; // ZaloPay server sẽ callback lại (tối đa 3 lần)
         result.return_message = ex.message;
     }

@@ -1,29 +1,30 @@
+const mongoose = require('mongoose');
+
 const paymentSchema = new mongoose.Schema({
     transactionId: {
         type: String,
-        required: true,
-        unique: true
+        required:true
     },
     orderId: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Order',
         required: true
     },
     userId: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
     paymentMethod: {
         type: String,
         required: true,
-        enum: ['zalopay', 'cash', 'vnpay', 'momo'],
         default: 'cash'
     },
     paymentStatus: {
         type: String,
         required: true,
-        enum: ['pending', 'completed', 'failed', 'canceled']
+        enum: ['pending', 'completed', 'failed', 'canceled'],
+        default: 'pending'
     },
     finalAmount: {
         type: Number,
@@ -41,4 +42,7 @@ const paymentSchema = new mongoose.Schema({
         type: String,
         required: false
     }
-});
+},{timestamps:true});
+
+
+module.exports = mongoose.model('Payment', paymentSchema)
