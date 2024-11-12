@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStateContext } from '../../context/UserContext'
 import { getShippingFeeByProvinceId } from '../../services/shippingService';
+import { createZaloPay } from '../../services/zaloPayService';
 import { createOrder } from '../../services/orderService';
 
 function Checkout() {
@@ -146,17 +147,23 @@ function Checkout() {
                         })),
                 discountCode:"SALE20",
                 shippingFee: shippingFee,
-                totalPrice: totalPrice,
-                paymentMethod: selectedPayment
+                totalPrice: totalPrice
             }
             
     
             try {
                 // Call the createOrder API to submit the order
                 const response = await createOrder(orderData);
-                console.log(response); // Kiểm tra toàn bộ response
                 if (response.data.success) {
-                    alert('success')
+                    console.log(response.data.data._id)
+                    const orderId= response.data.data._id
+                if(selectedPayment ==='zalopay'){
+                    const zaloPayData = {orderId: orderId}
+                    const response = await createZaloPay(zaloPayData);
+                    console.log(response)
+                    const {order_url} = response.data;
+                    window.location.href = order_url;
+                }
                 } else {
                     console.log("Error: ", response.error || "Unknown error");
                     setError('There was an error while creating your order.');
@@ -264,7 +271,7 @@ function Checkout() {
                         </div>
                         <div className="bg-white p-4 rounded shadow">
                             <h2 className="fw-bold text-lg mb-4">PHƯƠNG THỨC THANH TOÁN</h2>
-                            {['cash', 'VNPAY', 'shopeepay', 'atm', 'momo'].map(method => (
+                            {['cash', 'VNPAY', 'zalopay', 'atm', 'momo'].map(method => (
                                 <div className="payment-option d-flex align-items-center mb-3" key={method}>
                                     <input
                                         type="radio"

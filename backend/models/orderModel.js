@@ -55,14 +55,7 @@ const orderSchema = new mongoose.Schema({
         enum: ['pending', 'completed', 'failed'],
         default: 'pending'
     },
-    paymentMethod: {
-        type: String,
-        default: 'cash_on_delivery'
-    },
-    paidAt:{
-        type: Date,
-        default:Date.now()
-    },
+   
     deliveryAt: Date,
     createdAt: {
         type: Date,

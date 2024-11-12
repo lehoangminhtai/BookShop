@@ -5,7 +5,7 @@ const Discount = require('../models/discountModel');
 
 exports.createOrder = async (req, res) => {
     try {
-        const { userId, address, itemsPayment, discountCode, shippingFee, totalPrice, paymentMethod } = req.body;
+        const { userId, address, itemsPayment, discountCode, shippingFee, totalPrice } = req.body;
 
         let discountAmount = 0;
         let discountId = null;
@@ -40,8 +40,7 @@ exports.createOrder = async (req, res) => {
             discountAmount,
             shippingFee,
             totalPrice,
-            finalAmount,
-            paymentMethod
+            finalAmount
         });
 
         await newOrder.save();

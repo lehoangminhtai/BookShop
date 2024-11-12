@@ -15,6 +15,7 @@ const cartRoutes = require('./routes/cartRoute')
 const orderRoutes = require('./routes/orderRoute')
 const discountRoutes = require('./routes/discountRoute')
 const shippingRoutes = require('./routes/shippingRoute')
+const zaloPayRoutes = require('./routes/zaloPayRoute')
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
@@ -27,7 +28,7 @@ mongoose.connect(process.env.MONGO_URI)
         console.log(error);
     })
 
-app.use(bodyParser.json({ limit: '100mb' }));
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     limit: '100mb',
     extended: true
@@ -42,6 +43,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/discounts', discountRoutes);
 app.use('/api/shipping', shippingRoutes);
+app.use('/api/zalopay', zaloPayRoutes);
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);
