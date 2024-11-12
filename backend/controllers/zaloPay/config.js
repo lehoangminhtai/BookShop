@@ -1,0 +1,1 @@
+ export const publicLink = "https://42df-2402-800-6319-4dbf-147b-8bd5-a58e-98ab.ngrok-free.app";
