@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Sidebar from "./components/admin/AdSidebar";
 import Cart from './pages/user/Cart';
 import Checkout from './pages/user/Checkout';
+import SuccessPage from './pages/user/Success';
 
 function AppContent() {
   const location = useLocation(); // Lấy thông tin về đường dẫn hiện tại
@@ -28,9 +29,13 @@ function AppContent() {
           <Route path="/admin" element={<Sidebar />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path='/payment/success' element={<SuccessPage/>}></Route>
         </Routes>
       </div>
       {location.pathname !== '/checkout' && <Footer />} {/* Chỉ hiển thị Footer khi không phải là trang /checkout */}
+      <Routes>
+        
+      </Routes>
     </>
   );
 }

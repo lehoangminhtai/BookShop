@@ -25,6 +25,14 @@ function Checkout() {
     const [addressDetail, setAddressDetail] = useState(''); 
     const [error, setError] = useState(''); 
    
+    const paymentLogos = {
+        cash: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731438956/ico_cashondelivery_olyccj.svg',
+        VNPAY: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731438956/ico_vnpay_p7e5eq.svg',
+        zalopay: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731419014/Logo-ZaloPay-Square_ktergo.webp',
+        atm: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731419014/Logo-ATM.webp',
+        momo: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731439476/momo_icon_ltl6ll.png'
+    };
+    
 
     const handleChange = (e) => {
         setAddressDetail(e.target.value); // Cập nhật giá trị địa chỉ khi người dùng nhập
@@ -147,7 +155,8 @@ function Checkout() {
                         })),
                 discountCode:"SALE20",
                 shippingFee: shippingFee,
-                totalPrice: totalPrice
+                totalPrice: totalPrice,
+                paymentMethod: selectedPayment
             }
             
     
@@ -281,7 +290,7 @@ function Checkout() {
                                         checked={selectedPayment === method}
                                         onChange={() => setSelectedPayment(method)}
                                     />
-                                    <img src={`https://placehold.co/32x32`} alt={`${method} logo`} className="me-2" />
+                                    <img  src={paymentLogos[method]}  alt={`${method} logo`} className="me-2" style={{width:"32px"}} />
                                     <label htmlFor={method} className="flex-grow-1 font-weight-medium">
                                         {method === 'cash' ? 'Thanh toán bằng tiền mặt khi nhận hàng' : method.toUpperCase()}
                                     </label>
