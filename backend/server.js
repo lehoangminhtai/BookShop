@@ -16,6 +16,9 @@ const orderRoutes = require('./routes/orderRoute')
 const discountRoutes = require('./routes/discountRoute')
 const shippingRoutes = require('./routes/shippingRoute')
 const zaloPayRoutes = require('./routes/zaloPayRoute')
+const momoRoutes = require('./routes/momoRoute')
+const paymentRoutes = require('./routes/paymentRoute')
+const Payment = require('./models/paymentModel')
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
@@ -44,6 +47,8 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/discounts', discountRoutes);
 app.use('/api/shipping', shippingRoutes);
 app.use('/api/zalopay', zaloPayRoutes);
+app.use('/api/momo', momoRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);
