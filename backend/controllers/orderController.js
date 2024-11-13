@@ -62,7 +62,7 @@ exports.createOrder = async (req, res) => {
 // Lấy đơn hàng theo ID
 exports.getOrderById = async (req, res) => {
     try {
-        const orderId = req.params.id;
+        const {orderId} = req.params;
         const order = await Order.findById(orderId).populate('userId').populate('itemsPayment.bookId');
 
         if (!order) {

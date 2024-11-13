@@ -36,6 +36,23 @@ exports.getPaymentByTransactionId = async (req, res) => {
     }
 };
 
+exports.getPaymentByOrderId = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const payment = await Payment.findOne({ orderId: orderId })
+        .populate('orderId') 
+        .populate('userId'); 
+
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment not found' });
+        }
+
+        res.status(200).json(payment);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching payment', error: error.message });
+    }
+};
+
 // Lấy danh sách thanh toán của người dùng
 exports.getUserPayments = async (req, res) => {
     try {

@@ -8,6 +8,8 @@ router.post('/', paymentController.createPayment);
 // Lấy thông tin thanh toán theo transactionId
 router.get('/:transactionId', paymentController.getPaymentByTransactionId);
 
+router.get('/order/:orderId', paymentController.getPaymentByOrderId);
+
 // Lấy danh sách thanh toán của người dùng
 router.get('/user/:userId', paymentController.getUserPayments);
 

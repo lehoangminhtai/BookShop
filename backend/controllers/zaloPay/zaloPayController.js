@@ -25,10 +25,10 @@ exports.payment = async (req, res) => {
     if(!payment){
         return res.status(404).json({ message: 'Order not found' });
      }
-    const embed_data = {
-        //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
-        redirecturl: 'http://localhost:3000',
-      };
+
+     const embed_data = {
+         redirecturl: `http://localhost:3000/payment/success?orderId=${orderId}`,
+     };
     
 
       const transID = Math.floor(Math.random() * 1000000);
