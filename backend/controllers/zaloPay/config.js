@@ -1,1 +1,5 @@
- export const publicLink = "https://7876-2402-800-6319-4dbf-147b-8bd5-a58e-98ab.ngrok-free.app";
+const {publicPort} = require('../../publicPort')
+ 
+const publicLink = `${publicPort}`
+
+module.exports={publicLink}

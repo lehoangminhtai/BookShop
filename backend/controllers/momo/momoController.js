@@ -17,7 +17,7 @@ exports.momoPayment =  async (req, res) => {
       lang,
     } = config;
   
-    var amount = '10000';
+    var amount = '30000';
     var orderId = partnerCode + new Date().getTime();
     var requestId = orderId;
   
