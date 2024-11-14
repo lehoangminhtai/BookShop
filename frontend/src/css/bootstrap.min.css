@@ -84,7 +84,7 @@ h1,
     font-family: "Raleway", sans-serif;
     font-weight: 600;
     line-height: 1.2;
-    color: #45595b
+    color: black
 }
 
 h1,
@@ -4383,7 +4383,7 @@ fieldset:disabled .btn {
 
 .nav-link {
     display: block;
-    padding: .5rem 1rem;
+    padding: 1rem 1rem;
     color: #81c408;
     transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out
 }
@@ -8371,7 +8371,7 @@ fieldset:disabled .btn {
 }
 
 .text-dark {
-    color: #45595b !important
+    color: #444444 !important
 }
 
 .text-white {

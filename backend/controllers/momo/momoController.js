@@ -1,8 +1,19 @@
 const axios = require('axios');
 const crypto = require('crypto');
-
+const Order = require('../../models/orderModel')
+const Payment = require('../../models/paymentModel')
 const config = require('./config');
 exports.momoPayment =  async (req, res) => {
+  const { id } = req.body
+     const orderBook = await Order.findById(id)
+    if (!orderBook) {
+        return res.status(404).json({ message: 'Order not found' });
+     }
+
+    const payment = await Payment.findOne({orderId:id})
+    if(!payment){
+        return res.status(404).json({ message: 'Order not found' });
+     }
     let {
       accessKey,
       secretKey,
@@ -17,7 +28,7 @@ exports.momoPayment =  async (req, res) => {
       lang,
     } = config;
   
-    var amount = '30000';
+    var amount = payment.finalAmount;
     var orderId = partnerCode + new Date().getTime();
     var requestId = orderId;
   

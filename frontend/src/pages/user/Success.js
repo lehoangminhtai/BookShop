@@ -50,9 +50,9 @@ const SuccessPage = () => {
                     <div className="col-6 pe-3">
                         <h3 className="h5 fw-semibold mb-3">Thông tin khách hàng</h3>
                         <div className="text-secondary">
-                            <p className="mb-3"><span className="fw-semibold">Họ tên:</span> <span className="text-primary">{user.fullName}</span></p>
-                            <p className="mb-3"><span className="fw-semibold">Điện thoại:</span> <span className="text-primary">{user.phone}</span></p>
-                            <p className="mb-3"><span className="fw-semibold">Email:</span> <span className="text-primary">{user.email}</span></p>
+                            <p className="mb-3"><span className="fw-semibold">Họ tên:</span> <span className="text-primary">{user?.fullName}</span></p>
+                            <p className="mb-3"><span className="fw-semibold">Điện thoại:</span> <span className="text-primary">{user?.phone}</span></p>
+                            <p className="mb-3"><span className="fw-semibold">Email:</span> <span className="text-primary">{user?.email}</span></p>
                             <p className="mb-3"><span className="fw-semibold">Địa chỉ:</span> <span className="text-primary">{payment.orderId.address}</span></p>
                             <p className="mb-3"><span className="fw-semibold">Phương thức thanh toán:</span> <span className="text-primary">{payment.paymentMethod} </span><span className="badge bg-warning text-white">{payment.paymentStatus ==='success' ? "Đã thanh toán":"Chưa thanh toán"}</span></p>
                             <p className="mb-3"><span className="fw-semibold">Trạng thái đơn hàng:</span> <span className="badge bg-warning text-white">{payment.orderId.orderStatus ==='pending' ? "Chờ xác nhận":""}</span></p>
