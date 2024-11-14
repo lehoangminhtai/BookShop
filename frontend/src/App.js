@@ -13,6 +13,7 @@ import SuccessPage from './pages/user/Success';
 
 //Admin
 import Dashboard from './pages/admin/Dashboard';
+import AdCategoryBook from './pages/admin/AdCategoryBook';
 
 function AppContent() {
   const location = useLocation(); // Lấy thông tin về đường dẫn hiện tại
@@ -28,10 +29,15 @@ function AppContent() {
           <Route path='/auth' element={<Auth />} />
           <Route path='/upload' element={<SecureUpload />} />
           <Route path="/chi-tiet/:productId" element={<ProductDetail />} />
-          <Route path="/admin" element={<Dashboard />} />
+         
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path='/payment/success' element={<SuccessPage/>}></Route>
+
+            {/* admin */}
+
+          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/admin/category-book" element={<AdCategoryBook />} />
         </Routes>
       </div>
       {location.pathname !== '/checkout' && <Footer />} {/* Chỉ hiển thị Footer khi không phải là trang /checkout */}

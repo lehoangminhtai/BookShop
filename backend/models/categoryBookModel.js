@@ -7,6 +7,9 @@ const categoryBookSchema = new Schema(
         nameCategory: {
             type: String,
             required: true // Sửa "require" thành "required"
+        },
+        image:{
+            type:String,
         }
     },
     { timestamps: true }

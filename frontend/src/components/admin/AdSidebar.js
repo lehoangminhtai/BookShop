@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const AdSidebar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -24,9 +25,9 @@ const AdSidebar = () => {
         <nav className="mt-3">
           <ul className="nav flex-column" style={{ padding: '0' }}>
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <a href="#dashboard" className="nav-link text-dark d-flex align-items-center">
+              <Link to="/admin" className="nav-link text-dark d-flex align-items-center">
                 <i className="fas fa-home me-2"></i> <span>Bảng điều khiển</span>
-              </a>
+              </Link>
             </li>
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0',  // Border radius cho toàn bộ sidebar
           boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)' }}>
@@ -47,9 +48,9 @@ const AdSidebar = () => {
                 
                 <ul className="nav flex-column ms-3" >
                   <li className="nav-item ms-5" style={{ borderBottom: '1px solid #e0e0e0' }}>
-                    <a href="#orders" className="nav-link text-dark">
+                    <Link to="/admin/category-book" className="nav-link text-dark">
                       Loại Sách
-                    </a>
+                    </Link>
                   </li>
                   <li className="nav-item ms-5" style={{ borderBottom: '1px solid #e0e0e0' }}>
                     <a href="#products" className="nav-link text-dark">
