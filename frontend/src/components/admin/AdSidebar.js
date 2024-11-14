@@ -40,7 +40,7 @@ const AdSidebar = () => {
                 className="nav-link text-dark d-flex justify-content-between align-items-center"
               >
                 <span className="d-flex align-items-center">
-                  <i className="fas fa-shopping-cart me-2"></i>Thương mại
+                  <i className="fas fa-shopping-cart me-2"></i>Sản Phẩm
                 </span>
                 <i className={`fas ${dropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
               </a>
@@ -53,9 +53,9 @@ const AdSidebar = () => {
                     </Link>
                   </li>
                   <li className="nav-item ms-5" style={{ borderBottom: '1px solid #e0e0e0' }}>
-                    <a href="#products" className="nav-link text-dark">
+                    <Link to="/admin/book" className="nav-link text-dark">
                       Sách
-                    </a>
+                    </Link>
                   </li>
                   <li className="nav-item ms-5" style={{ borderBottom: '1px solid #e0e0e0' }}>
                     <a href="#customers" className="nav-link text-dark">

@@ -46,7 +46,7 @@ const AdCategoryBook = () => {
     }
 
     return (
-        <div className="d-flex mt-5">
+        <div className="d-flex">
             <AdSidebar />
             <div className="container d-flex gap-4">
                 {/* Categories List */}
