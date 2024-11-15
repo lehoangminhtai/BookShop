@@ -58,9 +58,9 @@ const AdSidebar = () => {
                     </Link>
                   </li>
                   <li className="nav-item ms-5" style={{ borderBottom: '1px solid #e0e0e0' }}>
-                    <a href="#customers" className="nav-link text-dark">
+                    <Link to={'/admin/book-sale-price'} className="nav-link text-dark">
                       Giá sách bán
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               )}

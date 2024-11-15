@@ -37,7 +37,7 @@ const getBookSales = async (req, res) => {
     try {
         const bookSales = await BookSale.find({})
             .sort({ createdAt: -1 })
-            .populate('bookId', 'title author'); // Liên kết với thông tin cơ bản của sách
+            .populate('bookId', 'title author images'); // Liên kết với thông tin cơ bản của sách
 
         res.status(200).json(bookSales);
     } catch (error) {

@@ -8294,7 +8294,8 @@ fieldset:disabled .btn {
 }
 
 .text-start {
-    text-align: left !important
+    text-align: left !important;
+    font-size: smaller
 }
 
 .text-end {
