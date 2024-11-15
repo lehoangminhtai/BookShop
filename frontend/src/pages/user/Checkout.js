@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStateContext } from '../../context/UserContext'
 import { getShippingFeeByProvinceId } from '../../services/shippingService';
 import { createZaloPay } from '../../services/zaloPayService';
+import { createMomoPay } from '../../services/momoService';
 import { createOrder } from '../../services/orderService';
 
 function Checkout() {
@@ -173,6 +174,14 @@ function Checkout() {
                     const {order_url} = response.data;
                     window.location.href = order_url;
                 }
+                if(selectedPayment ==='momo'){
+                    const momoData = {orderId: orderId}
+                    const response = await createMomoPay(momoData);
+                    console.log(response)
+                    const {payUrl} = response.data;
+                    window.location.href = payUrl;
+                }
+
                 } else {
                     console.log("Error: ", response.error || "Unknown error");
                     setError('There was an error while creating your order.');

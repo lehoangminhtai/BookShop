@@ -3,14 +3,17 @@ const crypto = require('crypto');
 const Order = require('../../models/orderModel')
 const Payment = require('../../models/paymentModel')
 const config = require('./config');
+const PaymentController = require('../paymentController')
+const {publicPort} = require('../../publicPort')
 exports.momoPayment =  async (req, res) => {
-  const { id } = req.body
-     const orderBook = await Order.findById(id)
+  const { orderId } = req.body
+     const orderBook = await Order.findById(orderId)
+
     if (!orderBook) {
         return res.status(404).json({ message: 'Order not found' });
      }
 
-    const payment = await Payment.findOne({orderId:id})
+    const payment = await Payment.findOne({orderId})
     if(!payment){
         return res.status(404).json({ message: 'Order not found' });
      }
@@ -19,18 +22,18 @@ exports.momoPayment =  async (req, res) => {
       secretKey,
       orderInfo,
       partnerCode,
-      redirectUrl,
-      ipnUrl,
+    
       requestType,
       extraData,
       orderGroupId,
       autoCapture,
       lang,
     } = config;
-  
+    var redirectUrl = `http://localhost:3000/payment/success?orderId=${orderId}`
     var amount = payment.finalAmount;
-    var orderId = partnerCode + new Date().getTime();
+    //var orderId = partnerCode + new Date().getTime();
     var requestId = orderId;
+    var ipnUrl= `${publicPort}/api/momo/callback/${payment.transactionId}`
   
     //before sign HMAC SHA256 with format
     //accessKey=$accessKey&amount=$amount&extraData=$extraData&ipnUrl=$ipnUrl&orderId=$orderId&orderInfo=$orderInfo&partnerCode=$partnerCode&redirectUrl=$redirectUrl&requestId=$requestId&requestType=$requestType
@@ -65,8 +68,8 @@ exports.momoPayment =  async (req, res) => {
     //json object send to MoMo endpoint
     const requestBody = JSON.stringify({
       partnerCode: partnerCode,
-      partnerName: 'Test',
-      storeId: 'MomoTestStore',
+      partnerName: 'BookShop',
+      storeId: 'BookShop',
       requestId: requestId,
       amount: amount,
       orderId: orderId,
@@ -103,6 +106,7 @@ exports.momoPayment =  async (req, res) => {
 };
 
 exports.momoCallback = async (req, res) => {
+  const {transactionId} = req.params
     /**
       resultCode = 0: giao dịch thành công.
       resultCode = 9000: giao dịch được cấp quyền (authorization) thành công .
@@ -110,6 +114,18 @@ exports.momoCallback = async (req, res) => {
      */
     console.log('callback: ');
     console.log(req.body);
+    try{
+      await PaymentController.updatePaymentStatus(
+        { params: { transactionId: transactionId }, body: { paymentStatus: 'success',finalAmount: 0 } },
+        {
+            status: (code) => ({ json: (message) => console.log('Update response:', message) }),
+        }
+    );
+    return res.status(204).json(req.body);
+    }
+    catch(error){
+      console.log(error)
+    }
     /**
      * Dựa vào kết quả này để update trạng thái đơn hàng
      * Kết quả log:
@@ -130,7 +146,7 @@ exports.momoCallback = async (req, res) => {
         }
      */
   
-    return res.status(204).json(req.body);
+    
   }
 
   exports.check = async (req, res) => {
