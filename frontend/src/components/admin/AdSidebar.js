@@ -66,9 +66,9 @@ const AdSidebar = () => {
               )}
             </li>
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <a href="#product-specification" className="nav-link text-dark d-flex align-items-center">
+              <Link to={'/admin/order'} className="nav-link text-dark d-flex align-items-center">
                 <i className="fas fa-store me-2"></i> <span>Đơn Hàng</span>
-              </a>
+              </Link>
             </li>
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
               <a href="#marketplace" className="nav-link text-dark d-flex align-items-center">

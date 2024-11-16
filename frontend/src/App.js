@@ -17,6 +17,7 @@ import AdCategoryBook from './pages/admin/AdCategoryBook';
 import AdBook from './pages/admin/AdBook';
 import AdBookSale from './pages/admin/AdBookSale';
 import BookForm from './components/BookForm';
+import AdOrder from './pages/admin/AdOrder';
 
 function AppContent() {
   const location = useLocation(); // Lấy thông tin về đường dẫn hiện tại
@@ -45,6 +46,7 @@ function AppContent() {
           <Route path="/admin/book" element={<AdBook />} />
           <Route path="/admin/book/create" element={<BookForm/>} />
           <Route path="/admin/book-sale-price" element={<AdBookSale />} />
+          <Route path="/admin/order" element={<AdOrder />} />
         </Routes>
       </div>
       {location.pathname !== '/checkout' && !isAdminRoute && <Footer />} {/* Chỉ hiển thị Footer khi không phải là trang /checkout */}
