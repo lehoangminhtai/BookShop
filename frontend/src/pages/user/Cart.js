@@ -166,6 +166,8 @@ const Cart = () => {
                                 {cartItems.map(item => {
                                     const itemId = item.bookId ? item.bookId._id : item.id;
                                     const product = products[itemId];
+
+                                    if (!product) return null;
                                     return (
                                         <div key={itemId} className="row align-items-center pb-3">
                                             <div className="col-3 col-md-2 d-flex align-items-center">

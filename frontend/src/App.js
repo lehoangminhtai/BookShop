@@ -16,6 +16,7 @@ import Dashboard from './pages/admin/Dashboard';
 import AdCategoryBook from './pages/admin/AdCategoryBook';
 import AdBook from './pages/admin/AdBook';
 import AdBookSale from './pages/admin/AdBookSale';
+import BookForm from './components/BookForm';
 
 function AppContent() {
   const location = useLocation(); // Lấy thông tin về đường dẫn hiện tại
@@ -42,6 +43,7 @@ function AppContent() {
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/admin/category-book" element={<AdCategoryBook />} />
           <Route path="/admin/book" element={<AdBook />} />
+          <Route path="/admin/book/create" element={<BookForm/>} />
           <Route path="/admin/book-sale-price" element={<AdBookSale />} />
         </Routes>
       </div>
