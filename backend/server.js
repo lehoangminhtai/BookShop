@@ -31,7 +31,8 @@ mongoose.connect(process.env.MONGO_URI)
         console.log(error);
     })
 
-app.use(bodyParser.json());
+
+app.use(bodyParser.json({ limit: '100mb' }));
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     limit: '100mb',
     extended: true

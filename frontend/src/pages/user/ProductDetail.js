@@ -253,25 +253,27 @@ const ProductDetail = () => {
                         </div>
 
 
-                        <div className="card p-4 shadow-lg" >
-                            <h1 className="card-title fs-3 fw-bold mb-3 text-center">Mô tả sản phẩm</h1>
+                        <div className="card p-4 shadow-lg">
+    <h1 className="card-title fs-3 fw-bold mb-3 text-center">Mô tả sản phẩm</h1>
 
-                            <div style={{
-                                maxHeight: expanded ? 'none' : '100px', // Điều chỉnh chiều cao tối đa
-                                overflow: 'hidden',
-                                transition: 'max-height 0.3s ease',
-                            }}>
-                                <p className="text-body">{fullText}</p>
-                            </div>
+    <div
+        style={{
+            maxHeight: expanded ? 'none' : '100px', // Điều chỉnh chiều cao tối đa
+            overflow: 'hidden',
+            transition: 'max-height 0.3s ease',
+        }}
+        dangerouslySetInnerHTML={{ __html: fullText }}  // Set HTML content here
+    />
 
-                            {showMoreButton && (
-                                <div className="text-center mt-3">
-                                    <button className=" btn-link" onClick={toggleExpanded}>
-                                        {expanded ? "Rút gọn" : "Xem thêm"}
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+    {showMoreButton && (
+        <div className="text-center mt-3">
+            <button className="btn-link" onClick={toggleExpanded}>
+                {expanded ? "Rút gọn" : "Xem thêm"}
+            </button>
+        </div>
+    )}
+</div>
+
                     </div>
 
 

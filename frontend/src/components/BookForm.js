@@ -1,162 +1,235 @@
 import { useEffect, useState } from "react";
 import { useBookContext } from "../hooks/useBookContext";
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify'; 
+import { EditorState, convertToRaw } from 'draft-js';
+import { Editor } from 'react-draft-wysiwyg';
+import draftToHtml from 'draftjs-to-html';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import 'react-toastify/dist/ReactToastify.css';
+import { useDropzone } from 'react-dropzone'; // Import Dropzone
 
 const BookForm = () => {
-    const {dispatch} = useBookContext();
+    const { dispatch } = useBookContext();
 
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
-    const [description, setDescription] = useState('');
+    const [description, setDescription] = useState(EditorState.createEmpty());
     const [images, setImages] = useState('');
     const [publisher, setPublisher] = useState('');
     const [categoryId, setCategoryId] = useState('');
     const [categories, setCategories] = useState([]);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [errors, setErrors]= useState(null);
+    const [errors, setErrors] = useState({});
 
-    // const handleImageChange = (e) => {
-    //     const file = e.target.files[0];  // Lấy file ảnh đầu tiên
-    
-    //     const reader = new FileReader();
-    //     reader.onloadend = () => {
-    //         setImagePreview(reader.result);  // Lưu link ảnh để hiển thị
-    //     };
-    //     if (file) {
-    //         reader.readAsDataURL(file);
-    //     }
-    // };
-    
-    const handleImage = (e) =>{
-        const file = e.target.files[0];
-        setFileToBase(file);
-        console.log(file);
-    }
+    // Xử lý hình ảnh khi kéo thả hoặc chọn tệp
+    const onDrop = (acceptedFiles) => {
+        if (acceptedFiles.length > 0) {
+            const file = acceptedFiles[0];
+            setFileToBase(file);
+        }
+    };
 
-    const setFileToBase = (file) =>{
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: 'image/*',
+        multiple: false, // Chỉ cho phép một hình ảnh
+    });
+
+    const setFileToBase = (file) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onloadend = () =>{
+        reader.onloadend = () => {
             setImages(reader.result);
-        }
+            const updatedErrors = { ...errors };
+            delete updatedErrors.images; // Xóa lỗi nếu ảnh được chọn
+            setErrors(updatedErrors);
+        };
+    };
 
-    }
-    useEffect(()=>{
-        const fetchCategories= async () =>{
+    useEffect(() => {
+        const fetchCategories = async () => {
             const response = await fetch('/api/categoryBooks');
             const json = await response.json();
-
-            if(response.ok){
+            if (response.ok) {
                 setCategories(json);
-            }
-            else{
+            } else {
                 console.error('Failed to fetch categories');
             }
-        }
+        };
         fetchCategories();
-    },[]);
+    }, []);
+    
+    const handleInputChange = (e, field) => {
+        const value = e.target.value;
+        const updatedErrors = { ...errors };
 
-    // const handleSubmit = async (e) =>{
-    //     e.preventDefault();
-    //     const book = {title, author, description, images, publisher, categoryId};
-     
-    //     const response = await fetch('/api/books',{
-    //         method: 'POST',
-    //         body: JSON.stringify(book),
-    //         headers:{
-    //             'Content-Type': 'application/json'
-    //         }
-    //     })
-    //     const json = await response.json();
+        if (value.trim() !== '') {
+            delete updatedErrors[field]; // Xóa lỗi nếu input không rỗng
+        }
 
-    //     if(!response.ok){
-    //         setErrors(json.errors);
-    //     }
-    //     if(response.ok){
-    //         setTitle('');
-    //         setAuthor('');
-    //         setDescription('');
-    //         setImages(null);  
-    //         setImagePreview(null);
-    //         setPublisher('');
-    //         setCategoryId('');
-    //         setErrors(null);
-    //         console.log('new book added',json);
-    //         dispatch({type:'CREATE_BOOK', payload: json})
-    //     }
-    // }
-    const handleSubmit = async (e) =>{
+        setErrors(updatedErrors);
+
+        if (field === "title") setTitle(value);
+        if (field === "author") setAuthor(value);
+        if (field === "publisher") setPublisher(value);
+        if (field === "categoryId") setCategoryId(value);
+    };
+
+    const onEditorStateChange = (editorState) => {
+        setDescription(editorState);
+
+        const updatedErrors = { ...errors };
+        if (editorState.getCurrentContent().hasText()) {
+            delete updatedErrors.description; // Xóa lỗi nếu mô tả không trống
+        }
+        setErrors(updatedErrors);
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const newErrors = {};
+        if (!title) newErrors.title = 'Vui lòng nhập tên sách';
+        if (!author) newErrors.author = 'Vui lòng nhập tên tác giả';
+        if (!description.getCurrentContent().hasText()) newErrors.description = 'Mô tả gì đó về cuốn sách đi';
+        if (!images) newErrors.images = 'Không thể thiếu ảnh cho cuốn sách';
+        if (!publisher) newErrors.publisher = 'Cho cuốn sách nhà xuất bản';
+        if (!categoryId) newErrors.categoryId = 'Thuộc thể loại sách nào';
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            return;
+        }
+
         try {
-            const {data} = await axios.post('/api/books', {title,author, description, images,publisher, categoryId})
-            if  (data.success === true){
+            const descriptionHtml = draftToHtml(convertToRaw(description.getCurrentContent()));
+            const { data } = await axios.post('/api/books', { 
+                title, author, description: descriptionHtml, images, publisher, categoryId 
+            });
+
+            if (data.success) {
                 setTitle('');
-                setDescription('');
+                setDescription(EditorState.createEmpty());
                 setImages('');
                 setPublisher('');
                 setAuthor('');
                 setCategoryId('');
-               
-                toast.success('product created successfully');
+                toast.success('Thêm sách thành công');
                 const response = await fetch('/api/books');
                 const json = await response.json();
-                dispatch({type:'CREATE_BOOK', payload: json})            
+                dispatch({ type: 'CREATE_BOOK', payload: json });
+            } else {
+                toast.error('Lỗi thêm sách');
             }
-            console.log(data);
         } catch (error) {
-            console.log(error)
+            console.error(error);
+            toast.error('Lỗi thêm sách');
         }
+    };
 
-    }
-      
-    return(
-        <form className="create" onSubmit={handleSubmit} encType="multipart/form-data">
-            <h3>Add a new Book</h3>
-            <label>Book Title: </label>
-            <input
-                type = "text"
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
-            />
-             <label>Book Author: </label>
-            <input
-                type = "text"
-                onChange={(e) => setAuthor(e.target.value)}
-                value={author}
-            />
-             <label>Book Description: </label>
-            <input
-                type = "text"
-                onChange={(e) => setDescription(e.target.value)}
-                value={description}
-            />
-             <label>Book Images: </label>
-             <input type="file" onChange={handleImage} />
-           
-            <div>
-                <img src={images} alt="Selected" style={{ width: '200px', height: '200px' }} />
-            </div>
-        
-             <label>Book Publisher: </label>
-            <input
-                type = "text"
-                onChange={(e) => setPublisher(e.target.value)}
-                value={publisher}
-            />
-            <label>Book Category: </label> 
-            <select onChange={(e) => setCategoryId(e.target.value)} value={categoryId}>
-                <option value="" >Chọn thể loại</option>
-               {categories.map(category =>(
-                <option key={category._id} value={category._id}>
-                    {category.nameCategory}
-                </option>
-               ))}
-            </select>
-            <button>Add Book</button>
-            {errors &&  <div>{errors}</div>}
-        </form>
+    return (
+        <div className="">
+            <form className="create container mt-4" onSubmit={handleSubmit}>
+                <h3 className="text-center mb-4">Thêm sách mới</h3>
+
+                <div className="mb-3">
+                    <label className="form-label">Tên sách: </label>
+                    <input
+                        type="text"
+                        className={`form-control ${errors.title ? 'is-invalid' : ''}`}
+                        onChange={(e) => handleInputChange(e, 'title')}
+                        value={title}
+                    />
+                    {errors.title && <div className="invalid-feedback">{errors.title}</div>}
+                </div>
+
+                <div className="mb-3">
+                    <label className="form-label">Tác giả: </label>
+                    <input
+                        type="text"
+                        className={`form-control ${errors.author ? 'is-invalid' : ''}`}
+                        onChange={(e) => handleInputChange(e, 'author')}
+                        value={author}
+                    />
+                    {errors.author && <div className="invalid-feedback">{errors.author}</div>}
+                </div>
+
+                <div className="form-group col-md-12 editor" style={{ border: '2px solid #ccc', padding: '10px', borderRadius: '5px' }}>
+                    <label className="font-weight-bold">
+                        Mô tả <span className="required"> * </span>
+                    </label>
+                    <Editor
+                        editorState={description}
+                        toolbarClassName="toolbarClassName"
+                        wrapperClassName="wrapperClassName"
+                        editorClassName="editorClassName"
+                        onEditorStateChange={onEditorStateChange}
+                    />
+                    {errors.description && <div className="text-danger">{errors.description}</div>}
+                </div>
+
+                <div className="mb-3">
+                    <label className="form-label">Hình ảnh: </label>
+                    <div 
+                        {...getRootProps()} 
+                        className={`dropzone ${isDragActive ? 'active-dropzone' : ''}`}
+                        style={{
+                            border: '2px dashed #007bff',
+                            padding: '20px',
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            borderRadius: '5px'
+                        }}
+                    >
+                        <input {...getInputProps()} />
+                        {isDragActive 
+                            ? <p>Thả file của bạn vào đây...</p> 
+                            : <p>Kéo và thả hình ảnh vào đây, hoặc nhấn để chọn</p>
+                        }
+                    </div>
+                    {errors.images && <div className="text-danger">{errors.images}</div>}
+                    {images && (
+                        <div className="mt-2">
+                            <img src={images} alt="Selected" style={{ width: '200px', height: '200px' }} className="img-thumbnail" />
+                        </div>
+                    )}
+                </div>
+
+                <div className="mb-3">
+                    <label className="form-label">Nhà sản xuất: </label>
+                    <input
+                        type="text"
+                        className={`form-control ${errors.publisher ? 'is-invalid' : ''}`}
+                        onChange={(e) => handleInputChange(e, 'publisher')}
+                        value={publisher}
+                    />
+                    {errors.publisher && <div className="invalid-feedback">{errors.publisher}</div>}
+                </div>
+
+                <div className="mb-3">
+                    <label className="form-label">Thể loại: </label>
+                    <select
+                        className={`form-select ${errors.categoryId ? 'is-invalid' : ''}`}
+                        onChange={(e) => handleInputChange(e, 'categoryId')}
+                        value={categoryId}
+                    >
+                        <option value="">Chọn thể loại</option>
+                        {categories.map((category) => (
+                            <option key={category._id} value={category._id}>
+                                {category.nameCategory}
+                            </option>
+                        ))}
+                    </select>
+                    {errors.categoryId && <div className="invalid-feedback">{errors.categoryId}</div>}
+                </div>
+
+                <button type="submit" className="btn btn-primary w-100 mt-3">Thêm</button>
+            </form>
+
+            <ToastContainer />
+        </div>
     );
-}
+};
 
 export default BookForm;
