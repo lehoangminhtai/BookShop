@@ -131,6 +131,7 @@ function Checkout() {
     useEffect(() => {
         const itemsPayment = JSON.parse(localStorage.getItem('itemsPayment')) || [];
         setItems(itemsPayment);
+        console.log(itemsPayment)
         const total = itemsPayment.reduce((acc, item) => acc + item.price * item.quantity, 0);
         setTotalPrice(total);
     }, []);
@@ -316,14 +317,14 @@ function Checkout() {
                     <div className="border-top pt-3" key={item._id}>
                         <div className="d-flex align-items-start mb-3">
                             <img
-                                src={item.bookId.images[0] || "https://placehold.co/80x120"}
+                                src={item.bookId?.images?.[0] || "https://placehold.co/80x120"}
                                 alt="Book cover"
                                 className="img-fluid mr-3"
                                 style={{ width: '80px', height: '120px' }}
                             />
                             <div className="flex-grow-1 ms-3">
-                                <p className="small fw-bold">{item.bookId.title}</p>
-                                <p className="small">{item.bookId.author}</p>
+                                <p className="small fw-bold">{item.bookId?.title}</p>
+                                <p className="small">{item.bookId?.author}</p>
                             </div>
                             <div className="d-flex justify-content-end align-items-center">
                                 <div className="text-right me-5">

@@ -11,6 +11,21 @@ const Cart = () => {
     const { user } = useStateContext();
     const navigate = useNavigate();
 
+    const fetchProductDetails = async (cartItems) => {
+        const productsData = {};
+        for (const item of cartItems) {
+            try {
+                const bookId = item.bookId ? item.bookId._id : item.id;
+                const book = await fetchBook(bookId);  // Giả sử bạn gọi API để lấy thông tin chi tiết của sách
+                productsData[bookId] = book;
+            } catch (error) {
+                console.error('Error fetching book:', error);
+            }
+        }
+        return productsData;
+    };
+    
+
     useEffect(() => {
         const fetchCartData = async () => {
             if (user) {
@@ -121,12 +136,19 @@ const Cart = () => {
         }, 0);
     };
 
-    const checkOut = () => {
+    const checkOut = async () => {
         
         const itemsToCheckOut = cartItems.filter(item => 
             selectedItems.includes(item.bookId ? item.bookId._id : item.id)
         );
-    
+        
+        if (!user) {
+            const productsData = await fetchProductDetails(cartItems);
+            itemsToCheckOut.forEach(item => {
+                const bookId = item.bookId ? item.bookId._id : item.id;
+                item.bookId = productsData[bookId];
+            });
+        }
         localStorage.setItem('itemsPayment', JSON.stringify(itemsToCheckOut));
         console.log(itemsToCheckOut)
         navigate("/checkout");
