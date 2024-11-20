@@ -86,3 +86,23 @@ exports.updatePaymentStatus = async (req, res) => {
         res.status(500).json({ message: 'Error updating payment status', error: error.message });
     }
 };
+
+exports.getAllPayments = async (req, res) => {
+    try {
+        const payments = await Payment.find({})
+            .sort({ paymentDate: -1 })
+            .populate({
+                path:'orderId',
+                select:'address orderStatus'
+            }
+            )
+            .populate({
+                path: 'userId', 
+                select: 'fullName email phone'
+            });
+
+        res.status(200).json(payments);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

@@ -168,6 +168,10 @@ function Checkout() {
                 if (response.data.success) {
                     console.log(response.data.data._id)
                     const orderId= response.data.data._id
+                
+                    if(selectedPayment ==='cash'){
+                        navigate(`/payment/success?orderId=${orderId}`)
+                    }
                 if(selectedPayment ==='zalopay'){
                     const zaloPayData = {orderId: orderId}
                     const response = await createZaloPay(zaloPayData);

@@ -5,6 +5,8 @@ const paymentController = require('../controllers/paymentController');
 // Tạo thanh toán mới
 router.post('/', paymentController.createPayment);
 
+router.get('/', paymentController.getAllPayments)
+
 // Lấy thông tin thanh toán theo transactionId
 router.get('/:transactionId', paymentController.getPaymentByTransactionId);
 

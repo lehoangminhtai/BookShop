@@ -2003,7 +2003,7 @@ progress {
     --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
     width: 100%;
     margin-bottom: 1rem;
-    color: #747d88;
+    color: #000;
     vertical-align: top;
     border-color: #dee2e6
 }
@@ -2049,7 +2049,7 @@ progress {
 
 .table-striped>tbody>tr:nth-of-type(odd) {
     --bs-table-accent-bg: var(--bs-table-striped-bg);
-    color: var(--bs-table-striped-color)
+   
 }
 
 .table-active {

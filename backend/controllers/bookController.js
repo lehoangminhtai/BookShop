@@ -33,7 +33,6 @@ const createBook = async (req,res, next) =>{
 
 const getBooks = async (req,res) =>{
     const books = await Book.find({}).sort({createAt:-1}).populate('categoryId','nameCategory');
-
     res.status(200).json(books);
 }
 
