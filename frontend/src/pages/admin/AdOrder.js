@@ -2,31 +2,37 @@ import React, { useState, useEffect } from "react";
 import AdSidebar from "../../components/admin/AdSidebar";
 import { getAllPayments } from "../../services/paymentService";
 import { toast, ToastContainer } from 'react-toastify';
+import { useNavigate } from "react-router-dom"; 
 
 
 const AdOrder = () => {
     const [payments, setPayments] = useState([]);
-    const [loading, setLoading] = useState(true); // Trạng thái tải dữ liệu
+    const [loading, setLoading] = useState(true); 
+    const navigate = useNavigate();
    
-    // Hàm để lấy danh sách thanh toán
     const fetchPayment = async () => {
         try {
-            const response = await getAllPayments(); // Giả sử đây là API call
+            const response = await getAllPayments(); 
             const paymentData = response.data;
-            setPayments(paymentData); // Cập nhật state payments
+            setPayments(paymentData); 
             console.log(payments);
         } catch (error) {
             console.log(error);
             toast.error("Có lỗi xảy ra khi lấy dữ liệu thanh toán!");
         } finally {
-            setLoading(false); // Hoàn thành việc tải dữ liệu
+            setLoading(false); 
         }
     };
 
-    // Gọi hàm fetchPayment khi component mount
+    
     useEffect(() => {
         fetchPayment();
     }, []);
+
+    const handleViewDetails = (orderId) => {
+        navigate(`/admin/order/edit/${orderId}`);  // Chuyển hướng đến trang chỉnh sửa đơn hàng
+    };
+
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
@@ -109,7 +115,7 @@ const AdOrder = () => {
                                     </td>
 
                                     <td className="text-center">
-                                        <button className="btn btn-primary">Xem chi tiết</button>
+                                        <button className="btn btn-primary" onClick={() => handleViewDetails(payment.orderId._id)}>Xem chi tiết</button>
                                     </td>
                                 </tr>
                             ))}
