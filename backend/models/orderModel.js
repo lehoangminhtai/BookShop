@@ -72,6 +72,10 @@ orderSchema.pre('save', function (next) {
     this.updatedAt = Date.now();
     next();
 });
-
+orderSchema.pre(['update', 'findOneAndUpdate', 'updateOne'], function(next) {
+    // Chỉ cập nhật trường `updatedAt` nếu có thay đổi gì đó
+    this.set({ updatedAt: Date.now() });
+    next();
+});
 const Order = mongoose.model('Order', orderSchema);
 module.exports = Order;

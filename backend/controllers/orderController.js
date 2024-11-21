@@ -90,13 +90,17 @@ exports.getOrdersByUser = async (req, res) => {
 // Cập nhật trạng thái đơn hàng
 exports.updateOrderStatus = async (req, res) => {
     try {
-        const orderId = req.params.id;
+        const {orderId} = req.params;
         const { orderStatus, deliveryAt } = req.body;
-
+        
         // Nếu trạng thái đơn hàng là 'completed' thì thêm thời gian giao hàng
-        const updateData = { orderStatus };
+        const updateData = { orderStatus, deliveryAt };
         if (orderStatus === 'completed') {
-            updateData.deliveryAt = deliveryAt || Date.now();
+            updateData.deliveryAt =  Date.now();
+        }
+        else if (deliveryAt) {
+           
+            updateData.deliveryAt = new Date(deliveryAt); 
         }
 
         const updatedOrder = await Order.findByIdAndUpdate(
