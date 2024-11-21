@@ -93,7 +93,7 @@ exports.getAllPayments = async (req, res) => {
             .sort({ paymentDate: -1 })
             .populate({
                 path:'orderId',
-                select:'address orderStatus'
+                select:'address orderStatus finalAmount'
             }
             )
             .populate({

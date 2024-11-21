@@ -12,7 +12,7 @@ router.get('/:orderId', orderController.getOrderById);
 router.get('/user/:userId', orderController.getOrdersByUser);
 
 // Cập nhật trạng thái đơn hàng
-router.put('/:id/status', orderController.updateOrderStatus);
+router.put('/:orderId', orderController.updateOrderStatus);
 
 // Cập nhật phương thức thanh toán
 router.put('/:id/payment-method', orderController.updatePaymentMethod);

@@ -82,7 +82,7 @@ const AdOrder = () => {
                                         <div className="text-primary">{payment.userId.email}</div>
                                         <div className="text-muted">{payment.userId.phone}</div>
                                     </td>
-                                    <td className="text-center">{formatCurrency(payment.finalAmount)}</td>
+                                    <td className="text-center text-danger">{formatCurrency(payment.orderId.finalAmount)}</td>
                                     <td className="text-center">{payment.paymentMethod === 'cash' ? 'Tiền mặt' : payment.paymentMethod === 'zalopay' ? 'Zalo Pay' : 'Momo'}</td>
                                     <td className="text-center">
                                         <span className={`badge ${payment.paymentStatus === 'success' ? 'bg-success' : 'bg-warning'}`}>
