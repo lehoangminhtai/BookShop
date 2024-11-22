@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Cart from './pages/user/Cart';
 import Checkout from './pages/user/Checkout';
 import SuccessPage from './pages/user/Success';
+import CustomerOrders from './pages/user/Orders';
 
 //Admin
 import Dashboard from './pages/admin/Dashboard';
@@ -39,6 +40,7 @@ function AppContent() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path='/payment/success' element={<SuccessPage/>}></Route>
+          <Route path="/account/orders" element={<CustomerOrders />} />
 
             {/* admin */}
 

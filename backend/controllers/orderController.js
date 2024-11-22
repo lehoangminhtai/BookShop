@@ -79,7 +79,7 @@ exports.getOrderById = async (req, res) => {
 exports.getOrdersByUser = async (req, res) => {
     try {
         const userId = req.params.userId;
-        const orders = await Order.find({ userId }).populate('itemsPayment.bookId');
+        const orders = await Order.find({ userId }).sort({createdAt:-1}).populate('itemsPayment.bookId');
 
         res.status(200).json({ success: true, data: orders });
     } catch (error) {

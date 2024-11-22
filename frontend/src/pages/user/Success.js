@@ -131,7 +131,7 @@ const SuccessPage = () => {
                 {/* Continue Shopping Button */}
                 <div className="mt-4 text-center d-flex justify-content-center position-relative">
                     <button className="btn btn-primary px-4 py-2" onClick={handleToHome}>Tiếp tục mua sắm</button>
-                    <Link className="text-danger position-absolute end-0 d-flex align-items-center">
+                    <Link to={'/account/orders'} className="text-danger position-absolute end-0 d-flex align-items-center">
                         Đơn hàng của tôi <i className="fa-solid fa-arrow-right ms-2"></i>
                     </Link>
                 </div>
