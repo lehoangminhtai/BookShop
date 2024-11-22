@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
-import AdSidebar from "../../components/admin/AdSidebar";
+
 import { useStateContext } from '../../context/UserContext'
+import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+//Service
 import { fetchBook } from "../../services/bookService";
 import { updateStatusOrder } from "../../services/orderService"
 import { getPaymentByOrderId } from "../../services/paymentService";
-import { Link } from "react-router-dom";
+import { updateBookSale } from "../../services/bookSaleService";
+import { getBookSaleByBookId } from "../../services/bookSaleService";
+//Component
+import AdSidebar from "../../components/admin/AdSidebar";
 import AdUpdateOrder from "../../components/admin/AdUpdateOrder";
+//Toast
 import { toast, ToastContainer } from 'react-toastify';
 
 const AdOrderDetail = () => {
@@ -15,6 +21,7 @@ const AdOrderDetail = () => {
     const [orderConfirmed, setOrderConfirmed] = useState(false);
     const { orderId } = useParams();
     const [showModal, setShowModal] = useState(false);
+    const [showModalCancelOrder, setShowModalCancelOrder] = useState(false);
 
     const reloadData = async () => {
         try {
@@ -53,7 +60,6 @@ const AdOrderDetail = () => {
                 // Lấy dữ liệu thanh toán
                 const result = await getPaymentByOrderId(orderId);
                 setPayment(result.data); // Lưu dữ liệu vào state
-                console.log(result)
 
                 // Duyệt qua các mục trong itemsPayment để lấy ảnh sách
                 const itemsWithImages = await Promise.all(result.data.orderId.itemsPayment.map(async (item) => {
@@ -65,7 +71,7 @@ const AdOrderDetail = () => {
                     }
                     return item;
                 }));
-
+               
                 // Cập nhật lại itemsPayment với ảnh và tên sách
                 setPayment(prevPayment => ({
                     ...prevPayment,
@@ -74,7 +80,7 @@ const AdOrderDetail = () => {
                         itemsPayment: itemsWithImages
                     }
                 }));
-
+                
             } catch (error) {
                 console.error("Lỗi khi lấy dữ liệu đơn hàng:", error);
             }
@@ -83,6 +89,31 @@ const AdOrderDetail = () => {
         fetchPaymentData();
     }, [orderId]);
 
+    
+    const updateQuantityBookSale = async (calculate) =>{
+        for (const item of payment.orderId.itemsPayment) {
+            const bookSale = await getBookSaleByBookId(item.bookId);
+            const bookSaleId = bookSale.data._id
+            const quantityBookSale = bookSale.data.quantity;
+            const quantityOrder = item.quantity
+            if(calculate ==='minus'){
+                const quantity = quantityBookSale - quantityOrder;
+                const dataUpdate = {quantity}
+                if(await updateBookSale(bookSaleId,dataUpdate))
+                    return true
+                else
+                    return false
+            }
+            if(calculate ==='plus'){
+                const quantity = quantityBookSale + quantityOrder;
+                const dataUpdate = {quantity}
+                if(await updateBookSale(bookSaleId,dataUpdate))
+                    return true
+                else
+                    return false
+            }
+        }
+    }
     useEffect(() => {
         if (payment && payment.orderId.orderStatus !== 'pending') {
             setOrderConfirmed(true);
@@ -124,7 +155,8 @@ const AdOrderDetail = () => {
     }
 
     const handleConfirmOrder = async () => {
-        if (await confirmOrder()) { // Kiểm tra nếu confirmOrder trả về true
+        if (await confirmOrder() && updateQuantityBookSale('minus')) { 
+          
             setPayment(prevPayment => ({
                 ...prevPayment,
                 orderId: {
@@ -148,6 +180,50 @@ const AdOrderDetail = () => {
         setShowModal(false);
 
     };
+
+    const openCancelOrder = () =>{
+        setShowModalCancelOrder(true)
+    }
+    const closeCancelOrder = () =>{
+        setShowModalCancelOrder(false)
+    }
+
+    const cancelOrder = async () =>{
+        try {
+            const orderStatus = 'failed';
+            const orderData = { orderStatus };
+            const response = await updateStatusOrder(orderId, orderData); // Giả sử updateStatusOrder trả về một response.
+            if (response.data.success) {
+                return true; // Trả về true nếu thành công
+            } else {
+                return false; // Trả về false nếu không thành công
+            }
+        } catch (error) {
+            console.log(error);
+            return false; // Trả về false nếu có lỗi
+        }
+    }
+
+    const handleCancelOrder = async () =>{
+        if(await updateQuantityBookSale('plus') && await cancelOrder()){
+            reloadData();
+            toast.success('HỦY ĐƠN HÀNG thành công', {
+                    autoClose: 1000,
+                    onClose: () => {
+                       closeCancelOrder();
+                    }
+                });
+        }
+        else{
+            toast.error('Có lỗi khi hủy đơn', {
+                autoClose: 1000,
+                onClose: () => {
+                    // Đảm bảo đóng modal sau khi thông báo đã hoàn thành
+                    closeCancelOrder();
+                }
+            });
+        }
+    }
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
@@ -159,10 +235,10 @@ const AdOrderDetail = () => {
                     <div className="card-body">
                         <div className="d-flex justify-content-between align-items-center mb-4">
                             <h1 className="h4">Thông tin đơn hàng #{payment.orderId._id} </h1>
-                            <button className={`text-white btn ${payment.orderId.orderStatus === 'completed' ? 'bg-success' : 'bg-warning'}`}>{payment.orderId.orderStatus === 'completed' ? 'Hoàn Thành' :
+                            <button className={`text-white btn ${payment.orderId.orderStatus === 'completed' ? 'bg-success' : payment.orderId.orderStatus === 'failed' ? 'bg-danger': 'bg-warning'}`}>{payment.orderId.orderStatus === 'completed' ? 'Hoàn Thành' :
                                 payment.orderId.orderStatus === 'pending' && orderConfirmed ? 'Đã Xác Nhận' : payment.orderId.orderStatus === 'pending' ? 'Đang Chờ' :
                                     payment.orderId.orderStatus === 'confirm' ? 'Đã Xác Nhận' :
-                                        payment.orderId.orderStatus === 'failed' ? 'Thất Bại' :
+                                        payment.orderId.orderStatus === 'failed' ? 'Đã Hủy' :
                                             'Đang Vận Chuyển'}</button>
                         </div>
                         <div className="row">
@@ -351,7 +427,7 @@ const AdOrderDetail = () => {
 
                                     <div className="col-md-4">
                                         <div className="text-muted small">TRẠNG THÁI</div>
-                                        <span className={`badge ${payment.orderId.orderStatus === 'shipping' ? 'bg-warning' : payment.orderId.orderStatus === 'completed' ? 'bg-success' : payment.orderId.orderStatus === ' failed' ? 'bg-danger' : 'bg-info'} bg-success`}>{payment.orderId.orderStatus === 'shipping' ? 'Đang vận chuyển' : payment.orderId.orderStatus === 'completed' ? 'Hoàn thành' : 'Đang chờ'}</span>
+                                        <span className={`badge ${payment.orderId.orderStatus === 'shipping' ? 'bg-warning' : payment.orderId.orderStatus === 'completed' ? 'bg-success' : payment.orderId.orderStatus === 'failed' ? 'bg-danger' : 'bg-info'} bg-success`}>{payment.orderId.orderStatus === 'shipping' ? 'Đang vận chuyển' : payment.orderId.orderStatus === 'completed' ? 'Hoàn thành' : payment.orderId.orderStatus === 'failed' ? 'Đã Hủy': 'Đang chờ'}</span>
                                     </div>
 
                                     <div className="col-md-4">
@@ -370,7 +446,7 @@ const AdOrderDetail = () => {
                                             <i className="fas fa-truck me-2"></i> Cập nhật trạng thái
                                         </button>
                                     )}
-                                    <button className="btn btn-danger d-flex align-items-center">
+                                    <button className="btn btn-danger d-flex align-items-center" onClick={openCancelOrder}>
                                         <i className="fas fa-times me-2"></i> Hủy Đơn Hàng
                                     </button>
                                 </div>
@@ -383,6 +459,23 @@ const AdOrderDetail = () => {
                                         </div>
                                     </div>
                                 )}
+                                {showModalCancelOrder && (
+    <div className="modal-overlay" style={{marginBottom:"100px"}} >
+        <div className="modal-content">
+            <button className="close-btn" onClick={closeCancelOrder}>&times;</button>
+            <div className="d-flex justify-content-center">
+            <h5 className="h5">Bạn có chắc chắn muốn hủy đơn hàng?</h5> 
+            </div>
+            <div className="d-flex justify-content-center mt-3">
+            <button className="btn btn-danger" onClick={handleCancelOrder}>Hủy đơn hàng</button> 
+            </div>
+                
+                <button className="btn" onClick={closeCancelOrder}>Quay lại</button> 
+           
+        </div>
+    </div>
+)}
+
                             </div>
                         </div>
                     </div>

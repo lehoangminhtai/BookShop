@@ -6140,7 +6140,29 @@ fieldset:disabled .btn {
     background: none;
     cursor: pointer;
 }
+.modal-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
 
+.cancel-btn, .back-btn {
+    width: 40%;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.cancel-btn {
+    background-color: red;
+    color: white;
+}
+
+.back-btn {
+    background-color: gray;
+    color: white;
+}
 
 .modal-footer>* {
     margin: .25rem

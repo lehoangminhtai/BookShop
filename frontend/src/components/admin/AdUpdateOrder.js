@@ -58,10 +58,22 @@ const AdUpdateOrder = ({onClose, initialOrderStatus, orderId, reloadData }) => {
                     }
                 });
             } else {
-                toast.error('Có lỗi xảy ra khi cập nhật trạng thái!')
+                toast.error('Có lỗi xảy ra khi cập nhật trạng thái!', {
+                    autoClose: 1000,
+                    onClose: () => {
+                        // Đảm bảo đóng modal sau khi thông báo đã hoàn thành
+                        onClose();
+                    }
+                });
             }
         } catch (error) {
-            toast.error('Có lỗi xảy ra khi cập nhật trạng thái!')
+            toast.error('Có lỗi xảy ra khi cập nhật trạng thái!', {
+                autoClose: 1000,
+                onClose: () => {
+                    // Đảm bảo đóng modal sau khi thông báo đã hoàn thành
+                    onClose();
+                }
+            });
         }
     };
 
