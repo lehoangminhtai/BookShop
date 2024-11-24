@@ -155,7 +155,7 @@ function Checkout() {
                              quantity: item.quantity,
                             price: item.price
                         })),
-                discountCode:"SALE20",
+                discountCode:"SUMMER2024",
                 shippingFee: shippingFee,
                 totalPrice: totalPrice,
                 paymentMethod: selectedPayment

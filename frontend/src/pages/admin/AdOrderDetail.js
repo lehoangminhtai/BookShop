@@ -19,6 +19,7 @@ const AdOrderDetail = () => {
     const { user } = useStateContext()
     const [payment, setPayment] = useState(null);
     const [orderConfirmed, setOrderConfirmed] = useState(false);
+    const [orderFailed, setOrderFailed] = useState(false);
     const { orderId } = useParams();
     const [showModal, setShowModal] = useState(false);
     const [showModalCancelOrder, setShowModalCancelOrder] = useState(false);
@@ -118,6 +119,10 @@ const AdOrderDetail = () => {
         if (payment && payment.orderId.orderStatus !== 'pending') {
             setOrderConfirmed(true);
         }
+        if (payment && payment.orderId.orderStatus === 'failed') {
+            setOrderFailed(true);
+        }
+        
     }, [payment]);
 
     useEffect(() => {
@@ -206,6 +211,7 @@ const AdOrderDetail = () => {
 
     const handleCancelOrder = async () =>{
         if(await updateQuantityBookSale('plus') && await cancelOrder()){
+            setOrderFailed(true)
             reloadData();
             toast.success('HỦY ĐƠN HÀNG thành công', {
                     autoClose: 1000,
@@ -420,7 +426,8 @@ const AdOrderDetail = () => {
                             </div>
                             <div>
                                 <div className="d-flex align-items-center mb-3">
-                                    <i className="fas fa-check text-success me-2"></i>
+                                    {!orderFailed ?  <i className="fas fa-check text-success me-2"></i>:<i className="fas fa-times text-danger me-2"></i>}
+                                   
                                     <h5 className="mb-0 fw-bold">GIAO HÀNG</h5>
                                 </div>
                                 <div className="row g-4 mb-4">
@@ -440,6 +447,7 @@ const AdOrderDetail = () => {
                                         <div>{formatCurrency(payment.finalAmount)}</div>
                                     </div>
                                 </div>
+                                {!orderFailed &&(
                                 <div className="d-flex gap-3">
                                     {(payment.orderId.orderStatus !== 'pending' || orderConfirmed) && (
                                         <button className="btn btn-outline-secondary d-flex align-items-center" onClick={handleUpdateOrder}>
@@ -450,6 +458,7 @@ const AdOrderDetail = () => {
                                         <i className="fas fa-times me-2"></i> Hủy Đơn Hàng
                                     </button>
                                 </div>
+                                )}
                                 {showModal && (
                                     <div className="modal-overlay ">
                                         <div className="modal-content">

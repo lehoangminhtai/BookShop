@@ -1,6 +1,7 @@
 const Order = require('../models/orderModel');
 const Discount = require('../models/discountModel');
 const Payment = require('../models/paymentModel');
+const discountController = require('../controllers/discountController')
 const moment = require('moment');
 // Tạo đơn hàng mới
 
@@ -12,21 +13,16 @@ exports.createOrder = async (req, res) => {
         let discountId = null;
 
         if (discountCode) {
-            
-            const discount = await Discount.findOne({
-                discountCode: discountCode,
-                dateStart: { $lte: new Date() }, // Kiểm tra nếu discountCode đã bắt đầu
-                dateExpire: { $gte: new Date() } // Kiểm tra nếu discountCode chưa hết hạn
+            const discountResponse = await discountController.applyDiscount({
+                body: { discountCode, userId, totalPrice }
             });
-            
-            if (discount) {
-                if(totalPrice>=discount.minOfTotalPrice){
-                discountId = discount._id;
-                discountAmount = (totalPrice * discount.percent) / 100; // Tính giá trị giảm giá
-                }
+            if (discountResponse.success) {
+                discountAmount = discountResponse.discountAmount;
+                discountId = discountResponse.discountCode; 
             }
+
         }
-       
+
         const finalAmount = totalPrice - discountAmount + shippingFee;
 
         const newOrder = new Order({
@@ -55,6 +51,7 @@ exports.createOrder = async (req, res) => {
         }
         
     } catch (error) {
+        console.log(error)
         res.status(500).json({ success: false, message: error.message });
     }
 };

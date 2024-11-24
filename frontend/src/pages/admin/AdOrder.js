@@ -74,7 +74,7 @@ const AdOrder = () => {
                             {payments.map((payment, index) => (
                                 <tr key={payment._id}>
                                     <td className="text-center">
-                                        <input type="checkbox" className="me-2" />
+                                       
                                         <span>{index + 1}</span>
                                     </td>
                                     <td >

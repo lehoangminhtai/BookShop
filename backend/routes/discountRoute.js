@@ -1,12 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const discountController = require('../controllers/discountController');
+const discountController = require('../controllers/discountController'); // Đảm bảo đường dẫn đúng với controller của bạn
 
-// Routes cho các hành động với discount
-router.post('/', discountController.createDiscount);  // Tạo mã giảm giá
-router.get('', discountController.getAllDiscounts);  // Lấy tất cả mã giảm giá
-router.get('/:id', discountController.getDiscountById);  // Lấy mã giảm giá theo ID
-router.put('/:id', discountController.updateDiscount);  // Cập nhật mã giảm giá
-router.delete('/:id', discountController.deleteDiscount);  // Xóa mã giảm giá
+
+router.post('/create', discountController.createDiscount);
+
+router.get('/', discountController.getAllDiscounts);
+
+router.get('/:id', discountController.getDiscountById);
+
+router.put('/:id', discountController.updateDiscount);
+
+router.delete('/:id', discountController.deleteDiscount);
+
+router.post('/apply', discountController.applyDiscount);
+
+router.get('/available', discountController.getAvailableDiscounts);
+
+router.get('/unavailable', discountController.getUnavailableDiscounts);
 
 module.exports = router;
