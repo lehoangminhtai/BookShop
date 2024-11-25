@@ -71,7 +71,7 @@ discountSchema.pre('save', function(next) {
         this.dateStart = new Date(); // Gán ngày hiện tại
     }
     // Kiểm tra nếu có giá trị minOfTotalPrice và maxAmountDiscount, thì kiểm tra xem maxAmountDiscount có nhỏ hơn minOfTotalPrice không
-    if (this.minOfTotalPrice && this.maxAmountDiscount < this.minOfTotalPrice) {
+    if (this.minOfTotalPrice  && this.maxAmountDiscount < this.minOfTotalPrice) {
         return next(new Error('Giá giảm không thể lớn hơn giá trị tối thiẻu đơn hàng'));
     }
     next();
@@ -79,7 +79,7 @@ discountSchema.pre('save', function(next) {
 
 discountSchema.methods.incrementUsage = function(userId) {
     // Nếu không giới hạn số người sử dụng, không làm gì cả
-    if (this.maxUsage === 0 || (this.maxUsage && this.usedBy.length < this.maxUsage)) {
+    if (this.maxUsage === 0|| this.maxUsage == null || (this.maxUsage && this.usedBy.length < this.maxUsage)) {
         this.usedBy.push(userId);
         return this.save();
     } else {

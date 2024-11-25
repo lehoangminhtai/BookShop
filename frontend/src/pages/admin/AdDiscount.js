@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 //component
 import AdSidebar from '../../components/admin/AdSidebar';
-import BookForm from '../../components/BookForm';
+import AdDiscountForm from '../../components/admin/AdDiscountForm';
 //services
 import { getAllDiscount } from '../../services/discountService';
 
@@ -156,7 +156,7 @@ const AdDiscount = () => {
                     <div className="modal-overlay ">
                         <div className="modal-content">
                             <button className="close-btn" onClick={closeModal}>&times;</button>
-                            <BookForm onClose={closeModal} />
+                            <AdDiscountForm onClose={closeModal} />
                             <button className="" onClick={closeModal}>Quay lại</button>
                         </div>
                     </div>

@@ -6123,6 +6123,7 @@ fieldset:disabled .btn {
 
 .modal-content {
     margin-top: 110px;
+    margin-bottom: 50px;
     background: #fff;
     border-radius: 8px;
     padding: 20px;
