@@ -47,8 +47,7 @@ const AdDiscountForm = () => {
             delete updatedErrors[field];
         }
 
-        setErrors(updatedErrors);
-
+        
         if (field === "discountCode") {
             setDiscountCode(e.target.value.toUpperCase());
         }
@@ -61,25 +60,29 @@ const AdDiscountForm = () => {
         if (field === "discountNotLimited" && e.target.checked) {
             setIsUnlimited(true);
             setMaxUsage(null);
+            delete updatedErrors['maxUsage'];
         }
         else {
             setIsUnlimited(false);
         }
         if (field === "maxUsage") {
             setMaxUsage(value);
+            delete updatedErrors['maxUsage'];
         }
 
         if (field === "discountForCustomer" && e.target.checked) {
             setIsShowAll(true)
             setDiscountFor("customer")
         }
-        else {
-            setIsShowAll(false)
+        else if (field === "discountForCustomer" && !e.target.checked) {
+            setIsShowAll(false);
             setDiscountFor(null);
         }
 
         if (field === "discountType") {
             setDiscountType(value)
+            delete updatedErrors['discountMaxAmount'];
+            delete updatedErrors['discountValue'];
         }
         if (field === "discountValue") {
             if (discountType === "percentage") {
@@ -91,6 +94,7 @@ const AdDiscountForm = () => {
                 setAmount(value)
                 setPercent(null)
                 setMaxAmountDiscount(null)
+               
             }
         }
         if (field === "maxAmountDiscount") {
@@ -119,9 +123,12 @@ const AdDiscountForm = () => {
             setDateE('yyyy-mm-dd')
             setDateExpire(null);
         }
-        else {
+        else  if (field === "isExpire" && !e.target.checked) {
             setIsExpire(false)
+            setDateE(null)
+          
         }
+        setErrors(updatedErrors);
 
     };
 
@@ -135,12 +142,15 @@ const AdDiscountForm = () => {
         if (!discountDescription) newErrors.discountDescription = 'Mô tả gì đó về mã giảm này!';
         if(!isUnlimited){
             if(!maxUsage){
-                newErrors.discountMaxUsage = 'Vui lòng nhập số lượng giảm gía'
+                newErrors.maxUsage = 'Vui lòng nhập số lượng giảm gía'
             }
         }
         if(discountType === 'percentage'){
             if(!percent){
                 newErrors.discountValue = 'Vui lòng nhập phần trăm giảm'
+            }
+            else if(percent >100 || percent <0){
+                 newErrors.discountValue = 'Giá trị phần trăm không hợp lệ (0 < n < 100)'
             }
         }
         else{
@@ -150,13 +160,13 @@ const AdDiscountForm = () => {
         }
         if(discountType !=='amount'){
             if(!maxAmountDiscount){
-                newErrors.discountMaxAmount = 'Vui lòng nhập mức tiền giảm tối đa'
+                newErrors.maxAmountDiscount = 'Vui lòng nhập mức tiền giảm tối đa'
             }
         }
         
        if(!isExpire){
             if(!dateE){
-                newErrors.discountDateExpire = 'Vui lòng nhập ngày hết hạn hoặc chọn "Không thời hạn" bên dưới'
+                newErrors.dateE = 'Vui lòng nhập ngày hết hạn hoặc chọn "Không thời hạn" cho mã bên dưới'
             }
             else{
                 setDateExpire(`${dateE}T${timeExpire}:00`)
@@ -169,6 +179,11 @@ const AdDiscountForm = () => {
            return
         }
 
+        try {
+            
+        } catch (error) {
+            
+        }
        
     };
 
@@ -191,29 +206,30 @@ const AdDiscountForm = () => {
                             <h5 className="mb-1">Tên Giảm Giá</h5>
                             <input
                                 type="text"
-                                className="form-control mb-2"
+                                className={`form-control ${errors.discountName ? 'is-invalid' : ''} mb-1`}
                                 value={discountName}
                                 onChange={(e) => handleInputChange(e, 'discountName')}
                             />
                            {errors.discountName && <div className="invalid-feedback">{errors.discountName}</div>}
 
 
-                            <h5 className="mb-1 mt-3">Mã Giảm Giá</h5>
+                            <h5 className="mb-1 mt-2">Mã Giảm Giá</h5>
                             <input
                                 type="text"
-                                className="form-control"
+                                className={`form-control ${errors.discountCode ? 'is-invalid' : ''} mb-1`}
                                 value={discountCode}
                                 onChange={(e) => handleInputChange(e, 'discountCode')}
                             />
+                             {errors.discountCode && <div className="invalid-feedback">{errors.discountCode}</div>}
 
-                            <h5 className="mb-1 mt-3">Mô tả</h5>
+                            <h5 className="mb-1 mt-2">Mô tả</h5>
                             <input
                                 type="text"
-                                className="form-control"
+                                className={`form-control ${errors.discountDescription ? 'is-invalid' : ''} mb-1`}
                                 value={discountDescription}
                                 onChange={(e) => handleInputChange(e, 'discountDescription')}
                             />
-
+                            {errors.discountDescription && <div className="invalid-feedback">{errors.discountDescription}</div>}
                             <div className="form-check mb-2 mt-2">
                                 <input
                                     className="form-check-input"
@@ -251,14 +267,15 @@ const AdDiscountForm = () => {
                             <h5 className="mb-1 mt-3">Số lượng mã</h5>
                             <input
                                 type="number"
-                                className="form-control"
+                                className={`form-control ${errors.maxUsage ? 'is-invalid' : ''} mb-1`}
                                 onChange={(e) => handleInputChange(e, 'maxUsage')}
                                 
                                 value={isUnlimited ? '' : maxUsage}
                                 disabled={isUnlimited}
                             />
+                            {errors.maxUsage && <div className="invalid-feedback">{errors.maxUsage}</div>}
 
-                            <h5 className="mb-3">Loại mã giảm</h5>
+                            <h5 className="mb-1 mt-3">Loại mã giảm</h5>
                             <div className="input-group mb-3">
                                 <select
                                     className="form-select"
@@ -270,21 +287,24 @@ const AdDiscountForm = () => {
                                 </select>
                                 <input
                                     type="number"
-                                    className="form-control w-25"
+                                    className={`form-control ${errors.discountValue ? 'is-invalid' : ''}  w-50`}
                                     placeholder={discountType === "percentage" ? "0 - 100" : "Nhập số tiền"}
                                     onChange={(e) => handleInputChange(e, 'discountValue')}
                                     value={discountType === "percentage" ? percent: amount}
                                 />
+                                {errors.discountValue && <div className="invalid-feedback">{errors.discountValue}</div>}
+                                
                             </div>
 
                             <h5 className="mb-1 mt-3">Giảm tối đa (vnđ)</h5>
                             <input
                                 type="number"
-                                className="form-control"
+                                className={`form-control ${errors.maxAmountDiscount ? 'is-invalid' : ''} mb-1`}
                                 value={maxAmountDiscount}
                                 onChange={(e) => handleInputChange(e, 'maxAmountDiscount')}
                                 disabled={discountType === "amount"}
                             />
+                              {errors.maxAmountDiscount && <div className="invalid-feedback">{errors.maxAmountDiscount}</div>}
 
                             <h5 className="mb-1 mt-3">Đơn hàng tối thiểu (vnđ)</h5>
                             <input
@@ -305,7 +325,7 @@ const AdDiscountForm = () => {
                                 >
                                     <input
                                         type="date"
-                                        className="form-control"
+                                        className="form-control w-25"
                                         min={currentDate}
                                         value={dateS}
                                         onChange={(e) => handleInputChange(e, 'dateS')}
@@ -327,11 +347,11 @@ const AdDiscountForm = () => {
                                 >
                                     <input
                                         type="date"
-                                        className="form-control"
+                                        className={`form-control ${errors.dateE ? 'is-invalid' : ''} w-25`}
                                         min={currentDate}
                                         disabled ={isExpire}
                                         value={dateE}
-                                        onChange={(e) => handleInputChange(e, 'dateExpire')}
+                                        onChange={(e) => handleInputChange(e, 'dateE')}
                                         
                                     />
                                     <input
@@ -341,6 +361,7 @@ const AdDiscountForm = () => {
                                         value={timeExpire}
                                         onChange={(e) => handleInputChange(e, 'timeExpire')}
                                     />
+                                     {errors.dateE && <div className="invalid-feedback">{errors.dateE}</div>}
                                 </div>
                             </div>
 
