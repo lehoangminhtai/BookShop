@@ -6113,24 +6113,26 @@ fieldset:disabled .btn {
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    overflow-y: auto;
+    overflow-y: auto; /* Cho phép cuộn nếu modal quá cao */
     animation: fadeIn 0.3s;
 }
 
-.modal-overlay.fade-in {
-    animation: fadeIn 0.3s ease-in;
-}
-
 .modal-content {
-    margin-top: 110px;
-    margin-bottom: 50px;
     background: #fff;
     border-radius: 8px;
     padding: 20px;
     position: relative;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     animation: slideIn 0.3s;
+    max-height: 80vh; /* Đặt chiều cao tối đa của modal */
+    width: 90%; /* Có thể điều chỉnh width tuỳ vào nhu cầu */
+    overflow-y: auto; /* Cho phép cuộn nếu nội dung vượt quá chiều cao tối đa */
 }
+
+.modal-overlay.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
 
 .close-btn {
     position: absolute;
