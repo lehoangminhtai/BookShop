@@ -3,9 +3,9 @@ const Discount = require('../models/discountModel'); // Đường dẫn đúng v
 // Tạo mới mã giảm giá
 exports.createDiscount = async (req, res) => {
     try {
-        const { discountName } = req.body;
+        const { discountCode } = req.body;
 
-        const existingDiscount = await Discount.findOne({ discountName });
+        const existingDiscount = await Discount.findOne({ discountCode });
 
         if (existingDiscount) {
             return res.status(400).json({

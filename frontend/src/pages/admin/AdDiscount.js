@@ -64,7 +64,7 @@ const AdDiscount = () => {
 
     const closeModal = () => {
         setShowModal(false);
-        fetchBooks();
+        fetchDiscounts();
     };
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
@@ -112,14 +112,14 @@ const AdDiscount = () => {
                                             {discount.discountName}
                                         </small>
                                         <br />
-                                        <small>Giảm {discount.discountType === 'percentage' ? discount.percent + '%' : formatCurrency(discount.amount)} cho 
+                                        <small>Giảm {discount.discountType === 'percentage' ? discount.percent + `% (tối đa ${formatCurrency(discount.maxAmountDiscount)})` : formatCurrency(discount.amount)} cho 
                                             đơn hàng từ {formatCurrency(discount.minOfTotalPrice)} trở lên</small>
 
                                     </div>
                                 </td>
                                 <td className='text-center'>{discount.usedBy.length}</td>
                                 <td>{new Date(discount.dateStart).toLocaleString()}</td>
-                                <td className={`${discount.dateEnd ? '' :'text-center'}`}>{discount.dateEnd ? discount.dateEnd : '--'}</td>
+                                <td className={`${discount.dateExpire ? '' :'text-center'}`}>{discount.dateExpire ? new Date(discount.dateExpire).toLocaleString() : '--'}</td>
 
                                 <td>
                                     <button className="btn btn-link text-primary" >

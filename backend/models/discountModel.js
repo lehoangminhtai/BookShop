@@ -70,10 +70,7 @@ discountSchema.pre('save', function(next) {
     if (!this.dateStart) {
         this.dateStart = new Date(); // Gán ngày hiện tại
     }
-    // Kiểm tra nếu có giá trị minOfTotalPrice và maxAmountDiscount, thì kiểm tra xem maxAmountDiscount có nhỏ hơn minOfTotalPrice không
-    if (this.minOfTotalPrice  && this.maxAmountDiscount < this.minOfTotalPrice) {
-        return next(new Error('Giá giảm không thể lớn hơn giá trị tối thiẻu đơn hàng'));
-    }
+ 
     next();
 });
 
@@ -83,7 +80,7 @@ discountSchema.methods.incrementUsage = function(userId) {
         this.usedBy.push(userId);
         return this.save();
     } else {
-        throw new Error('Max usage limit reached');
+        throw new Error('Đã hết số lượng mã giảm');
     }
 };
 
