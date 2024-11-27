@@ -86,9 +86,9 @@ const AdSidebar = () => {
               </a>
             </li>
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <a href="#ads" className="nav-link text-dark d-flex align-items-center">
+              <Link to={'/admin/shipping'} className="nav-link text-dark d-flex align-items-center">
                 <i className="fas fa-truck me-2"></i> <span>Vận chuyển</span>
-              </a>
+              </Link>
             </li>
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
               <a href="#payments" className="nav-link text-dark d-flex justify-content-between align-items-center">

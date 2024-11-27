@@ -3,7 +3,10 @@
 const mongoose = require('mongoose');
 
 const shippingSchema = new mongoose.Schema({
-   
+    areaName:{
+        type: String,
+        required: true
+    },
     shippingFee: {
         type: Number,
         required: true
