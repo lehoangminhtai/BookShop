@@ -4,23 +4,20 @@ import { useNavigate } from 'react-router-dom';
 //component
 import AdSidebar from '../../components/admin/AdSidebar';
 import AdDiscountForm from '../../components/admin/AdDiscountForm';
+import AdEditDiscount from '../../components/admin/AdEditDiscount';
 //services
-import { getAllDiscount } from '../../services/discountService';
+import { getAllDiscount, deleteDiscount } from '../../services/discountService';
+import { toast,ToastContainer } from 'react-toastify';
 
 const AdDiscount = () => {
     const [books, setBooks] = useState([]);
     const [discounts, setDiscounts] = useState([]);
-    const [showModal, setShowModal] = useState(false); // Trạng thái hiển thị modal
+    const [showModal, setShowModal] = useState(false); 
+    const [showModalEdit, setShowModalEdit] = useState(false); 
+    const [dataDiscount, setDataDiscount] = useState(null)
     const navigate = useNavigate();
 
 
-    const fetchBooks = async () => {
-        const response = await fetch('/api/books');
-        const data = await response.json();
-        if (response.ok) {
-            setBooks(data);
-        }
-    };
 
     const fetchDiscounts = async () => {
         const response = await getAllDiscount();
@@ -29,8 +26,7 @@ const AdDiscount = () => {
             setDiscounts(data.discounts)
         }
 
-    }
-
+    }    
     useEffect(() => {
         fetchDiscounts();
     }, []);
@@ -47,23 +43,54 @@ const AdDiscount = () => {
         };
     }, [showModal]);
 
-    const handleDelete = async (bookId) => {
-        const response = await fetch(`/api/books/${bookId}`, { method: 'DELETE' });
-        if (response.ok) {
-            setBooks(books.filter(book => book._id !== bookId));
-        }
-    };
 
-    const handleEdit = (bookId) => {
-        navigate(`/edit/${bookId}`);
-    };
-
-    const handleCreateBook = () => {
+    const handleCreateDiscount = () => {
         setShowModal(true);
     };
 
     const closeModal = () => {
         setShowModal(false);
+        fetchDiscounts();
+    };
+    const handleEditDiscount = (discount) => {
+        const data = { 
+            discountId: discount._id,
+            discountCodeE: discount.discountCode,
+            discountNameE: discount.discountName,
+            discountDescriptionE: discount.discountDescription,
+            percentE: discount.percent,
+            amountE: discount.amount,
+            maxAmountDiscountE :discount.maxAmountDiscount,
+            minOfTotalPriceE: discount.minOfTotalPrice,
+            maxUsageE: discount.maxUsage,
+            dateStartE: discount.dateStart,
+            dateExpireE: discount.dateExpire,
+            discountForE: discount.discountFor,
+            discountTypeE: discount.discountType}
+            
+        setDataDiscount(data)
+        
+        setShowModalEdit(true);
+    };
+
+    const handleDeleteDiscount = async (discountId) =>{
+        try{
+            const response = await deleteDiscount(discountId);
+            if(response.data.success){
+                toast.success('Xóa mã giảm thành công')
+                fetchDiscounts()
+            }
+            else{
+                toast.error(response.data.message)
+            }
+        }
+        catch(error){
+            toast.error('Có lỗi khi kết nối tới server')
+        }
+    }
+
+    const closeModalEdit = () => {
+        setShowModalEdit(false);
         fetchDiscounts();
     };
     const formatCurrency = (value) => {
@@ -83,7 +110,7 @@ const AdDiscount = () => {
                     <div className="d-flex">
                         <button className="btn btn-primary ms-2">Export</button>
                         <button className="btn btn-primary ms-2">Import</button>
-                        <button className="btn btn-primary ms-2" onClick={handleCreateBook}>Create</button>
+                        <button className="btn btn-primary ms-2" onClick={handleCreateDiscount}>Create</button>
                     </div>
                 </div>
 
@@ -122,8 +149,11 @@ const AdDiscount = () => {
                                 <td className={`${discount.dateExpire ? '' :'text-center'}`}>{discount.dateExpire ? new Date(discount.dateExpire).toLocaleString() : '--'}</td>
 
                                 <td>
-                                    <button className="btn btn-link text-primary" >
-                                        Xem Chi Tiết
+                                <button className="btn btn-link text-primary" onClick={() => handleEditDiscount(discount)}>
+                                        <i className="fas fa-edit"></i>
+                                    </button>
+                                    <button className="btn btn-link text-danger" onClick={() => handleDeleteDiscount(discount._id)}>
+                                        <i className="fas fa-trash"></i>
                                     </button>
             
                                 </td>
@@ -161,7 +191,17 @@ const AdDiscount = () => {
                         </div>
                     </div>
                 )}
+                {showModalEdit && (
+                    <div className="modal-overlay ">
+                        <div className="modal-content">
+                            <button className="close-btn" onClick={closeModalEdit}>&times;</button>
+                            <AdEditDiscount onClose={closeModalEdit} discountData = {dataDiscount} />
+                            <button className="" onClick={closeModalEdit}>Quay lại</button>
+                        </div>
+                    </div>
+                )}
             </div>
+        <ToastContainer/>
         </div>
     );
 };

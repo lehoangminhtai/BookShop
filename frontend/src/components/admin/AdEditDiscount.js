@@ -1,254 +1,291 @@
 import React, { useState, useEffect } from "react";
-import { createDiscount } from "../../services/discountService";
 import { toast, ToastContainer } from "react-toastify";
 
+//service
+import { updateDiscount } from "../../services/discountService";
 
+const AdEditDiscount = ({ onClose, discountData }) => {
+  const {
+    discountId,
+    discountCodeE,
+    discountNameE,
+    discountDescriptionE,
+    percentE,
+    amountE,
+    maxAmountDiscountE,
+    minOfTotalPriceE,
+    maxUsageE,
+    dateStartE,
+    dateExpireE,
+    discountTypeE,
+    discountForE,
+  } = discountData;
 
+  const currentDate = new Date().toISOString().split("T")[0];
 
-const AdDiscountForm = ({onClose}) => {
+  const currentTime = new Date().getTime();
+  const currentD = new Date(currentTime);
 
-    const currentDate = new Date().toISOString().split("T")[0];
+  const hours = currentD.getHours().toString().padStart(2, '0');  // Thêm số 0 nếu giờ < 10
+  const minutes = currentD.getMinutes().toString().padStart(2, '0');  // Thêm số 0 nếu phút < 10
 
-    const currentTime = new Date().getTime();
-    const currentD = new Date(currentTime);
+  const formattedTime = `${hours}:${minutes}`;
 
-    const hours = currentD.getHours().toString().padStart(2, '0');  // Thêm số 0 nếu giờ < 10
-    const minutes = currentD.getMinutes().toString().padStart(2, '0');  // Thêm số 0 nếu phút < 10
+  // Initialize state with discountData values (if present)
+  const [discountCode, setDiscountCode] = useState(discountCodeE || '');
+  const [discountName, setDiscountName] = useState(discountNameE || '');
+  const [discountDescription, setDiscountDescription] = useState(discountDescriptionE || "");
+  const [percent, setPercent] = useState(percentE || null);
+  const [amount, setAmount] = useState(amountE || null);
+  const [maxAmountDiscount, setMaxAmountDiscount] = useState(maxAmountDiscountE || null);
+  const [minOfTotalPrice, setMinOfTotalPrice] = useState(minOfTotalPriceE || 0);
+  const [maxUsage, setMaxUsage] = useState(maxUsageE || null);
+  const [usedBy, setUsedBy] = useState([]);
+  const [dateStart, setDateStart] = useState(dateStartE || '');
+  const [dateExpire, setDateExpire] = useState(dateExpireE || null);
+  const [discountFor, setDiscountFor] = useState(discountForE || null);
+  const [discountType, setDiscountType] = useState(discountTypeE || "percentage");
 
-    const formattedTime = `${hours}:${minutes}`;
+  const [isUnlimited, setIsUnlimited] = useState(false);
+  const [isShowAll, setIsShowAll] = useState(true);
+  const [isExpire, setIsExpire] = useState(false);
+  const [dateS, setDateS] = useState(currentDate);
+  const [dateE, setDateE] = useState('');
+  const [timeStart, setTimeStart] = useState(formattedTime);
+  const [timeExpire, setTimeExpire] = useState(formattedTime);
 
-    const [discountCode, setDiscountCode] = useState('');
-    const [discountName, setDiscountName] = useState();
-    const [discountDescription, setDiscountDescription] = useState("");
-    const [percent, setPercent] = useState(null);
-    const [amount, setAmount] = useState(null);
-    const [maxAmountDiscount, setMaxAmountDiscount] = useState();
-    const [minOfTotalPrice, setMinOfTotalPrice] = useState(0);
-    const [maxUsage, setMaxUsage] = useState();
-    const [usedBy, setUsedBy] = useState([]);
-    const [dateStart, setDateStart] = useState();
-    const [dateExpire, setDateExpire] = useState(null);
-    const [discountFor, setDiscountFor] = useState(null);
-    const [discountType, setDiscountType] = useState("percentage");
+  const [errors, setErrors] = useState({});
 
-    const [isUnlimited, setIsUnlimited] = useState(false);
-    const [isShowAll, setIsShowAll] = useState(false);
-    const [isExpire, setIsExpire] = useState(false);
-    const [dateS, setDateS] = useState(currentDate);
-    const [dateE, setDateE] = useState('');
-    const [timeStart, setTimeStart] = useState(formattedTime);
-    const [timeExpire, setTimeExpire] = useState(formattedTime);
+  useEffect(() => {
 
-    const [errors, setErrors] = useState({});
+    if (discountFor) {
+      setIsShowAll(false);
+    }
+    if(!maxUsage){
+        setIsUnlimited(true)
+    }
+  }, [discountFor, maxUsage]);
 
+  //Chuyển sang ngày giờ
+  useEffect(() => {
+    if (dateStartE) {
+      const dateStartObj = new Date(dateStartE);
+      const dateStartFormatted = dateStartObj.toLocaleString('en-GB').split(", ");
+      
+      const dateStartParts = dateStartFormatted[0].split("/"); // [dd, mm, yyyy]
+      const formattedDateStart = `${dateStartParts[2]}-${dateStartParts[1]}-${dateStartParts[0]}`; // yyyy-mm-dd
+      setDateS(formattedDateStart); // Lấy phần ngày đã chuyển đổi sang định dạng yyyy-mm-dd
+      
+      const timeStart = dateStartFormatted[1].split(":").slice(0, 2).join(":"); // Giờ (hh:mm)
+      setTimeStart(timeStart);
+    }
+  
+    if (dateExpireE) {
+      const dateExpireObj = new Date(dateExpireE);
+      const dateExpireFormatted = dateExpireObj.toLocaleString('en-GB').split(", ");
+      
+      const dateExpireParts = dateExpireFormatted[0].split("/"); // [dd, mm, yyyy]
+      const formattedDateExpire = `${dateExpireParts[2]}-${dateExpireParts[1]}-${dateExpireParts[0]}`; // yyyy-mm-dd
+      setDateE(formattedDateExpire); // Lấy phần ngày đã chuyển đổi sang định dạng yyyy-mm-dd
+      
+      const timeExpire = dateExpireFormatted[1].split(":").slice(0, 2).join(":"); // Giờ (hh:mm)
+      setTimeExpire(timeExpire);
+    }
+  }, [dateStartE, dateExpireE]);
+  
 
-    const handleInputChange = (e, field) => {
-        const value = e.target.value;
-        const updatedErrors = { ...errors };
+  useEffect(() => {
+    if (dateE) {
+      const dateTimeExpire = new Date(`${dateE}T${timeExpire}:00`);
+      const utcDateExpire = dateTimeExpire.toISOString(); // Convert to UTC
+      setDateExpire(utcDateExpire);
+    }
+  }, [dateE, timeExpire]);
 
-        if (value.trim() !== '') {
-            delete updatedErrors[field];
+  useEffect(() => {
+    if (dateS) {
+      const dateTimeStart = new Date(`${dateS}T${timeStart}:00`);
+      const utcDateStart = dateTimeStart.toISOString(); // Convert to UTC
+      setDateStart(utcDateStart);
+    }
+  }, [dateS, timeStart]);
+
+  const handleInputChange = (e, field) => {
+    const value = e.target.value;
+    const updatedErrors = { ...errors };
+
+    if (value.trim() !== '') {
+      delete updatedErrors[field];
+    }
+
+    switch (field) {
+      case "discountCode":
+        setDiscountCode(e.target.value.toUpperCase());
+        break;
+      case "discountName":
+        setDiscountName(value);
+        break;
+      case "discountDescription":
+        setDiscountDescription(value);
+        break;
+      case "discountNotLimited":
+        if (e.target.checked) {
+          setIsUnlimited(true);
+          setMaxUsage(null);
+          delete updatedErrors['maxUsage'];
+        } else {
+          setIsUnlimited(false);
         }
+        break;
+      case "maxUsage":
+        setMaxUsage(value);
+        delete updatedErrors['maxUsage'];
+        break;
+      case "discountForCustomer":
+        if (e.target.checked) {
+          setIsShowAll(false);
+          setDiscountFor("customer");
+        } else {
+          setIsShowAll(true);
+          setDiscountFor(null);
+        }
+        break;
+      case "discountType":
+        setDiscountType(value);
+        delete updatedErrors['discountMaxAmount'];
+        delete updatedErrors['discountValue'];
+        break;
+      case "discountValue":
+        if (discountType === "percentage") {
+          setPercent(value);
+          setAmount(null);
+        } else if (discountType === "amount") {
+          setAmount(value);
+          setPercent(null);
+          setMaxAmountDiscount(null);
+        }
+        break;
+      case "maxAmountDiscount":
+        setMaxAmountDiscount(value);
+        break;
+      case "minOfTotalPrice":
+        setMinOfTotalPrice(value);
+        break;
+      case "dateS":
+        setDateS(value);
+        break;
+      case "timeStart":
+        setTimeStart(value);
+        break;
+      case "dateE":
+        setDateE(e.target.value);
+        setDateExpire(`${dateE}T${timeExpire}:00`);
+        break;
+      case "timeExpire":
+        setTimeExpire(value);
+        break;
+      case "isExpire":
+        if (e.target.checked) {
+          setIsExpire(true);
+          setDateE('yyyy-mm-dd');
+          setDateExpire(null);
+        } else {
+          setIsExpire(false);
+          setDateE(null);
+        }
+        break;
+      default:
+        break;
+    }
 
+    setErrors(updatedErrors);
+  };
 
-        if (field === "discountCode") {
-            setDiscountCode(e.target.value.toUpperCase());
-        }
-        if (field === "discountName") {
-            setDiscountName(value);
-        }
-        if (field === "discountDescription") {
-            setDiscountDescription(value);
-        }
-        if (field === "discountNotLimited" && e.target.checked) {
-            setIsUnlimited(true);
-            setMaxUsage(null);
-            delete updatedErrors['maxUsage'];
-        }
-        else {
-            setIsUnlimited(false);
-        }
-        if (field === "maxUsage") {
-            setMaxUsage(value);
-            delete updatedErrors['maxUsage'];
-        }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-        if (field === "discountForCustomer" && e.target.checked) {
-            setIsShowAll(true)
-            setDiscountFor("customer")
-        }
-        else if (field === "discountForCustomer" && !e.target.checked) {
-            setIsShowAll(false);
-            setDiscountFor(null);
-        }
+    const newErrors = {};
+    setDateStart(`${dateS}T${timeStart}:00`);
+    if (!discountCode) newErrors.discountCode = 'Vui lòng nhập mã giảm giá';
+    if (!discountName) newErrors.discountName = 'Vui lòng nhập tên giảm giá';
+    if (!discountDescription) newErrors.discountDescription = 'Mô tả gì đó về mã giảm này!';
+    if (!isUnlimited) {
+      if (!maxUsage) {
+        newErrors.maxUsage = 'Vui lòng nhập số lượng giảm gía';
+      }
+    }
+    if (discountType === 'percentage') {
+      if (!percent) {
+        newErrors.discountValue = 'Vui lòng nhập phần trăm giảm';
+      } else if (percent > 100 || percent < 0) {
+        newErrors.discountValue = 'Giá trị phần trăm không hợp lệ (0 < n < 100)';
+      }
+    } else {
+      if (!amount) {
+        newErrors.discountValue = 'Vui lòng nhập số tiền giảm';
+      }
+    }
+    if (discountType !== 'amount') {
+      if (!maxAmountDiscount) {
+        newErrors.maxAmountDiscount = 'Vui lòng nhập mức tiền giảm tối đa';
+      }
+    }
 
-        if (field === "discountType") {
-            setDiscountType(value)
-            delete updatedErrors['discountMaxAmount'];
-            delete updatedErrors['discountValue'];
-        }
-        if (field === "discountValue") {
-            if (discountType === "percentage") {
-                setPercent(value);
-                setAmount(null)
+    if (!isExpire) {
+      if (!dateE) {
+        newErrors.dateE = 'Vui lòng nhập ngày hết hạn hoặc chọn "Không thời hạn" cho mã bên dưới';
+      }
+    }
 
-            }
-            if (discountType === "amount") {
-                setAmount(value)
-                setPercent(null)
-                setMaxAmountDiscount(null)
+    setErrors(newErrors);
 
-            }
-        }
-        if (field === "maxAmountDiscount") {
-            setMaxAmountDiscount(value)
-        }
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
 
-        if (field === "minOfTotalPrice") {
-            setMinOfTotalPrice(value)
-        }
+    try {
+      const discountData = {
+        discountCode,
+        discountName,
+        discountDescription,
+        percent: Number(percent),  // Convert to Number
+        amount,
+        maxAmountDiscount: Number(maxAmountDiscount),  // Convert to Number
+        minOfTotalPrice: Number(minOfTotalPrice),  // Convert to Number
+        maxUsage,
+        usedBy,
+        dateStart,
+        dateExpire,
+        discountType,
+        discountFor
+      };
 
-        if (field === "dateS") {
-            setDateS(value)
-           
-        }
-        if (field === "timeStart") {
-            setTimeStart(value)
-        }
-        if (field === "dateE") {
-            setDateE(e.target.value)
-            setDateExpire(`${dateE}T${timeExpire}:00`)
-        }
-        if (field === "timeExpire") {
-            setTimeExpire(value)
-        }
+      console.log(discountData);
+      const response = await updateDiscount(discountId,discountData);
+      console.log(response);
+      if (response.data.success) {
+        toast.success('Cập nhật giảm giá thành công', {
+          autoClose: 1000,
+          onClose: () => {
+            onClose();
+          }
+        });
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error('Có lỗi trong lúc cập nhật mã giảm');
+    }
+  };
 
-        if (field === "isExpire" && e.target.checked) {
-            setIsExpire(true)
-            setDateE('yyyy-mm-dd')
-            setDateExpire(null);
-        }
-        else if (field === "isExpire" && !e.target.checked) {
-            setIsExpire(false)
-            setDateE(null)
-
-        }
-        setErrors(updatedErrors);
-
-    };
-
-    useEffect(() => {
-        if (dateE) {
-            const dateTimeExpire = new Date(`${dateE}T${timeExpire}:00`);
-            const utcDateExpire = dateTimeExpire.toISOString(); // Chuyển sang UTC
-            setDateExpire(utcDateExpire);
-        }
-    }, [dateE, timeExpire]);
-    
-    useEffect(() => {
-        if (dateS) {
-            const dateTimeStart = new Date(`${dateS}T${timeStart}:00`);
-            const utcDateStart = dateTimeStart.toISOString(); // Chuyển sang UTC
-            setDateStart(utcDateStart);
-        }
-    }, [dateS, timeStart]);
-    
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-       
-
-        const newErrors = {};
-        setDateStart(`${dateS}T${timeStart}:00`)
-        if (!discountCode) newErrors.discountCode = 'Vui lòng nhập mã giảm giá';
-        if (!discountName) newErrors.discountName = 'Vui lòng nhập tên giảm giá';
-        if (!discountDescription) newErrors.discountDescription = 'Mô tả gì đó về mã giảm này!';
-        if (!isUnlimited) {
-            if (!maxUsage) {
-                newErrors.maxUsage = 'Vui lòng nhập số lượng giảm gía'
-            }
-        }
-        if (discountType === 'percentage') {
-            if (!percent) {
-                newErrors.discountValue = 'Vui lòng nhập phần trăm giảm'
-            }
-            else if (percent > 100 || percent < 0) {
-                newErrors.discountValue = 'Giá trị phần trăm không hợp lệ (0 < n < 100)'
-            }
-        }
-        else {
-            if (!amount) {
-                newErrors.discountValue = 'Vui lòng nhập số tiền giảm'
-            }
-        }
-        if (discountType !== 'amount') {
-            if (!maxAmountDiscount) {
-                newErrors.maxAmountDiscount = 'Vui lòng nhập mức tiền giảm tối đa'
-            }
-        }
-
-        if (!isExpire) {
-            if (!dateE) {
-                newErrors.dateE = 'Vui lòng nhập ngày hết hạn hoặc chọn "Không thời hạn" cho mã bên dưới'
-            }
-           
-        }
-        setErrors(newErrors);
-
-
-        if (Object.keys(newErrors).length > 0) {
-            return
-        }
-       
-         try {
-         const discountData = {
-                 discountCode, 
-                 discountName, 
-                 discountDescription, 
-                 percent: Number(percent),  // Chuyển đổi thành Number
-                 amount, 
-                 maxAmountDiscount: Number(maxAmountDiscount),  // Chuyển đổi thành Number
-                 minOfTotalPrice: Number(minOfTotalPrice),  // Chuyển đổi thành Number
-                 maxUsage, 
-                 usedBy, 
-             dateStart, 
-                 dateExpire, 
-                 discountType, 
-                discountFor
-             };
-        
-           
-             const response = await createDiscount(discountData);
-             
-            if(response.data.success)
-             toast.success('Tạo giảm giá thành công', {
-                autoClose: 1000,
-                onClose: () => {
-                    // Đảm bảo đóng modal sau khi thông báo đã hoàn thành
-                    onClose();
-                }
-            })
-            else
-             toast.error(response.data.message)
-            
-            
-         }
-          catch (error) {
-             toast.error('Có lỗi trong lúc tạo mã giảm')
-     }
-
-};
-
-// Định dạng tiền (nếu loại là VNĐ)
-const formatCurrency = (value) => {
+  const formatCurrency = (value) => {
     if (discountType === "VNĐ" && value) {
-        return new Intl.NumberFormat('vi-VN').format(value);
+      return new Intl.NumberFormat('vi-VN').format(value);
     }
     return value;
-};
+  };
 
-
-return (
+  return (
     <div className="">
         <div className="">
             <div className="card-body">
@@ -289,7 +326,6 @@ return (
                                 id="unlimitedCheck"
                                 checked={isUnlimited}
                                 onChange={(e) => handleInputChange(e, 'discountNotLimited')}
-                                value={isUnlimited}
                             />
                             <label
                                 className="form-check-label"
@@ -303,6 +339,7 @@ return (
                                 className="form-check-input"
                                 type="checkbox"
                                 id="displayCheck"
+                                checked = {discountFor}
                                 onChange={(e) => handleInputChange(e, 'discountForCustomer')}
                                 value={discountFor}
                             />
@@ -440,7 +477,7 @@ return (
         </div>
         <ToastContainer/>
     </div>
-);
+  );
 };
 
-export default AdDiscountForm;
+export default AdEditDiscount;

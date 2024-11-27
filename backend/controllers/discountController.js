@@ -71,15 +71,17 @@ exports.getDiscountById = async (req, res) => {
 
 // Cập nhật mã giảm giá
 exports.updateDiscount = async (req, res) => {
+    const {discountId} = req.params
     try {
-        const discount = await Discount.findByIdAndUpdate(req.params.id, req.body, {
+
+        const discount = await Discount.findByIdAndUpdate(discountId, req.body, {
             new: true,
             runValidators: true
         });
         if (!discount) {
             return res.status(404).json({
                 success: false,
-                message: 'Discount not found'
+                message: 'Không tìm thấy giảm giá'
             });
         }
         res.status(200).json({
@@ -97,17 +99,18 @@ exports.updateDiscount = async (req, res) => {
 
 // Xóa mã giảm giá
 exports.deleteDiscount = async (req, res) => {
+    const {discountId} = req.params
     try {
-        const discount = await Discount.findByIdAndDelete(req.params.id);
+        const discount = await Discount.findByIdAndDelete(discountId);
         if (!discount) {
             return res.status(404).json({
                 success: false,
-                message: 'Discount not found'
+                message: 'Không tìm thấy mã giảm'
             });
         }
         res.status(200).json({
             success: true,
-            message: 'Discount deleted successfully'
+            message: 'Xóa mã giảm thành công'
         });
     } catch (error) {
         res.status(500).json({

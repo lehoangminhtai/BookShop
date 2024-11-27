@@ -9,9 +9,9 @@ router.get('/', discountController.getAllDiscounts);
 
 router.get('/:id', discountController.getDiscountById);
 
-router.put('/:id', discountController.updateDiscount);
+router.put('/:discountId', discountController.updateDiscount);
 
-router.delete('/:id', discountController.deleteDiscount);
+router.delete('/:discountId', discountController.deleteDiscount);
 
 router.post('/apply', discountController.applyDiscount);
 
