@@ -1,5 +1,25 @@
 const Shipping = require('../models/shippingModel');
 
+exports.createShipping = async (req, res) =>{
+    try {
+   
+        const shipping = new Shipping(req.body)
+        await shipping.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'Tạo vùng vận chuyển thành công',
+            shipping
+        });
+
+
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
 // Thêm một tỉnh vào phí vận chuyển
 exports.addProvinceToShipping = async (req, res) => {
     try {
@@ -7,7 +27,7 @@ exports.addProvinceToShipping = async (req, res) => {
 
         const existingProvince = await Shipping.findOne({ "provinces.provinceId": provinceId });
         if (existingProvince) {
-            return res.status(400).json({ message: 'Province ID đã tồn tại trong một phí vận chuyển khác' });
+            return res.status(400).json({ success: false, message: 'Province ID đã tồn tại trong một phí vận chuyển khác' });
         }
 
         // Tìm hoặc tạo mới một document với shippingFee
@@ -20,9 +40,9 @@ exports.addProvinceToShipping = async (req, res) => {
         shipping.provinces.push({ provinceId, provinceName });
         await shipping.save();
 
-        res.status(201).json({ message: 'Tỉnh đã được thêm vào phí vận chuyển', shipping });
+        res.status(201).json({ success: true, message: 'Tỉnh đã được thêm vào phí vận chuyển', shipping });
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi thêm phí vận chuyển', error });
+        res.status(500).json({ success: false, message: 'Lỗi khi thêm phí vận chuyển', error });
     }
 };
 
@@ -34,7 +54,7 @@ exports.updateProvinceShipping = async (req, res) => {
         // Tìm phí vận chuyển chứa provinceId
         const shipping = await Shipping.findOne({ "provinces.provinceId": provinceId });
         if (!shipping) {
-            return res.status(404).json({ message: 'Không tìm thấy tỉnh này trong phí vận chuyển nào' });
+            return res.status(404).json({ success: false, message: 'Không tìm thấy tỉnh này trong phí vận chuyển nào' });
         }
 
         // Xóa tỉnh từ phí vận chuyển hiện tại
@@ -51,19 +71,42 @@ exports.updateProvinceShipping = async (req, res) => {
         newShipping.provinces.push({ provinceId, provinceName: shipping.provinces.find(p => p.provinceId === provinceId).provinceName });
         await newShipping.save();
 
-        res.status(200).json({ message: 'Phí vận chuyển của tỉnh đã được cập nhật', newShipping });
+        res.status(200).json({ success: true, message: 'Phí vận chuyển của tỉnh đã được cập nhật', newShipping });
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi cập nhật phí vận chuyển', error });
+        res.status(500).json({ success: false, message: 'Lỗi khi cập nhật phí vận chuyển', error });
     }
 };
+
+exports.updateShippingName = async (req, res) => {
+
+    try {
+        const { shippingId } = req.params;
+        const { areaName } = req.body;
+        const updateData = { areaName }
+        const updatedShipping = await Shipping.findByIdAndUpdate(
+            shippingId,
+            updateData,
+            { new: true }
+        );
+
+        if(!updatedShipping){
+            return res.status(404).json({success:false, message: "Không tìm thấy mã vận chuyển"})
+        }
+        return res.status(200).json({success: true, message: "Cập nhật tên khu vực thành công"})
+
+    } catch (error) {
+        return res.status(500).json({success:false, message: "Lỗi hệ thống"})
+        
+    }
+}
 
 // Lấy danh sách tất cả các phí vận chuyển
 exports.getAllShippingFees = async (req, res) => {
     try {
         const shippingFees = await Shipping.find();
-        res.status(200).json(shippingFees);
+        res.status(200).json({ success: true, shippingFees });
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi lấy danh sách phí vận chuyển', error });
+        res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách phí vận chuyển', error });
     }
 };
 
@@ -79,7 +122,7 @@ exports.getShippingFeeByProvinceId = async (req, res) => {
 
         // Nếu không tìm thấy, trả về lỗi
         if (!shipping) {
-            return res.status(404).json({ message: 'Province not found or shipping fee not set for this province.' });
+            return res.status(404).json({ success: false, message: 'Province not found or shipping fee not set for this province.' });
         }
 
         // Tìm province trong provinces array
@@ -87,11 +130,12 @@ exports.getShippingFeeByProvinceId = async (req, res) => {
 
         // Trả về phí vận chuyển
         res.status(200).json({
+            success: true,
             provinceName: province.provinceName,
             shippingFee: shipping.shippingFee
         });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -103,15 +147,15 @@ exports.deleteProvinceFromShipping = async (req, res) => {
         // Tìm phí vận chuyển chứa provinceId
         const shipping = await Shipping.findOne({ "provinces.provinceId": provinceId });
         if (!shipping) {
-            return res.status(404).json({ message: 'Không tìm thấy tỉnh này trong phí vận chuyển nào' });
+            return res.status(404).json({ success: false, message: 'Không tìm thấy tỉnh này trong phí vận chuyển nào' });
         }
 
         // Xóa tỉnh khỏi phí vận chuyển
         shipping.provinces = shipping.provinces.filter(province => province.provinceId !== parseInt(provinceId));
         await shipping.save();
 
-        res.status(200).json({ message: 'Tỉnh đã được xóa khỏi phí vận chuyển', shipping });
+        res.status(200).json({ success: true, message: 'Tỉnh đã được xóa khỏi phí vận chuyển', shipping });
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi xóa tỉnh khỏi phí vận chuyển', error });
+        res.status(500).json({ success: false, message: 'Lỗi khi xóa tỉnh khỏi phí vận chuyển', error });
     }
 };

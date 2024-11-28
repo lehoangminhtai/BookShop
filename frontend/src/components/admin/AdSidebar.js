@@ -80,11 +80,7 @@ const AdSidebar = () => {
                 <i className="fas fa-file-alt me-2"></i> <span>Báo cáo</span>
               </a>
             </li>
-            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <a href="#blog" className="nav-link text-dark d-flex align-items-center">
-                <i className="fas fa-blog me-2"></i> <span>Blog</span>
-              </a>
-            </li>
+            
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
               <Link to={'/admin/shipping'} className="nav-link text-dark d-flex align-items-center">
                 <i className="fas fa-truck me-2"></i> <span>Vận chuyển</span>

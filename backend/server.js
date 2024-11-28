@@ -46,7 +46,7 @@ app.use('/api/bookSales', bookSaleRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/discounts', discountRoutes);
-app.use('/api/shipping', shippingRoutes);
+app.use('/api/shippings', shippingRoutes);
 app.use('/api/zalopay', zaloPayRoutes);
 app.use('/api/momo', momoRoutes);
 app.use('/api/payments', paymentRoutes);

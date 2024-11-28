@@ -15,13 +15,11 @@ const shippingSchema = new mongoose.Schema({
         {
             provinceId:{
                 type: Number,
-                required: true,
-                unique: true
+                
             },
             provinceName: {
                 type: String,
-                required: true,
-                unique: true
+               
             }
         }
     ]
