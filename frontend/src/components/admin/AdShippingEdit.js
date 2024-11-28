@@ -1,10 +1,15 @@
 import React, { useState,useEffect } from "react";
-import { createShipping } from "../../services/shippingService";
+import {  updateShipping} from "../../services/shippingService";
 import { toast, ToastContainer } from "react-toastify";
 
-const AdShippingForm = ({ onClose }) => {
-    const [areaName, setAreaName] = useState();
-    const [shippingFee, setShippingFee] = useState();
+const AdShippingEdit = ({ onClose, shippingData}) => {
+
+    const {shippingId, areaNameE, shippingFeeE, provincesE} = shippingData
+
+    const [areaName, setAreaName] = useState(areaNameE);
+    const [shippingFee, setShippingFee] = useState(shippingFeeE);
+    const [provinces, setProvinces] = useState(provincesE);
+
     
     const [errors, setErrors] = useState({});
 
@@ -43,12 +48,12 @@ const AdShippingForm = ({ onClose }) => {
             return
         }
         try {
-            const shippingData = { areaName: areaName, shippingFee: shippingFee, provinces: [] }
+            const shippingData = { areaName: areaName, shippingFee: shippingFee, provinces: provinces }
 
-            const response = await createShipping(shippingData);
+            const response = await updateShipping(shippingId, shippingData);
 
             if (response.data.success) {
-                toast.success('Thêm vùng vận chuyển thành công', {
+                toast.success('Cập nhật vùng vận chuyển thành công', {
                     autoClose: 1000,
                     onClose: () => {
                         // Đảm bảo đóng modal sau khi thông báo đã hoàn thành
@@ -64,12 +69,17 @@ const AdShippingForm = ({ onClose }) => {
         }
     }
 
+    const handleRemoveProvince = (provinceId) => {
+        setProvinces((prevList) => prevList.filter((item) => item.provinceId !== provinceId));
+        
+    };
+
     return (
         <div className="d-flex align-items-center justify-content-center ">
             <div className="w-100">
                 <div className="card-body">
                     <div className="d-flex justify-content-center">
-                        <h3 className="h3">Thêm Vùng</h3>
+                        <h3 className="h3">Cập Nhật Vùng</h3>
                     </div>
                     <div className="mb-5">
                         <label className="fw-bold form-label">
@@ -99,11 +109,23 @@ const AdShippingForm = ({ onClose }) => {
                             {errors.shippingFee && <div className="invalid-feedback">{errors.shippingFee}</div>}
                         </div>
                     </div>
-                   
+                    <div className="selected-provinces">
+                                {provinces.map((province) => (
+                                    <div key={province.provinceId} className=" d-flex justify-content-between align-items-center mb-3 p-2 border">
+                                        <span className="fw-bold" style={{ color: "black" }}>{province.provinceName}</span>
+                                        <button
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => handleRemoveProvince(province.provinceId)}
+                                            >
+                                                &times;
+                                            </button>
+                                    </div>
+                                ))}
+                            </div>
                     <div className="d-flex justify-content-center gap-2">
 
                         <button className="btn btn-primary" onClick={handleSubmit}>
-                            Thêm
+                            Cập nhật
                         </button>
                     </div>
                 </div>
@@ -113,4 +135,4 @@ const AdShippingForm = ({ onClose }) => {
     );
 }
 
-export default AdShippingForm
+export default AdShippingEdit

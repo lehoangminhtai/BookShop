@@ -2,8 +2,19 @@ const Shipping = require('../models/shippingModel');
 
 exports.createShipping = async (req, res) =>{
     try {
-   
-        const shipping = new Shipping(req.body)
+        const { shippingFee, areaName } = req.body;
+
+        let shipping = await Shipping.findOne({ areaName, shippingFee });
+        if(shipping)
+        {
+            return res.status(400).json({
+                success: false,
+                message: 'Đã tồn tại vùng vận chuyển tương tự',
+               
+            });
+        }
+
+        shipping = new Shipping(req.body)
         await shipping.save();
 
         res.status(201).json({
@@ -23,24 +34,24 @@ exports.createShipping = async (req, res) =>{
 // Thêm một tỉnh vào phí vận chuyển
 exports.addProvinceToShipping = async (req, res) => {
     try {
-        const { provinceId, provinceName, shippingFee } = req.body;
+        const { provinceId, provinceName, shippingFee, areaName } = req.body;
 
         const existingProvince = await Shipping.findOne({ "provinces.provinceId": provinceId });
         if (existingProvince) {
-            return res.status(400).json({ success: false, message: 'Province ID đã tồn tại trong một phí vận chuyển khác' });
+            return res.status(400).json({ success: false, message: provinceName +' đã có phí vận chuyển là: '+ existingProvince.shippingFee });
         }
 
         // Tìm hoặc tạo mới một document với shippingFee
-        let shipping = await Shipping.findOne({ shippingFee });
+        let shipping = await Shipping.findOne({ areaName,shippingFee });
         if (!shipping) {
-            shipping = new Shipping({ shippingFee, provinces: [] });
+            shipping = new Shipping({areaName, shippingFee, provinces: [] });
         }
 
         // Thêm tỉnh vào danh sách provinces
         shipping.provinces.push({ provinceId, provinceName });
         await shipping.save();
 
-        res.status(201).json({ success: true, message: 'Tỉnh đã được thêm vào phí vận chuyển', shipping });
+        res.status(201).json({ success: true, message: provinceName +' đã được thêm vào phí vận chuyển', shipping });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi khi thêm phí vận chuyển', error });
     }
@@ -49,40 +60,53 @@ exports.addProvinceToShipping = async (req, res) => {
 // Cập nhật phí vận chuyển của một tỉnh
 exports.updateProvinceShipping = async (req, res) => {
     try {
-        const { provinceId, newShippingFee } = req.body;
+        const { provinceId, provinceName, newShippingFee, areaName } = req.body;
 
-        // Tìm phí vận chuyển chứa provinceId
         const shipping = await Shipping.findOne({ "provinces.provinceId": provinceId });
+      
         if (!shipping) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy tỉnh này trong phí vận chuyển nào' });
         }
 
         // Xóa tỉnh từ phí vận chuyển hiện tại
-        shipping.provinces = shipping.provinces.filter(province => province.provinceId !== provinceId);
-        await shipping.save();
+        shipping.provinces = shipping.provinces.filter(province => province.provinceName !== provinceName);
+
+        // Lưu lại shipping sau khi xóa
+        const updatedShipping = await shipping.save();  // Đảm bảo lưu sau khi thay đổi
 
         // Tìm hoặc tạo document với newShippingFee
-        let newShipping = await Shipping.findOne({ shippingFee: newShippingFee });
+        let newShipping = await Shipping.findOne({ shippingFee: newShippingFee, areaName: areaName });
         if (!newShipping) {
-            newShipping = new Shipping({ shippingFee: newShippingFee, provinces: [] });
+            newShipping = new Shipping({ shippingFee: newShippingFee,areaName: areaName, provinces: [] });
         }
 
-        // Thêm tỉnh vào phí vận chuyển mới
-        newShipping.provinces.push({ provinceId, provinceName: shipping.provinces.find(p => p.provinceId === provinceId).provinceName });
-        await newShipping.save();
+        // Kiểm tra trùng lặp khi thêm vào phí vận chuyển mới
+        const alreadyInNewShipping = newShipping.provinces.some(province => province.provinceId === provinceId);
+        if (!alreadyInNewShipping) {
+            newShipping.provinces.push({ provinceId, provinceName });
+            await newShipping.save();
+        } else {
+            return res.status(409).json({ success: false, message: 'Tỉnh này đã tồn tại trong phí vận chuyển mới' });
+        }
 
-        res.status(200).json({ success: true, message: 'Phí vận chuyển của tỉnh đã được cập nhật', newShipping });
+        res.status(200).json({
+            success: true,
+            message: 'Phí vận chuyển của tỉnh đã được cập nhật thành công',
+            updatedShipping,  
+            newShipping,
+        });
     } catch (error) {
+        console.error('Error updating province shipping:', error);
         res.status(500).json({ success: false, message: 'Lỗi khi cập nhật phí vận chuyển', error });
     }
 };
 
-exports.updateShippingName = async (req, res) => {
+exports.updateShipping = async (req, res) => {
 
     try {
         const { shippingId } = req.params;
-        const { areaName } = req.body;
-        const updateData = { areaName }
+        const { areaName, shippingFee, provinces } = req.body;
+        const updateData = { areaName,shippingFee, provinces }
         const updatedShipping = await Shipping.findByIdAndUpdate(
             shippingId,
             updateData,
@@ -92,7 +116,7 @@ exports.updateShippingName = async (req, res) => {
         if(!updatedShipping){
             return res.status(404).json({success:false, message: "Không tìm thấy mã vận chuyển"})
         }
-        return res.status(200).json({success: true, message: "Cập nhật tên khu vực thành công"})
+        return res.status(200).json({success: true, message: "Cập nhật khu vực vận chuyển thành công"})
 
     } catch (error) {
         return res.status(500).json({success:false, message: "Lỗi hệ thống"})
@@ -159,3 +183,28 @@ exports.deleteProvinceFromShipping = async (req, res) => {
         res.status(500).json({ success: false, message: 'Lỗi khi xóa tỉnh khỏi phí vận chuyển', error });
     }
 };
+
+exports.deleteShipping = async (req, res) =>{
+    try {
+        const {shippingId} = req.params;
+        if(shippingId){
+            const deletedShipping = await Shipping.findByIdAndDelete(shippingId);
+
+            if (!deletedShipping) {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy phí vận chuyển cần xóa' });
+            }
+
+            res.status(200).json({ 
+                success: true, 
+                message: 'Phí vận chuyển đã được xóa thành công', 
+                deletedShipping 
+            });
+        }
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: 'Đã xảy ra lỗi khi xóa phí vận chuyển', 
+            error 
+        });
+    }
+}
