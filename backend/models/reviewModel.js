@@ -13,6 +13,11 @@ const reviewSchema = new Schema({
         ref: 'Book', // Liên kết với model Book
         required: true
     },
+    orderId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Oder', 
+        required: true
+    },
     rating: {
         type: Number,
         required: true,

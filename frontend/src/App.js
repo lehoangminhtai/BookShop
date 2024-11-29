@@ -11,6 +11,8 @@ import Cart from './pages/user/Cart';
 import Checkout from './pages/user/Checkout';
 import SuccessPage from './pages/user/Success';
 import CustomerOrders from './pages/user/Orders';
+import MyAccount from './components/customer/MyAccount';
+import ReviewsList from './components/customer/ReviewsList';
 
 //Admin
 import Dashboard from './pages/admin/Dashboard';
@@ -43,6 +45,8 @@ function AppContent() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path='/payment/success' element={<SuccessPage/>}></Route>
           <Route path="/account/orders" element={<CustomerOrders />} />
+          <Route path="/account/reviews" element={<ReviewsList />} />
+          <Route path="/account" element={<MyAccount />} />
 
             {/* admin */}
 

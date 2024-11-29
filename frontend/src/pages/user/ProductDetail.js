@@ -6,7 +6,7 @@ import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
 import '../../css/user/ProductDetail.scss'
 import { Modal } from 'bootstrap'
-
+import BookReviews from '../../components/BookReviews';
 const ProductDetail = () => {
     const { productId } = useParams();
     const [bookDetail, setBookDetail] = useState(null);
@@ -281,43 +281,7 @@ const ProductDetail = () => {
             </div>
             <div className="container-fluid d-flex justify-content-center align-items-center mt-5">
                 <div className="bg-white p-5 rounded shadow w-100" >
-                    <h2 className="h4 font-weight-bold mb-4">Đánh giá sản phẩm</h2>
-                    <div className="d-flex">
-                        <div className="text-center w-25">
-                            <div className="display-4 font-weight-bold">0<span className="h5">/5</span></div>
-                            <div className="mt-2">
-                                <i className="far fa-star text-warning"></i>
-                                <i className="far fa-star text-warning"></i>
-                                <i className="far fa-star text-warning"></i>
-                                <i className="far fa-star text-warning"></i>
-                                <i className="far fa-star text-warning"></i>
-                            </div>
-                            <div className="text-muted mt-2">(0 đánh giá)</div>
-                        </div>
-                        <div className="w-50 ml-1">
-                            {['5 sao', '4 sao', '3 sao', '2 sao', '1 sao'].map((rating, index) => (
-                                <div key={index} className="d-flex align-items-center mb-1">
-                                    <div className="w-25 text-muted">{rating}</div>
-                                    <div className="flex-grow-1 bg-light rounded" style={{ height: '10px' }}>
-                                        <div className="bg-warning" style={{ width: '0%' }}></div>
-                                    </div>
-                                    <div className="w-25 text-muted">0%</div>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="w-25 ml-3 d-flex">
-                            {
-                                user ? (<div>
-                                    <button className="btn btn-danger w-100 " >Đánh giá</button>
-                                </div>)
-                                    : (<div className="text-muted">
-                                        Chỉ có thành viên mới có thể viết nhận xét. Vui lòng <Link to="/auth" className="text-primary">đăng nhập</Link>.
-                                    </div>)
-
-                            }
-
-                        </div>
-                    </div>
+                    <BookReviews bookId = {productId}/>
                 </div>
             </div>
         </div>
