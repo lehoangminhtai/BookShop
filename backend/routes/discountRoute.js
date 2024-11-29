@@ -7,7 +7,13 @@ router.post('/create', discountController.createDiscount);
 
 router.get('/', discountController.getAllDiscounts);
 
+router.get('/available', discountController.getAvailableDiscounts);
+
+router.get('/for-user', discountController.getDiscountsForUser);
+
 router.get('/:id', discountController.getDiscountById);
+
+
 
 router.put('/:discountId', discountController.updateDiscount);
 
@@ -15,7 +21,6 @@ router.delete('/:discountId', discountController.deleteDiscount);
 
 router.post('/apply', discountController.applyDiscount);
 
-router.get('/available', discountController.getAvailableDiscounts);
 
 router.get('/unavailable', discountController.getUnavailableDiscounts);
 

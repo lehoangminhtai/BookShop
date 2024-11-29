@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
 import { useStateContext } from '../../context/UserContext'
+
+//service
 import { getShippingFeeByProvinceId } from '../../services/shippingService';
 import { createZaloPay } from '../../services/zaloPayService';
 import { createMomoPay } from '../../services/momoService';
 import { createOrder } from '../../services/orderService';
+
+//component
+import Discount from '../../components/customer/Discount';
 
 function Checkout() {
 
@@ -23,7 +29,9 @@ function Checkout() {
 
     const [selectedShipping, setSelectedShipping] = useState('standard');
     const [selectedPayment, setSelectedPayment] = useState('');
-    const [addressDetail, setAddressDetail] = useState(''); 
+    const [addressDetail, setAddressDetail] = useState('');
+
+    const [showModal, setShowModal] = useState(false);
     const [error, setError] = useState(''); 
    
     const paymentLogos = {
@@ -46,7 +54,7 @@ function Checkout() {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
 
-
+    //useEffect
     useEffect(() => {
         // Lấy dữ liệu từ Local Storage
         const itemsPayment = JSON.parse(localStorage.getItem('itemsPayment')) || [];
@@ -71,6 +79,21 @@ function Checkout() {
 
         fetchProvinces();
     }, []);
+
+    useEffect(() => {
+        if (!user) {
+            navigate('/auth?redirect=/checkout', { replace: true });
+        }
+    }, [user, navigate]);
+
+    useEffect(() => {
+        const itemsPayment = JSON.parse(localStorage.getItem('itemsPayment')) || [];
+        setItems(itemsPayment);
+        console.log(itemsPayment)
+        const total = itemsPayment.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        setTotalPrice(total);
+    }, []);
+
 
 
     const handleProvinceChange = async (e) => {
@@ -121,20 +144,16 @@ function Checkout() {
         setSelectedWard(e.target.value);
     };
 
+    const handleShowDiscount = () =>{
+        setShowModal(true)
+        document.body.classList.add("no-scroll");
+    }
 
-    useEffect(() => {
-        if (!user) {
-            navigate('/auth?redirect=/checkout', { replace: true });
-        }
-    }, [user, navigate]);
+    const closeModal = () => {
+        setShowModal(false);
+        document.body.classList.remove("no-scroll");
+    };
 
-    useEffect(() => {
-        const itemsPayment = JSON.parse(localStorage.getItem('itemsPayment')) || [];
-        setItems(itemsPayment);
-        console.log(itemsPayment)
-        const total = itemsPayment.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        setTotalPrice(total);
-    }, []);
 
     const handleSubmit = async () => {
          if (!selectedProvince || !selectedDistrict || !selectedWard) {
@@ -349,20 +368,24 @@ function Checkout() {
                 <div className="bg-white p-4 rounded shadow-sm w-100">
                     <h1 className="h5 fw-bold mb-4">MÃ KHUYẾN MÃI/MÃ QUÀ TẶNG</h1>
                     <div className="form-inline mb-2">
-                        <label className="mr-2 text-gray-700">Mã KM/Quà tặng</label>
-                        <input
-                            type="text"
-                            placeholder="Nhập mã khuyến mãi/Quà tặng"
-                            className="form-control flex-grow-1 mr-2"
-                        />
-                        <button className="btn btn-primary">Áp dụng</button>
+                        
+                        <div className="d-flex align-items-center  mb-3 mt-3">
+    <input
+        type="text"
+        placeholder="Nhập mã khuyến mãi/Quà tặng"
+        className="form-control me-2 w-75" 
+        
+    />
+    <button className="btn btn-primary w-25 w-md-auto">Áp Dụng</button>
+</div>
+
                     </div>
-                    <a href="#" className="text-primary">Chọn mã khuyến mãi</a>
-                    <p className="text-muted mt-2">Có thể áp dụng đồng thời nhiều mã <i className="fas fa-info-circle"></i></p>
+                    <Link  className="text-primary" onClick={handleShowDiscount}>Chọn mã khuyến mãi</Link>
+                    
                 </div>
             </div>
             <div style={{ height: "160px" }}></div>
-            <div className="w-100 bg-white p-3 border-top shadow-lg rounded-lg fixed-bottom">
+            <div className="w-100 bg-white p-3 border-top shadow-lg rounded-lg fixed-bottom" style={{zIndex:"1000"}}>
                 <h2 className="h5 font-weight-semibold text-gray-800">Thanh Toán Đơn Hàng</h2>
                 <div className="d-flex justify-content-between">
                     <div className="text-gray-700 small">Thành tiền</div>
@@ -387,6 +410,14 @@ function Checkout() {
                     <button className="btn btn-danger font-weight-semibold px-4" onClick={handleSubmit} >Xác nhận thanh toán</button>
                 </div>
             </div>
+            {showModal && (
+                <div className="modal-overlay" style={{marginTop:"70px", zIndex:"1050"}}>
+                    <div className="modal-content">
+                        <button className="close-btn" onClick={closeModal}>&times;</button>
+                        <Discount />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

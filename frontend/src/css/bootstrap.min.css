@@ -2265,7 +2265,7 @@ progress {
 }
 
 .form-control:focus {
-    color: #747d88;
+    color: black;
     background-color: #fff;
     border-color: #c0e284;
     outline: 0;
@@ -6102,6 +6102,10 @@ fieldset:disabled .btn {
     border-bottom-left-radius: 9px
 }
 
+body.no-scroll {
+    overflow: hidden;  /* Vô hiệu hóa cuộn của body */
+}
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -8454,7 +8458,9 @@ fieldset:disabled .btn {
 .text-muted {
     color: #6c757d !important
 }
-
+.text-black {
+    color: #000;
+}
 .text-black-50 {
     color: rgba(0, 0, 0, .5) !important
 }

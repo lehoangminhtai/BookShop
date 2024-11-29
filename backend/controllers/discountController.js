@@ -306,3 +306,52 @@ exports.getUnavailableDiscounts = async (req, res) => {
         });
     }
 };
+
+exports.getDiscountsForUser = async (req,res) =>{
+    try {
+        const  {page = 1} = req.query  // Nhận số trang từ query (mặc định là 1)
+        const limit = 3; // Số lượng discount mỗi trang
+        const skip = (page - 1) * limit;
+
+        // Điều kiện lọc
+        const now = new Date();
+        const filterConditions = {
+            $or: [
+                { maxUsage: { $eq: null } },  // Không có giới hạn maxUsage
+                {
+                    $expr: {
+                        $gt: [
+                            { $size: "$usedBy" },  // Lấy số lượng phần tử trong mảng 'usedBy'
+                            "$maxUsage"  // So sánh với 'maxUsage'
+                        ]
+                    }
+                }
+            ],
+            $or: [
+                { dateExpire: { $gt: now } }, // dateExpire lớn hơn hiện tại
+                { dateExpire: { $eq: null } }  // dateExpire là null
+            ],
+            discountFor: null  // discountFor là null
+        };
+
+        // Truy vấn với điều kiện lọc, phân trang, sắp xếp theo ngày mới nhất
+        const discounts = await Discount.find(filterConditions)
+            .sort({ createdAt: -1 }) // Sắp xếp mới nhất
+            .skip(skip) // Bỏ qua các bản ghi trước đó
+            .limit(limit); // Giới hạn số bản ghi
+
+        // Tổng số lượng discount phù hợp (dùng để tính tổng số trang)
+        const totalDiscounts = await Discount.countDocuments(filterConditions);
+
+        res.status(200).json({
+            discounts,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(totalDiscounts / limit),
+                totalDiscounts,
+            },
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi lấy danh sách mã giảm giá', error: error.message });
+    }
+}
