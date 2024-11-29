@@ -1,4 +1,4 @@
-const publicPort = "https://1ec0-2402-800-6319-c47a-5483-9997-489b-9e45.ngrok-free.app";
+const publicPort = "https://f4e8-2402-800-6318-d2ae-9596-3f59-cc1a-9864.ngrok-free.app";
 
 module.exports= {
     publicPort

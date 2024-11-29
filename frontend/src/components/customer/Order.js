@@ -1,9 +1,47 @@
-import React from "react";
+import ReviewForm from "./ReviewForm";
+import React, { useState } from "react";
 
 
-const Order = ({ orders }) => {
+const Order = ({ orders, userId }) => {
+
+    const [showModal, setShowModal] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+    };
+
+    const handleShowModal = (order) => {
+        setSelectedOrder(order);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedOrder(null);
+    };
+
+    const handleSubmitReview = (reviewData) => {
+        console.log("Dữ liệu đánh giá:", reviewData);
+        // Gửi reviewData tới server qua API
+        handleCloseModal();
+    };
+
+    const getOrderStatusText = (status) => {
+        switch (status) {
+            case 'pending':
+                return 'Chờ xác nhận';
+            case 'confirm':
+                return 'Chờ lấy hàng';
+            case 'shipping':
+                return 'Đang giao hàng';
+            case 'completed':
+                return 'Hoàn thành';
+            case 'failed':
+                return 'Đã hủy';
+            default:
+                return status;
+        }
     };
 
     return (
@@ -25,15 +63,13 @@ const Order = ({ orders }) => {
                                     />
                                     <div className="flex-grow-1">
                                         <h6 className="fw-bold mb-1">{item.bookId.title}</h6>
-                               
+
                                         <p className="mb-0">Số lượng: x{item.quantity}</p>
                                     </div>
                                     <div className="text-end">
-                                        <p className="text-decoration-line-through text-muted mb-1">
-                                            {formatCurrency(item.price)}
-                                        </p>
+
                                         <p className="text-danger fw-bold mb-0">
-                                            {formatCurrency(item.price )}
+                                            {formatCurrency(item.price)}
                                         </p>
                                     </div>
                                 </div>
@@ -43,37 +79,59 @@ const Order = ({ orders }) => {
                         <div>
                             <p className="text-muted mb-2">
                                 Tổng tiền sản phẩm:{" "}
-                                <span className="text-danger">₫{order.totalPrice}</span>
+                                <span className="text-danger">{formatCurrency(order.totalPrice)}</span>
                             </p>
                             <p className="text-muted mb-2">
                                 Phí vận chuyển:{" "}
-                                <span className="text-danger">₫{order.shippingFee}</span>
+                                <span className="text-danger">{formatCurrency(order.shippingFee)}</span>
                             </p>
                             <p className="text-muted mb-2">
                                 Thành tiền:{" "}
-                                <span className="text-danger">₫{order.finalAmount}</span>
+                                <span className="text-danger">{formatCurrency(order.finalAmount)}</span>
                             </p>
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
                                     <p className="mb-0 text-primary">
-                                        Trạng thái: {order.orderStatus}
+                                        Trạng thái: {getOrderStatusText(order.orderStatus)}
                                     </p>
                                     <p className="text-muted">
                                         Ngày đặt hàng: {new Date(order.createdAt).toLocaleDateString()}
                                     </p>
                                 </div>
                                 <div className="d-flex gap-2">
-                                    <button className="btn btn-danger text-white">Đánh Giá</button>
+
+                                    {order.orderStatus === 'completed' && (
+                                        <>
+                                            <button
+                                                className="btn btn-danger"
+                                                onClick={() => handleShowModal(order)}
+                                            >
+                                                Đánh Giá
+                                            </button>
+                                            <button className="btn btn-outline-secondary">
+                                                Mua Lại
+                                            </button>
+                                        </>
+                                    )}
                                     <button className="btn btn-outline-secondary">
                                         Liên Hệ Người Bán
                                     </button>
-                                    <button className="btn btn-outline-secondary">Mua Lại</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             ))}
+            {selectedOrder && (
+                <ReviewForm
+                    show={showModal}
+                    onClose={handleCloseModal}
+                    onSubmit={handleSubmitReview}
+                    orderBooks={selectedOrder.itemsPayment} // Truyền danh sách sách của đơn hàng vào ReviewForm
+                    userId={userId}
+                    orderId={selectedOrder._id}
+                />
+            )}
         </div>
     );
 };

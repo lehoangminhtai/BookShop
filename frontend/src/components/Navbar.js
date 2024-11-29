@@ -50,7 +50,7 @@ const Navbar = () => {
                                            
 
                                         </Link>
-                                        <Link to="/auth" className="my-auto">
+                                        <Link to="/account" className="my-auto">
                                             {/* <i className="fas fa-user fa-2x"></i> */}
                                             <img src={user?.image} alt="avatar" className="rounded-circle img-fluid"
                                                 style={{ width: '40px', height: '40px', objectFit: 'cover', border: '2px solid black' }} />

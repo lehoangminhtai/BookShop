@@ -1,7 +1,22 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useStateContext } from '../../context/UserContext';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../actions/UserAction';
 
 const CustomerSidebar = () => {
+
+  const { users, setUser } = useStateContext()
+
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const logoutFunc = () => {
+    dispatch(logout())
+    setUser(null)
+    navigate('/')
+  }
+
   return (
     <div className="d-flex">
       <aside
@@ -18,34 +33,25 @@ const CustomerSidebar = () => {
         </div>
         <nav className="mt-3">
           <ul className="nav flex-column" style={{ padding: '0' }}>
-            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <Link to="/customer/orders" className="nav-link text-dark d-flex align-items-center">
-                <i className="fas fa-box me-2"></i> <span>Orders</span>
+          <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
+              <Link to="/account" className="nav-link text-dark d-flex align-items-center">
+                <i className="fas fa-cog me-2"></i> <span>Tài khoản của tôi</span>
               </Link>
             </li>
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <Link to="/customer/reviews" className="nav-link text-dark d-flex align-items-center">
-                <i className="fas fa-star me-2"></i> <span>Reviews</span>
+              <Link to="/account/orders" className="nav-link text-dark d-flex align-items-center">
+                <i className="fas fa-box me-2"></i> <span>Đơn hàng</span>
               </Link>
             </li>
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <Link to="/customer/orders-return" className="nav-link text-dark d-flex align-items-center">
-                <i className="fas fa-undo me-2"></i> <span>Order Return Requests</span>
+              <Link to="/account/reviews" className="nav-link text-dark d-flex align-items-center">
+                <i className="fas fa-star me-2"></i> <span>Đánh giá</span>
               </Link>
             </li>
-            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <Link to="/customer/address" className="nav-link text-dark d-flex align-items-center">
-                <i className="fas fa-map-marker-alt me-2"></i> <span>Address</span>
-              </Link>
-            </li>
-            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <Link to="/customer/account-setting" className="nav-link text-dark d-flex align-items-center">
-                <i className="fas fa-cog me-2"></i> <span>Account Setting</span>
-              </Link>
-            </li>
-            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
+            
+            <li onClick={logoutFunc} className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
               <Link to="/logout" className="nav-link text-dark d-flex align-items-center">
-                <i className="fas fa-sign-out-alt me-2"></i> <span>Logout</span>
+                <i className="fas fa-sign-out-alt me-2"></i> <span>Đăng xuát</span>
               </Link>
             </li>
           </ul>
