@@ -123,14 +123,21 @@ const Order = ({ orders, userId }) => {
                 </div>
             ))}
             {selectedOrder && (
-                <ReviewForm
-                    show={showModal}
-                    onClose={handleCloseModal}
-                    onSubmit={handleSubmitReview}
-                    orderBooks={selectedOrder.itemsPayment} // Truyền danh sách sách của đơn hàng vào ReviewForm
-                    userId={userId}
-                    orderId={selectedOrder._id}
-                />
+                <div className="modal-overlay" style={{marginTop:"50px"}}>
+                    <div className="modal-content">
+                        <button className="close-btn" onClick={handleCloseModal}>&times;</button>
+                        <ReviewForm
+                            
+                            onClose={handleCloseModal}
+                            onSubmit={handleSubmitReview}
+                            orderBooks={selectedOrder.itemsPayment} // Truyền danh sách sách của đơn hàng vào ReviewForm
+                            userId={userId}
+                            orderId={selectedOrder._id}
+                        />
+                      
+                    </div>
+                </div>
+
             )}
         </div>
     );

@@ -46,16 +46,30 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
             rating,
             comment,
         }));
-
+        let error = false;
         try {
             // Gửi từng đánh giá đến API
             for (const review of reviewData) {
-                await createReview(review)
-                console.error();
-                
-
+                if (await createReview(review)) {
+                    error = false
+                }
+                else {
+                    error = true
+                }
             }
-            toast.success("Đánh giá đơn hàng thành công!");
+            if (!error) {
+
+                toast.success("Đánh giá đơn hàng thành công!", {
+                    autoClose: 1000,
+                    onClose: () => {
+                        // Đảm bảo đóng modal sau khi thông báo đã hoàn thành
+                        onClose();
+                    }
+                });
+            }
+            else{
+                toast.success("Đánh giá đơn hàng thất bại");
+            }
 
         } catch (error) {
             toast.error("Có lỗi xảy ra khi gửi đánh giá!", {
@@ -65,75 +79,73 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
     };
 
     return (
-        <div className="modal-overlay" style={{ alignItems: "flex-start" }}>
-            <ToastContainer />
-            <div className="modal-content p-4">
-                <button className="close-btn" onClick={onClose}>
-                    &times;
-                </button>
-                <h4
-                    className="mb-4 text-center"
-                    style={{ fontSize: "1.5rem", fontWeight: "bold" }}
-                >
-                    <strong>Đánh giá đơn hàng</strong>
-                </h4>
 
-                <form onSubmit={handleSubmit}>
-                    {orderBooks.map((book, index) => (
-                        <div key={index} className="mb-4">
-                            <div className="d-flex mb-3">
-                                <img
-                                    src={book.bookId.images[0]}
-                                    alt={book.bookId.title}
-                                    className="img-thumbnail me-3"
-                                    style={{ width: 100, height: 100, objectFit: "cover" }}
-                                />
-                                <div>
-                                    <h5>{book.bookId.title}</h5>
-                                    <h5 style={{ color: "gray" }}>Tác giả: {book.bookId.author}</h5>
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label className="d-block">Đánh giá (sao):</label>
-                                <div className="rating-stars d-flex align-items-center">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <i
-                                            key={star}
-                                            className={`bi bi-star${reviews.find((r) => r.bookId === book.bookId._id).rating >= star
-                                                    ? "-fill text-warning"
-                                                    : ""
-                                                }`}
-                                            style={{ fontSize: "1.5rem", cursor: "pointer" }}
-                                            onClick={() => handleStarClick(book.bookId._id, star)}
-                                        ></i>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="form-group mt-3">
-                                <label>Bình luận:</label>
-                                <textarea
-                                    className="form-control"
-                                    rows="4"
-                                    value={reviews.find((r) => r.bookId === book.bookId._id).comment}
-                                    onChange={(e) =>
-                                        handleCommentChange(book.bookId._id, e.target.value)
-                                    }
-                                    required
-                                ></textarea>
+        <div className="container">
+              <ToastContainer />
+            <h4
+                className="mb-4 text-center"
+                style={{ fontSize: "1.5rem", fontWeight: "bold" }}
+            >
+                <strong>Đánh giá đơn hàng</strong>
+            </h4>
+
+            <form onSubmit={handleSubmit}>
+                {orderBooks.map((book, index) => (
+                    <div key={index} className="mb-4">
+                        <div className="d-flex mb-3">
+                            <img
+                                src={book.bookId.images[0]}
+                                alt={book.bookId.title}
+                                className="img-thumbnail me-3"
+                                style={{ width: 100, height: 100, objectFit: "cover" }}
+                            />
+                            <div>
+                                <h5>{book.bookId.title}</h5>
+                                <h5 style={{ color: "gray" }}>Tác giả: {book.bookId.author}</h5>
                             </div>
                         </div>
-                    ))}
-                    <div className="d-flex justify-content-between align-items-center mt-4">
-                        <button type="submit" className="btn btn-primary">
-                            Gửi đánh giá
-                        </button>
-                        <button type="button" className="btn btn-secondary" onClick={onClose}>
-                            Hủy
-                        </button>
+                        <div className="form-group">
+                            <label className="d-block">Đánh giá (sao):</label>
+                            <div className="rating-stars d-flex align-items-center">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <i
+                                        key={star}
+                                        className={`bi bi-star${reviews.find((r) => r.bookId === book.bookId._id).rating >= star
+                                            ? "-fill text-warning"
+                                            : ""
+                                            }`}
+                                        style={{ fontSize: "1.5rem", cursor: "pointer" }}
+                                        onClick={() => handleStarClick(book.bookId._id, star)}
+                                    ></i>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="form-group mt-3">
+                            <label>Bình luận:</label>
+                            <textarea
+                                className="form-control"
+                                rows="4"
+                                value={reviews.find((r) => r.bookId === book.bookId._id).comment}
+                                onChange={(e) =>
+                                    handleCommentChange(book.bookId._id, e.target.value)
+                                }
+                                required
+                            ></textarea>
+                        </div>
                     </div>
-                </form>
-            </div>
+                ))}
+                <div className="d-flex justify-content-between align-items-center mt-4">
+                    <button type="submit" className="btn btn-primary">
+                        Gửi đánh giá
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={onClose}>
+                        Hủy
+                    </button>
+                </div>
+            </form>
+          
         </div>
+
     );
 };
 

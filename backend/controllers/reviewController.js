@@ -64,7 +64,7 @@ const getReviewsByUser = async (req, res) => {
     const { userId } = req.params;
 
     try {
-        const reviews = await Review.find({ userId })
+        const reviews = await Review.find({ userId }).sort({createdAt:-1})
             .populate('bookId', 'title images') // Lấy thông tin sách
             .populate('userId', 'fullName image'); // Lấy thêm thông tin người dùng
 
