@@ -65,7 +65,7 @@ const AdDiscountForm = ({onClose}) => {
             setMaxUsage(null);
             delete updatedErrors['maxUsage'];
         }
-        else {
+        else if(field === "discountNotLimited" && !e.target.checked) {
             setIsUnlimited(false);
         }
         if (field === "maxUsage") {
@@ -125,7 +125,7 @@ const AdDiscountForm = ({onClose}) => {
 
         if (field === "isExpire" && e.target.checked) {
             setIsExpire(true)
-            setDateE('yyyy-mm-dd')
+            setDateE('yyyy-MM-dd')
             setDateExpire(null);
         }
         else if (field === "isExpire" && !e.target.checked) {
@@ -140,7 +140,7 @@ const AdDiscountForm = ({onClose}) => {
     useEffect(() => {
         if (dateE) {
             const dateTimeExpire = new Date(`${dateE}T${timeExpire}:00`);
-            const utcDateExpire = dateTimeExpire.toISOString(); // Chuyển sang UTC
+            const utcDateExpire = dateTimeExpire; // Chuyển sang UTC
             setDateExpire(utcDateExpire);
         }
     }, [dateE, timeExpire]);

@@ -30,10 +30,11 @@ function Checkout() {
     const [selectedShipping, setSelectedShipping] = useState('standard');
     const [selectedPayment, setSelectedPayment] = useState('');
     const [addressDetail, setAddressDetail] = useState('');
+    const [discountSelected, setDiscountSelected] = useState(null);
 
     const [showModal, setShowModal] = useState(false);
-    const [error, setError] = useState(''); 
-   
+    const [error, setError] = useState('');
+
     const paymentLogos = {
         cash: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731438956/ico_cashondelivery_olyccj.svg',
         VNPAY: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731438956/ico_vnpay_p7e5eq.svg',
@@ -41,11 +42,11 @@ function Checkout() {
         atm: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731419014/Logo-ATM.webp',
         momo: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731439476/momo_icon_ltl6ll.png'
     };
-    
+
 
     const handleChange = (e) => {
         setAddressDetail(e.target.value); // Cập nhật giá trị địa chỉ khi người dùng nhập
-        if(addressDetail.trim() !== '')
+        if (addressDetail.trim() !== '')
             setError('')
     };
 
@@ -144,7 +145,7 @@ function Checkout() {
         setSelectedWard(e.target.value);
     };
 
-    const handleShowDiscount = () =>{
+    const handleShowDiscount = () => {
         setShowModal(true)
         document.body.classList.add("no-scroll");
     }
@@ -154,57 +155,63 @@ function Checkout() {
         document.body.classList.remove("no-scroll");
     };
 
+    const closeModalWithDiscount = (selectedDiscount) => {
+        setDiscountSelected(selectedDiscount);
+        document.body.classList.remove("no-scroll");
+        setShowModal(false);  // Đóng modal
+    };
+
 
     const handleSubmit = async () => {
-         if (!selectedProvince || !selectedDistrict || !selectedWard) {
-             alert('Please select the full address');
-             return;
-         }
-    
-        if (addressDetail.trim() === '') { 
-            setError('Vui lòng nhập địa chỉ chi tiết'); 
+        if (!selectedProvince || !selectedDistrict || !selectedWard) {
+            alert('Please select the full address');
+            return;
+        }
+
+        if (addressDetail.trim() === '') {
+            setError('Vui lòng nhập địa chỉ chi tiết');
         } else {
-            setError(''); 
-    
-            const orderData ={
+            setError('');
+
+            const orderData = {
                 userId: user?._id,
                 address: `${addressDetail}, ${wards.find(w => w.id === selectedWard)?.full_name}, ${districts.find(d => d.id === selectedDistrict)?.full_name}, ${provinces.find(p => p.id === selectedProvince)?.full_name}`,
                 itemsPayment: items.map(item => ({
-                            bookId: item.bookId._id,
-                             quantity: item.quantity,
-                            price: item.price
-                        })),
-                discountCode:"SUMMER2024",
+                    bookId: item.bookId._id,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                discountCode: discountSelected.discountCode,
                 shippingFee: shippingFee,
                 totalPrice: totalPrice,
                 paymentMethod: selectedPayment
             }
-            
-    
+
+
             try {
                 // Call the createOrder API to submit the order
                 const response = await createOrder(orderData);
                 if (response.data.success) {
                     console.log(response.data.data._id)
-                    const orderId= response.data.data._id
-                
-                    if(selectedPayment ==='cash'){
+                    const orderId = response.data.data._id
+
+                    if (selectedPayment === 'cash') {
                         navigate(`/payment/success?orderId=${orderId}`)
                     }
-                if(selectedPayment ==='zalopay'){
-                    const zaloPayData = {orderId: orderId}
-                    const response = await createZaloPay(zaloPayData);
-                    console.log(response)
-                    const {order_url} = response.data;
-                    window.location.href = order_url;
-                }
-                if(selectedPayment ==='momo'){
-                    const momoData = {orderId: orderId}
-                    const response = await createMomoPay(momoData);
-                    console.log(response)
-                    const {payUrl} = response.data;
-                    window.location.href = payUrl;
-                }
+                    if (selectedPayment === 'zalopay') {
+                        const zaloPayData = { orderId: orderId }
+                        const response = await createZaloPay(zaloPayData);
+                        console.log(response)
+                        const { order_url } = response.data;
+                        window.location.href = order_url;
+                    }
+                    if (selectedPayment === 'momo') {
+                        const momoData = { orderId: orderId }
+                        const response = await createMomoPay(momoData);
+                        console.log(response)
+                        const { payUrl } = response.data;
+                        window.location.href = payUrl;
+                    }
 
                 } else {
                     console.log("Error: ", response.error || "Unknown error");
@@ -216,11 +223,11 @@ function Checkout() {
             }
         }
     };
-    
+
 
     return (
         <div className="container mt-5">
-           
+
             <div className="row">
                 <div className="col-md-6 mb-4">
 
@@ -285,9 +292,9 @@ function Checkout() {
                                 <label className="col-sm-6 col-form-label fw-bold">Địa chỉ nhận hàng</label>
                                 <div className="col-sm-6">
                                     <input type="text" placeholder=" số 123 đường Nguyễn Văn A..." className="form-control" onChange={handleChange}
-                    />
-                    {error && <small className="text-danger">{error}</small>} {/* Hiển thị thông báo lỗi nếu có */}
-                
+                                    />
+                                    {error && <small className="text-danger">{error}</small>} {/* Hiển thị thông báo lỗi nếu có */}
+
                                 </div>
                             </div>
                         </div>
@@ -323,7 +330,7 @@ function Checkout() {
                                         checked={selectedPayment === method}
                                         onChange={() => setSelectedPayment(method)}
                                     />
-                                    <img  src={paymentLogos[method]}  alt={`${method} logo`} className="me-2" style={{width:"32px"}} />
+                                    <img src={paymentLogos[method]} alt={`${method} logo`} className="me-2" style={{ width: "32px" }} />
                                     <label htmlFor={method} className="flex-grow-1 font-weight-medium">
                                         {method === 'cash' ? 'Thanh toán bằng tiền mặt khi nhận hàng' : method.toUpperCase()}
                                     </label>
@@ -368,24 +375,30 @@ function Checkout() {
                 <div className="bg-white p-4 rounded shadow-sm w-100">
                     <h1 className="h5 fw-bold mb-4">MÃ KHUYẾN MÃI/MÃ QUÀ TẶNG</h1>
                     <div className="form-inline mb-2">
-                        
+
                         <div className="d-flex align-items-center  mb-3 mt-3">
-    <input
-        type="text"
-        placeholder="Nhập mã khuyến mãi/Quà tặng"
-        className="form-control me-2 w-75" 
-        
-    />
-    <button className="btn btn-primary w-25 w-md-auto">Áp Dụng</button>
-</div>
+                            <input
+                                type="text"
+                                placeholder="Nhập mã khuyến mãi/Quà tặng"
+                                className="form-control me-2 w-75"
+
+                            />
+                            <button className="btn btn-primary w-25 w-md-auto">Áp Dụng</button>
+                        </div>
 
                     </div>
-                    <Link  className="text-primary" onClick={handleShowDiscount}>Chọn mã khuyến mãi</Link>
-                    
+                    <Link className="text-primary" onClick={handleShowDiscount}>Chọn mã khuyến mãi</Link>
+                    {discountSelected && (
+                <div>
+                    <h3>Mã giảm giá đã chọn:</h3>
+                    <p>{discountSelected.discountName}</p>
+                </div>
+            )}
+
                 </div>
             </div>
             <div style={{ height: "160px" }}></div>
-            <div className="w-100 bg-white p-3 border-top shadow-lg rounded-lg fixed-bottom" style={{zIndex:"1000"}}>
+            <div className="w-100 bg-white p-3 border-top shadow-lg rounded-lg fixed-bottom" style={{ zIndex: "1000" }}>
                 <h2 className="h5 font-weight-semibold text-gray-800">Thanh Toán Đơn Hàng</h2>
                 <div className="d-flex justify-content-between">
                     <div className="text-gray-700 small">Thành tiền</div>
@@ -411,10 +424,10 @@ function Checkout() {
                 </div>
             </div>
             {showModal && (
-                <div className="modal-overlay" style={{marginTop:"70px", zIndex:"1050"}}>
+                <div className="modal-overlay" style={{ marginTop: "70px", zIndex: "1050" }}>
                     <div className="modal-content">
                         <button className="close-btn" onClick={closeModal}>&times;</button>
-                        <Discount />
+                        <Discount onClose={closeModalWithDiscount} totalPrice={totalPrice} />
                     </div>
                 </div>
             )}

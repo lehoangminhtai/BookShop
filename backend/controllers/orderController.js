@@ -18,6 +18,7 @@ exports.createOrder = async (req, res) => {
             });
             if (discountResponse.success) {
                 discountAmount = discountResponse.discountAmount;
+                console.log(discountAmount)
                 discountId = discountResponse.discountCode; 
             }
 

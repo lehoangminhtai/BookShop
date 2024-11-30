@@ -151,7 +151,7 @@ exports.applyDiscount = async (req, res) => {
         }
 
         // Kiểm tra số lần sử dụng
-        if (discount.maxUsage > 0 && discount.usedBy.length >= discount.maxUsage) {
+        if (discount.maxUsage && discount.maxUsage > 0 && discount.usedBy.length >= discount.maxUsage) {
             return {
                 success: false,
                 message: 'Discount code usage limit reached'
@@ -159,7 +159,7 @@ exports.applyDiscount = async (req, res) => {
         }
 
         // Kiểm tra người dùng đã sử dụng mã chưa
-        if (discount.usedBy.includes(userId)) {
+        if (discount.usedBy.some(entry => entry.userId.toString() === userId.toString())) {
             return {
                 success: false,
                 message: 'You have already used this discount code'
@@ -175,7 +175,12 @@ exports.applyDiscount = async (req, res) => {
         }
 
         // Đảm bảo không vượt quá mức giảm giá tối đa
-        discountAmount = Math.min(discountAmount, discount.maxAmountDiscount);
+        if (discount.discountType === 'percentage') {
+            if(discount.maxAmountDiscount){
+                discountAmount = Math.min(discountAmount, discount.maxAmountDiscount);
+            }
+       
+        }
 
         // Ghi nhận người dùng đã sử dụng mã giảm giá
         await discount.incrementUsage(userId);
@@ -310,7 +315,7 @@ exports.getUnavailableDiscounts = async (req, res) => {
 exports.getDiscountsForUser = async (req,res) =>{
     try {
         const  {page = 1} = req.query  // Nhận số trang từ query (mặc định là 1)
-        const limit = 3; // Số lượng discount mỗi trang
+        const limit = 1; // Số lượng discount mỗi trang
         const skip = (page - 1) * limit;
 
         // Điều kiện lọc
@@ -331,25 +336,22 @@ exports.getDiscountsForUser = async (req,res) =>{
                 { dateExpire: { $gt: now } }, // dateExpire lớn hơn hiện tại
                 { dateExpire: { $eq: null } }  // dateExpire là null
             ],
+            dateStart: { $lte: now } ,
             discountFor: null  // discountFor là null
         };
 
         // Truy vấn với điều kiện lọc, phân trang, sắp xếp theo ngày mới nhất
         const discounts = await Discount.find(filterConditions)
             .sort({ createdAt: -1 }) // Sắp xếp mới nhất
-            .skip(skip) // Bỏ qua các bản ghi trước đó
-            .limit(limit); // Giới hạn số bản ghi
+            
 
         // Tổng số lượng discount phù hợp (dùng để tính tổng số trang)
         const totalDiscounts = await Discount.countDocuments(filterConditions);
 
         res.status(200).json({
-            discounts,
-            pagination: {
-                currentPage: parseInt(page),
-                totalPages: Math.ceil(totalDiscounts / limit),
-                totalDiscounts,
-            },
+            success:true,
+            discounts
+            
         });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi lấy danh sách mã giảm giá', error: error.message });
