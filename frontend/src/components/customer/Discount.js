@@ -3,26 +3,32 @@ import { useNavigate } from "react-router-dom";
 
 //service
 import { getDiscountForUser } from "../../services/discountService";
-
-const Discount = ({onClose, totalPrice }) => {
-    const navigate = useNavigate()
+//user
+import { useStateContext } from "../../context/UserContext";
+const Discount = ({ onClose, totalPrice, selectedDiscount }) => {
+    const { user } = useStateContext();
+    const navigate = useNavigate();
     const [discounts, setDiscounts] = useState([]);
     const [discountSelected, setDiscountSelected] = useState();
+    const [discountSelectedProp, setDiscountSelectedProp] = useState(selectedDiscount);
     const [showMore, setShowMore] = useState(false); // Trạng thái để điều khiển hiển thị discount thêm
-
+    
     useEffect(() => {
         fetchDiscounts();
     }, []);
 
-    useEffect(()=>{
-        if(discountSelected){
+    useEffect(() => {
+        if (discountSelected) {
             onClose(discountSelected);
         }
-    },[discountSelected, onClose])
+       
+    }, [discountSelected, onClose]);
 
     const fetchDiscounts = async () => {
         try {
-            const response = await getDiscountForUser();
+            const userId = user._id;
+            const data = { userId };
+            const response = await getDiscountForUser(data);
             if (response.data.success) {
                 setDiscounts(response.data.discounts);
             }
@@ -31,23 +37,29 @@ const Discount = ({onClose, totalPrice }) => {
         }
     };
 
-    const handleBuyMore = () =>{
+    const handleBuyMore = () => {
+        localStorage.removeItem('discount');
         document.body.classList.remove("no-scroll");
         navigate('/');
-        
     }
 
-    const handleSelectDiscount = (discount) =>{
-        if(totalPrice>=discount.minOfTotalPrice){
-            setDiscountSelected(discount)
+    const handleSelectDiscount = (discount) => {
+        if (totalPrice >= discount.minOfTotalPrice) {
+            setDiscountSelected(discount); // Chọn discount
+            localStorage.setItem('discount', JSON.stringify(discount));
         }
     }
+
+    const handleDeselectDiscount = () => {
+        setDiscountSelected(null); // Bỏ chọn discount
+        setDiscountSelectedProp(null)
+        localStorage.removeItem('discount');
+    };
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
 
-    // Hàm để toggle hiển thị "Xem thêm" và "Rút gọn"
     const toggleShowMore = () => {
         setShowMore(prevState => !prevState);
     };
@@ -58,10 +70,7 @@ const Discount = ({onClose, totalPrice }) => {
                 <div className="w-100">
                     <h5 className="text-primary text-center h5"><i className="fas fa-gift" style={{ color: "red" }}></i> CHỌN MÃ KHUYẾN MÃI</h5>
                     <div className="card-body">
-                        <div className="mb-4">
-                            <input type="text" className="form-control text-black" placeholder="Nhập mã khuyến mãi/Quà tặng" />
-                            <button className="btn btn-primary w-100 mt-3">Áp dụng</button>
-                        </div>
+                        
 
                         <div>
                             <h3 className="h5 mb-3">Mã giảm giá</h3>
@@ -90,7 +99,11 @@ const Discount = ({onClose, totalPrice }) => {
                                                 </div>
                                             )}
                                             {totalPrice >= discount.minOfTotalPrice ? (
-                                                <button className="btn btn-primary btn-sm ms-3 text-nowrap" onClick={(e) => handleSelectDiscount(discount)}>Áp dụng</button>
+                                                discountSelectedProp?.discountCode === discount.discountCode ? (
+                                                    <button className="btn btn-secondary" onClick={handleDeselectDiscount}>Bỏ Chọn</button>
+                                                ) : (
+                                                    <button className="btn btn-primary btn-sm ms-3 text-nowrap" onClick={() => handleSelectDiscount(discount)}>Áp dụng</button>
+                                                )
                                             ) : (
                                                 <button className="btn btn-primary btn-sm ms-3 text-nowrap" onClick={handleBuyMore}>Mua Thêm</button>
                                             )}
@@ -114,5 +127,6 @@ const Discount = ({onClose, totalPrice }) => {
         </div>
     );
 }
+
 
 export default Discount;

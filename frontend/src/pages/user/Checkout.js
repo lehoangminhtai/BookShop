@@ -12,6 +12,9 @@ import { createOrder } from '../../services/orderService';
 //component
 import Discount from '../../components/customer/Discount';
 
+//css
+import '../../css/user/Discount.scss'
+
 function Checkout() {
 
     const { user } = useStateContext();
@@ -28,18 +31,20 @@ function Checkout() {
     const [selectedWard, setSelectedWard] = useState(0);
 
     const [selectedShipping, setSelectedShipping] = useState('standard');
-    const [selectedPayment, setSelectedPayment] = useState('');
+    const [selectedPayment, setSelectedPayment] = useState('cash');
     const [addressDetail, setAddressDetail] = useState('');
+
     const [discountSelected, setDiscountSelected] = useState(null);
+    const [discountCode, setDiscountCode] = useState('');
 
     const [showModal, setShowModal] = useState(false);
     const [error, setError] = useState('');
 
     const paymentLogos = {
         cash: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731438956/ico_cashondelivery_olyccj.svg',
-        VNPAY: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731438956/ico_vnpay_p7e5eq.svg',
+       
         zalopay: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731419014/Logo-ZaloPay-Square_ktergo.webp',
-        atm: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731419014/Logo-ATM.webp',
+        
         momo: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731439476/momo_icon_ltl6ll.png'
     };
 
@@ -93,6 +98,9 @@ function Checkout() {
         console.log(itemsPayment)
         const total = itemsPayment.reduce((acc, item) => acc + item.price * item.quantity, 0);
         setTotalPrice(total);
+
+        const discount = JSON.parse(localStorage.getItem('discount')) || null;
+        setDiscountSelected(discount)
     }, []);
 
 
@@ -161,6 +169,34 @@ function Checkout() {
         setShowModal(false);  // Đóng modal
     };
 
+    const handleDeleteDiscount = () => {
+        setDiscountSelected(null)
+        localStorage.removeItem('discount');
+    }
+
+    const handleCalculateDiscount = () => {
+        if (discountSelected) {
+            const discount = discountSelected;
+            let discountAmount = 0;
+            if (discount.discountType === 'percentage') {
+                discountAmount = (totalPrice * discount.percent) / 100;
+            } else if (discount.discountType === 'amount') {
+                discountAmount = discount.amount;
+            }
+
+            // Đảm bảo không vượt quá mức giảm giá tối đa
+            if (discount.discountType === 'percentage') {
+                if (discount.maxAmountDiscount) {
+                    discountAmount = Math.min(discountAmount, discount.maxAmountDiscount);
+                }
+
+            }
+            return discountAmount
+        }
+        else{
+            return 0;
+        }
+    }
 
     const handleSubmit = async () => {
         if (!selectedProvince || !selectedDistrict || !selectedWard) {
@@ -320,7 +356,7 @@ function Checkout() {
                         </div>
                         <div className="bg-white p-4 rounded shadow">
                             <h2 className="fw-bold text-lg mb-4">PHƯƠNG THỨC THANH TOÁN</h2>
-                            {['cash', 'VNPAY', 'zalopay', 'atm', 'momo'].map(method => (
+                            {['cash',  'zalopay',  'momo'].map(method => (
                                 <div className="payment-option d-flex align-items-center mb-3" key={method}>
                                     <input
                                         type="radio"
@@ -389,11 +425,57 @@ function Checkout() {
                     </div>
                     <Link className="text-primary" onClick={handleShowDiscount}>Chọn mã khuyến mãi</Link>
                     {discountSelected && (
-                <div>
-                    <h3>Mã giảm giá đã chọn:</h3>
-                    <p>{discountSelected.discountName}</p>
-                </div>
-            )}
+                        <div class="container mt-5">
+                            <div class="d-flex justify-content-center row">
+                                <div class="col-md-6">
+                                    <div class="coupon p-3" style={{ background: "#EBE3D8", position: 'relative' }}>
+                                        <button
+                                            onClick={handleDeleteDiscount}
+
+                                            style={{
+                                                position: 'absolute',
+                                                top: '-15px',   // Điều chỉnh để nó nửa nằm ngoài
+                                                right: '-3px', // Điều chỉnh để nó nửa nằm ngoài
+                                                background: 'transparent',
+                                                border: 'none',
+                                                fontSize: '24px',
+                                                color: 'black',
+                                                cursor: 'pointer',
+                                                zIndex: 10
+                                            }}
+
+
+                                        >
+                                            &times;
+                                        </button>
+                                        <div class="row no-gutters mt-2">
+                                            <div class="col-md-4 border-right">
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <i className='fas fa-gift text-black'></i>
+                                                    <span class="d-block mt-1 fw-bold text-black">Book</span>
+                                                    <span class="fw-bold text-black">Shop</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div>
+                                                    <div class="d-flex flex-row justify-content-end off">
+                                                        <h1>{discountSelected.discountName}</h1>
+                                                    </div>
+                                                    <div class="d-flex flex-row justify-content-between off px-3 p-2">
+                                                        <span></span>
+                                                        <span class="border border-info px-3 rounded" style={{ color: 'blue' }}>
+                                                            Giảm {discountSelected.discountType === 'percentage' ? discountSelected.percent + ' %' : formatCurrency(discountSelected.amount)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
 
                 </div>
             </div>
@@ -408,16 +490,24 @@ function Checkout() {
                     <div className="text-gray-700 small">Phí vận chuyển (Giao hàng tiêu chuẩn)</div>
                     <div className="text-gray-700 font-weight-medium small">{shippingFee.toLocaleString()} đ</div>
                 </div>
+                {
+                    discountSelected && (
+                        <div className="d-flex justify-content-between">
+                            <div className="text-gray-700 small">Giảm giá</div>
+                            <div className="text-gray-700 font-weight-medium small">{handleCalculateDiscount().toLocaleString()} đ</div>
+                        </div>
+                    )
+                }
                 <div className="d-flex justify-content-between border-top pt-2 mt-2">
                     <div className="fw-bold text-gray-900 h6">Tổng Số Tiền (gồm VAT)</div>
-                    <div className="fw-bold text-warning h6">{(totalPrice + shippingFee).toLocaleString()} đ</div>
+                    <div className="fw-bold text-warning h6">{(totalPrice + shippingFee - handleCalculateDiscount()).toLocaleString()} đ</div>
                 </div>
                 <div className="d-flex align-items-center justify-content-between mt-3">
                     <div className="form-check">
                         <input type="checkbox" className="form-check-input" id="termsCheckbox" checked />
                         <label className="form-check-label" htmlFor="termsCheckbox">
                             Bằng việc tiến hành mua hàng, bạn đã đồng ý với
-                            <a href="#" className="text-primary ml-1">Điều khoản & Điều kiện của Pahasa.com</a>
+                            <a className="text-primary ml-1">Điều khoản & Điều kiện của Pahasa.com</a>
                         </label>
                     </div>
                     <button className="btn btn-danger font-weight-semibold px-4" onClick={handleSubmit} >Xác nhận thanh toán</button>
@@ -427,7 +517,7 @@ function Checkout() {
                 <div className="modal-overlay" style={{ marginTop: "70px", zIndex: "1050" }}>
                     <div className="modal-content">
                         <button className="close-btn" onClick={closeModal}>&times;</button>
-                        <Discount onClose={closeModalWithDiscount} totalPrice={totalPrice} />
+                        <Discount onClose={closeModalWithDiscount} totalPrice={totalPrice} selectedDiscount={discountSelected} />
                     </div>
                 </div>
             )}

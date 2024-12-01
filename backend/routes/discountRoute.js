@@ -9,7 +9,9 @@ router.get('/', discountController.getAllDiscounts);
 
 router.get('/available', discountController.getAvailableDiscounts);
 
-router.get('/for-user', discountController.getDiscountsForUser);
+router.post('/for-user', discountController.getDiscountsForUser);
+
+router.post('/search', discountController.searchDiscountsForUser);
 
 router.get('/:id', discountController.getDiscountById);
 

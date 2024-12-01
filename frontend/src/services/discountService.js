@@ -49,9 +49,24 @@ export const deleteDiscount = async (discountId) => {
 };
 export const getAllDiscount = async () => await API.get('/')
 
-export const getDiscountForUser = async () => {
+export const getDiscountForUser = async (dataDiscount) => {
     try {
-        const response = await API.get(`/for-user`);
+        const response = await API.post(`/for-user`,dataDiscount);
+        return response;
+    } catch (error) {
+
+        if (error.response) {
+
+            return error.response;
+        } else {
+
+            return { success: false, message: 'Có lỗi xảy ra khi kết nối tới server.' };
+        }
+    }
+};
+export const searchDiscountForUser = async (dataDiscount) => {
+    try {
+        const response = await API.post(`/search`,dataDiscount);
         return response;
     } catch (error) {
 

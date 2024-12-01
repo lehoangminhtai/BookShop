@@ -150,6 +150,7 @@ const Cart = () => {
             });
         }
         localStorage.setItem('itemsPayment', JSON.stringify(itemsToCheckOut));
+        localStorage.removeItem('discount');
         console.log(itemsToCheckOut)
         navigate("/checkout");
     };
