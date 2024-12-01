@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
-import { useBookContext } from "../hooks/useBookContext";
 import { useNavigate } from 'react-router-dom';
+
+import { useBookContext } from "../hooks/useBookContext";
+import { useStateContext } from '../context/UserContext'
+//service
+import { addItemToCart } from '../services/cartService';
 
 const BookDetail = ({ book }) => {
   const { dispatch } = useBookContext();
   const navigate = useNavigate();
   const [bookSale, setBookSale] = useState({ price: 0, discount: 0, status: 'available' });
+  const { user } = useStateContext();
 
   useEffect(() => {
     const fetchBookSaleDetails = async () => {
@@ -30,9 +35,46 @@ const BookDetail = ({ book }) => {
     navigate(`/chi-tiet/${id}`);
   };
 
+  const handleAddItemToCart = async (itemData) => {
+    try {
+        await addItemToCart(itemData);
+    }
+    catch (error) {
+        console.log("lỗi, không thể thêm giỏ hàng", error)
+    }
+}
+
+  const addToCart = () => {
+    if (user) {
+        const itemData = { userId: user._id, bookId: book._id, quantity: 1, price: priceDiscount }
+        handleAddItemToCart(itemData);
+    }
+    else {
+
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        const existingProduct = cart.find(item => item.id === book._id);
+        if (existingProduct) {
+            // Nếu có, cập nhật số lượng sản phẩm trong giỏ hàng
+            existingProduct.quantity += 1;
+        } else {
+            // Nếu không, thêm sản phẩm mới vào giỏ hàng
+            cart.push({ id: book._id, quantity: 1, price: priceDiscount });
+        }
+
+        // Lưu giỏ hàng vào Local Storage
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }
+   
+};
+
+
   const handleAddToCart = () => {
-    alert('add to cart');
+    addToCart()
   };
+
 
   return (
     <div className="tw-w-full tw-max-w-sm tw-bg-white tw-border tw-border-gray-200 tw-rounded-lg tw-shadow tw-dark:bg-gray-800 tw-dark:border-gray-700" onClick={() => handleProductClick(book._id)}>
