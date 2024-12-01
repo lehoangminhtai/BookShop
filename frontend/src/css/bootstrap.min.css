@@ -5968,6 +5968,10 @@ fieldset:disabled .btn {
 
 .modal-open {
     overflow: hidden
+
+}
+body .modal-open{
+    padding-right: 0 !important;
 }
 
 .modal-open .modal {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from "react-toastify";
 
 import { useBookContext } from "../hooks/useBookContext";
 import { useStateContext } from '../context/UserContext'
@@ -73,6 +74,20 @@ const BookDetail = ({ book }) => {
 
   const handleAddToCart = () => {
     addToCart()
+    toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+      Sản phẩm đã được thêm vào giỏ hàng
+     
+    </div>, 
+    {
+      position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+      autoClose: 1500, // Đóng sau 3 giây
+      hideProgressBar: true, // Ẩn thanh tiến độ
+      closeButton: false, // Ẩn nút đóng
+      className: "custom-toast", // Thêm class để tùy chỉnh CSS
+      draggable: false, // Tắt kéo di chuyển
+      rtl: false, // Không hỗ trợ RTL
+    }
+  );
   };
 
 
@@ -111,6 +126,7 @@ const BookDetail = ({ book }) => {
           </button>
         </div>
       </div>
+      <ToastContainer/>
     </div>
   );
 };

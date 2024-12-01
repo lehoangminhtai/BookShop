@@ -1,12 +1,15 @@
 import { useParams } from 'react-router-dom';
+import { toast, ToastContainer } from "react-toastify";
 import { useEffect, useState } from 'react';
 import { fetchBook } from '../../services/bookService';
 import { addItemToCart } from '../../services/cartService';
 import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
 import '../../css/user/ProductDetail.scss'
-import { Modal } from 'bootstrap'
+
 import BookReviews from '../../components/BookReviews';
+
+
 const ProductDetail = () => {
     const { productId } = useParams();
     const [bookDetail, setBookDetail] = useState(null);
@@ -125,26 +128,29 @@ const ProductDetail = () => {
         }
        
         setAmount(1);
-        showModal();
+        toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+            Sản phẩm đã được thêm vào giỏ hàng
+           
+          </div>, 
+          {
+            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+            autoClose: 1500, // Đóng sau 3 giây
+            hideProgressBar: true, // Ẩn thanh tiến độ
+            closeButton: false, // Ẩn nút đóng
+            className: "custom-toast", // Thêm class để tùy chỉnh CSS
+            draggable: false, // Tắt kéo di chuyển
+            rtl: false, // Không hỗ trợ RTL
+          }
+        );
+       
     };
 
 
-    const showModal = () => {
-        const modal = new Modal(document.getElementById('notificationModal'));
-        modal.show();
-        setTimeout(() => {
-            modal.hide();
-            const backdrop = document.querySelector('.modal-backdrop');
-            if (backdrop) {
-                backdrop.remove();
-            }
-        }, 1000);
-    };
+   
 
 
     const handleCheckout = (product) => {
-       // addToCart(product)
-       // navigate('/cart')
+       
        const productsData = {};
        productsData[product._id] = bookDetail;
        const itemData = {
@@ -163,22 +169,6 @@ const ProductDetail = () => {
 
     return (
         <div className="container mt-4">
-            <div
-                className="modal fade"
-                id="notificationModal"
-                tabIndex="-1"
-                aria-labelledby="notificationModalLabel"
-                aria-hidden="true"
-            >
-                <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content bg-dark text-white border-0">
-                        <div className="modal-body d-flex justify-content-center align-items-center gap-2">
-                            Sản phẩm đã được thêm vào giỏ hàng
-                            <span className="tick-icon"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <div className="row">
                 <div className="col-md-4">
@@ -297,6 +287,7 @@ const ProductDetail = () => {
                     <BookReviews bookId = {productId}/>
                 </div>
             </div>
+            <ToastContainer/>
         </div>
     );
 }
