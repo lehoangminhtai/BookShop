@@ -143,9 +143,22 @@ const ProductDetail = () => {
 
 
     const handleCheckout = (product) => {
-        addToCart(product)
-        navigate('/cart')
+       // addToCart(product)
+       // navigate('/cart')
+       const productsData = {};
+       productsData[product._id] = bookDetail;
+       const itemData = {
+        bookId: productsData[product._id],
+        title: product.title,
+        quantity: 1,
+        price: priceDiscount
+    };
 
+    // Lưu vào localStorage
+    localStorage.setItem('itemsPayment', JSON.stringify([itemData])); // Giả sử chỉ có 1 sản phẩm trong lúc này
+
+    // Sau khi lưu xong, chuyển hướng đến trang thanh toán
+    navigate('/checkout');
     }
 
     return (
