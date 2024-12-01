@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from "react-toastify";
 
 import { useStateContext } from '../../context/UserContext'
 
@@ -8,6 +9,7 @@ import { getShippingFeeByProvinceId } from '../../services/shippingService';
 import { createZaloPay } from '../../services/zaloPayService';
 import { createMomoPay } from '../../services/momoService';
 import { createOrder } from '../../services/orderService';
+import { searchDiscountForUser } from '../../services/discountService';
 
 //component
 import Discount from '../../components/customer/Discount';
@@ -39,6 +41,7 @@ function Checkout() {
 
     const [showModal, setShowModal] = useState(false);
     const [error, setError] = useState('');
+    const [errors, setErrors] = useState({});
 
     const paymentLogos = {
         cash: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731438956/ico_cashondelivery_olyccj.svg',
@@ -55,18 +58,30 @@ function Checkout() {
             setError('')
     };
 
+    
+
+
+    const handleInputChange = (e, field) => {
+        const value = e.target.value;
+        const updatedErrors = { ...errors };
+
+        if (value.trim() !== '') {
+            delete updatedErrors[field];
+        }
+
+
+        if (field === "discountCode") {
+            setDiscountCode(e.target.value.toUpperCase());
+        }
+        setErrors(updatedErrors);
+    }
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
 
     //useEffect
-    useEffect(() => {
-        // Lấy dữ liệu từ Local Storage
-        const itemsPayment = JSON.parse(localStorage.getItem('itemsPayment')) || [];
-        setItems(itemsPayment);
-    }, []);
-
+    
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
@@ -92,6 +107,7 @@ function Checkout() {
         }
     }, [user, navigate]);
 
+    //get itemPayment
     useEffect(() => {
         const itemsPayment = JSON.parse(localStorage.getItem('itemsPayment')) || [];
         setItems(itemsPayment);
@@ -101,9 +117,11 @@ function Checkout() {
 
         const discount = JSON.parse(localStorage.getItem('discount')) || null;
         setDiscountSelected(discount)
+       
+        
     }, []);
 
-
+   
 
     const handleProvinceChange = async (e) => {
         const provinceId = e.target.value;
@@ -163,6 +181,12 @@ function Checkout() {
         document.body.classList.remove("no-scroll");
     };
 
+    useEffect(()=>{
+        const discount = JSON.parse(localStorage.getItem('discount')) || null;
+        setDiscountSelected(discount)
+       
+    },[closeModal])
+
     const closeModalWithDiscount = (selectedDiscount) => {
         setDiscountSelected(selectedDiscount);
         document.body.classList.remove("no-scroll");
@@ -172,6 +196,75 @@ function Checkout() {
     const handleDeleteDiscount = () => {
         setDiscountSelected(null)
         localStorage.removeItem('discount');
+    }
+
+    const handleSearchDiscount = async (event) =>{
+        event.preventDefault();
+        const newErrors = {};
+
+        if (!discountCode) newErrors.discountCode = 'Vui lòng nhập mã giảm giá';
+
+        setErrors(newErrors);
+        if (Object.keys(newErrors).length > 0) {
+            return
+        }
+        try {
+            const userId = user?._id
+            const dataDiscount = {userId, discountCode}
+
+            const response = await searchDiscountForUser(dataDiscount);
+            console.log(response)
+            if(response.data.success){
+                const discount = response.data.discount
+                setDiscountSelected(discount)
+                localStorage.setItem('discount', JSON.stringify(discount));
+                toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                    Mã giảm đã được áp vào đơn hàng
+                  </div>, 
+                  {
+                    position: "top-center", 
+                    autoClose: 1500, 
+                    hideProgressBar: true, 
+                    closeButton: false, 
+                    className: "custom-toast",
+                    draggable: false, 
+                    rtl: false, 
+                  }
+                );
+                setDiscountCode('')
+            }
+            else if(!response.data.success) {
+               
+                toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                    Mã {discountCode} không hợp lệ
+                  </div>, 
+                  {
+                    position: "top-center", 
+                    autoClose: 1500, 
+                    hideProgressBar: true, 
+                    closeButton: false, 
+                    className: "custom-toast",
+                    draggable: false, 
+                    rtl: false, 
+                  }
+                );
+            }
+
+        } catch (error) {
+            toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                Có lỗi trong lúc áp mã giảm
+              </div>, 
+              {
+                position: "top-center", 
+                autoClose: 1500, 
+                hideProgressBar: true, 
+                closeButton: false, 
+                className: "custom-toast",
+                draggable: false, 
+                rtl: false, 
+              }
+            );
+        }
     }
 
     const handleCalculateDiscount = () => {
@@ -412,20 +505,25 @@ function Checkout() {
                     <h1 className="h5 fw-bold mb-4">MÃ KHUYẾN MÃI/MÃ QUÀ TẶNG</h1>
                     <div className="form-inline mb-2">
 
-                        <div className="d-flex align-items-center  mb-3 mt-3">
-                            <input
-                                type="text"
-                                placeholder="Nhập mã khuyến mãi/Quà tặng"
-                                className="form-control me-2 w-75"
+                    <div className="d-flex flex-column mb-3 mt-3">
+    <div className="d-flex">
+        <input
+            type="text"
+            placeholder="Nhập mã khuyến mãi/Quà tặng"
+            className={`form-control ${errors.discountCode ? 'is-invalid' : ''} mb-1 me-1`}
+            value={discountCode}
+            onChange={(e) => handleInputChange(e, 'discountCode')}
+        />
+        <button className="btn btn-primary w-25 w-md-auto" onClick={handleSearchDiscount}>Áp Dụng</button>
+    </div>
+    {errors.discountCode && <div className="invalid-feedback d-block">{errors.discountCode}</div>}
+</div>
 
-                            />
-                            <button className="btn btn-primary w-25 w-md-auto">Áp Dụng</button>
-                        </div>
 
                     </div>
                     <Link className="text-primary" onClick={handleShowDiscount}>Chọn mã khuyến mãi</Link>
                     {discountSelected && (
-                        <div class="container mt-5">
+                        <div class="container mt-3">
                             <div class="d-flex justify-content-center row">
                                 <div class="col-md-6">
                                     <div class="coupon p-3" style={{ background: "#EBE3D8", position: 'relative' }}>
@@ -514,13 +612,14 @@ function Checkout() {
                 </div>
             </div>
             {showModal && (
-                <div className="modal-overlay" style={{ marginTop: "70px", zIndex: "1050" }}>
+                <div className="modal-overlay" style={{ marginTop: '20px', zIndex: "1050" }}>
                     <div className="modal-content">
                         <button className="close-btn" onClick={closeModal}>&times;</button>
                         <Discount onClose={closeModalWithDiscount} totalPrice={totalPrice} selectedDiscount={discountSelected} />
                     </div>
                 </div>
             )}
+            <ToastContainer/>
         </div>
     );
 }

@@ -382,15 +382,23 @@ exports.searchDiscountsForUser = async (req,res) =>{
         };
 
         // Truy vấn với điều kiện lọc, phân trang, sắp xếp theo ngày mới nhất
-        const discounts = await Discount.find(filterConditions)
+        const discount = await Discount.findOne(filterConditions)
             .sort({ createdAt: -1 }) // Sắp xếp mới nhất
             
-
-        res.status(200).json({
-            success:true,
-            discounts
-            
-        });
+        if(discount){
+            res.status(200).json({
+                success:true,
+                discount
+                
+            });
+        }
+        else{
+            res.status(500).json({
+                success:false,
+               message: `Mã ${discountCode} không hợp lệ`
+            });
+        }
+       
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi lấy danh sách mã giảm giá', error: error.message });
     }
