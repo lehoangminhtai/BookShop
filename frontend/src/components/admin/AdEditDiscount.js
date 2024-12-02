@@ -64,6 +64,9 @@ const AdEditDiscount = ({ onClose, discountData }) => {
     if(!maxUsage){
         setIsUnlimited(true)
     }
+    if(!dateExpire){
+      setIsExpire(true)
+    }
   }, [discountFor, maxUsage]);
 
   //Chuyển sang ngày giờ
@@ -96,11 +99,11 @@ const AdEditDiscount = ({ onClose, discountData }) => {
 
   useEffect(() => {
     if (dateE) {
-      const dateTimeExpire = new Date(`${dateE}T${timeExpire}:00`);
-      const utcDateExpire = dateTimeExpire.toISOString(); // Convert to UTC
-      setDateExpire(utcDateExpire);
+        const dateTimeExpire = new Date(`${dateE}T${timeExpire}:00`);
+        const utcDateExpire = dateTimeExpire; // Chuyển sang UTC
+        setDateExpire(utcDateExpire);
     }
-  }, [dateE, timeExpire]);
+}, [dateE, timeExpire]);
 
   useEffect(() => {
     if (dateS) {
@@ -460,6 +463,7 @@ const AdEditDiscount = ({ onClose, discountData }) => {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="neverExpiredCheck"
+                                checked={isExpire}
                                 onChange={(e) => handleInputChange(e, 'isExpire')}
                             />
                             <label
