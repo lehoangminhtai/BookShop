@@ -20,6 +20,7 @@ const momoRoutes = require('./routes/momoRoute')
 const paymentRoutes = require('./routes/paymentRoute')
 const reviewRoute = require('./routes/reviewRoute');
 const accountRoute = require('./routes/accountRoute');
+const addressRoutes = require('./routes/addressRoute');
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
@@ -53,6 +54,8 @@ app.use('/api/momo', momoRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoute);
 app.use('/api/account', accountRoute);
+app.use('/api/user/addresses', addressRoutes);
+
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);
