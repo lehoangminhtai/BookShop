@@ -5,7 +5,7 @@ const StateContext = createContext();
 
 export const ContextProvider = ({ children }) => {
 
-    const initialUserState = { name: '', email: '',phone:'', password: '',address:'', confirmPassword: '', registerOTP: '', forgetPasswordOTP: '' }
+    const initialUserState = { name: '', email: '',phone:'', password: '', confirmPassword: '', registerOTP: '', forgetPasswordOTP: '' }
     const initialErrorObj = { login: '', register: '', sendRegisterOTP: '', sendForgetPasswordOTP: '', changePassword: '' }
 
     const [user, setUser] = useState(Cookie.get('profile') ? JSON.parse(Cookie.get('profile')) : null)

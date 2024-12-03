@@ -249,17 +249,7 @@ const Auth = () => {
                           />
                         </div>
 
-                        {/* Địa chỉ */}
-                        <div className="tw-relative">
-                          <label htmlFor="address" className="tw-block tw-mb-2 tw-text-lg tw-font-medium tw-text-gray-900 tw-dark:text-white">Địa chỉ</label>
-                          <i className="fa fa-map-marker tw-absolute tw-top-10 tw-right-3 tw-text-gray-400"></i>
-                          <Input
-                            attribute="address"
-                            type="text"
-                            placeholder="Địa chỉ..."
-                            className="tw-pl-10 tw-transition-all tw-duration-200 tw-ease-in-out tw-border-b-2 tw-border-gray-300 focus:tw-border-blue-500 focus:tw-shadow-md"
-                          />
-                        </div>
+                       
 
                         {/* Mật khẩu */}
                         <div className="tw-relative">

@@ -65,7 +65,7 @@ const otpGenerator = require('otp-generator');
 
 const register = async (req, res) => {
     try {
-        const {name, email, phone, password, address, otp } = req.body
+        const {name, email, phone, password,  otp } = req.body
         if (!name || !email || !password || !otp) return res.status(400).json({ message: 'make sure to provide all the fieds (name, email, password, otp)', success: false })
         if (!validator.isEmail(email)) return res.status(400).json({ message: `email pattern failed. Please provide a valid email.`, success: false })
 
@@ -87,7 +87,7 @@ const register = async (req, res) => {
         const fullName = name;
         if (isValidOTP) {
             const hashedPassword = await bcrypt.hash(password, 12)
-            const newUser = new User({ fullName, email, phone, password:hashedPassword , address })
+            const newUser = new User({ fullName, email, phone, password:hashedPassword  })
 
             await newUser.generateAuthToken()
 
@@ -102,7 +102,7 @@ const register = async (req, res) => {
 
     }
     catch (error) {
-        res.status(404).json({ message: 'error in register - controllers/user.js', error, success: false })
+        res.status(404).json({ message: error+ 'error in register - controllers/user.js', error, success: false })
     }
 }
 

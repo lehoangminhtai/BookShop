@@ -2,7 +2,7 @@ import * as api from "../api/UserApi"
 import { createCartSer, addItemToCart } from "../services/cartService"
 import { REGISTER, LOGIN, LOGOUT, SEND_OTP, CHANGE_PASSWORD, START_LOADING, END_LOADING } from "../constants/Auth"
 
-const initialUserState = { name: '', email: '',phone:'', password: '',address:'', confirmPassword: '', registerOTP: '', forgetPasswordOTP: '' }
+const initialUserState = { name: '', email: '',phone:'', password: '', confirmPassword: '', registerOTP: '', forgetPasswordOTP: '' }
 const initialErrorObj = { login: '', register: '', sendRegisterOTP: '', sendForgetPasswordOTP: '', changePassword: '' }
 
 
