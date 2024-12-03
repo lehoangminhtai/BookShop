@@ -2590,6 +2590,12 @@ textarea.form-control-lg {
     transition: background-position .15s ease-in-out
 }
 
+.disabled-link{
+    pointer-events: none; 
+    color: #aaa; 
+    text-decoration: none;
+}
+
 @media(prefers-reduced-motion: reduce) {
     .form-switch .form-check-input {
         transition: none
