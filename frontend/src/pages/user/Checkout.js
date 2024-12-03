@@ -537,7 +537,22 @@ function Checkout() {
     }
 
     const handleSubmit = async () => {
-
+        if(!addressSelected){
+            toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                Vui lòng chọn địa chỉ nhận hàng hoặc thêm mới
+            </div>,
+                {
+                    position: "top-center",
+                    autoClose: 1500,
+                    hideProgressBar: true,
+                    closeButton: false,
+                    className: "custom-toast",
+                    draggable: false,
+                    rtl: false,
+                }
+            );
+            return 
+        }
         const orderData = {
             userId: user?._id,
             address: `${street}, ${ward}, ${district}, ${province}`,
