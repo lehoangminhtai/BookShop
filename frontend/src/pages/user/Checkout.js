@@ -306,7 +306,11 @@ function Checkout() {
         if (defaultAddress && addressSelected === null) {
             setAddressSelected(defaultAddress._id);
             setSelectedProvince(defaultAddress.idProvince)
-            console.log(addressSelected)
+            setStreet(defaultAddress.street)
+            setWard(defaultAddress.ward)
+            setDistrict(defaultAddress.district)
+            setProvince(defaultAddress.province)
+           
         }
     }, [addresses, addressSelected]);
 
