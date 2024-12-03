@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useBookContext } from "../hooks/useBookContext";
 import { fetchBooks } from "../services/bookService";
+import { getBookSales } from "../services/bookSaleService";
 
 
 import '../css/bootstrap.min.css'
@@ -12,6 +13,7 @@ import BookForm from "../components/BookForm";
 const Home = () => {
 
     const { books, dispatch } = useBookContext();
+    const [bookSales, setBookSales] = useState([])
     useEffect(() => {
         const getBooks = async () => {
             try {
@@ -38,6 +40,18 @@ const Home = () => {
         { src: "https://placehold.co/64x64", alt: "Sản Phẩm Mới icon", label: "Sản Phẩm Mới" }
     ];
    
+    const fetchBookSales = async () =>{
+        try {
+            const response = await getBookSales();
+            setBookSales(response.data)
+        } catch (error) {
+            
+        }
+    }
+
+    useEffect(()=>{
+        fetchBookSales()
+    })
 
     return (
         <div >
@@ -179,9 +193,9 @@ const Home = () => {
             </div>
             <div className="container mt-5">
                 <div className="row">
-                    {books && books.map(book => (
+                    {bookSales && bookSales.map(book => (
                         <div key={book._id} className="col-md-4 col-sm-6 col-lg-3">
-                            <BookDetail  book={book} />
+                            <BookDetail  book={book.bookId} />
                         </div>
                     ))}
                 </div>

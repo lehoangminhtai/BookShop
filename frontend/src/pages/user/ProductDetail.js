@@ -126,45 +126,62 @@ const ProductDetail = () => {
             // Lưu giỏ hàng vào Local Storage
             localStorage.setItem('cart', JSON.stringify(cart));
         }
-       
+
         setAmount(1);
         toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
             Sản phẩm đã được thêm vào giỏ hàng
-           
-          </div>, 
-          {
-            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
-            autoClose: 1500, // Đóng sau 3 giây
-            hideProgressBar: true, // Ẩn thanh tiến độ
-            closeButton: false, // Ẩn nút đóng
-            className: "custom-toast", // Thêm class để tùy chỉnh CSS
-            draggable: false, // Tắt kéo di chuyển
-            rtl: false, // Không hỗ trợ RTL
-          }
+
+        </div>,
+            {
+                position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                autoClose: 1500, // Đóng sau 3 giây
+                hideProgressBar: true, // Ẩn thanh tiến độ
+                closeButton: false, // Ẩn nút đóng
+                className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                draggable: false, // Tắt kéo di chuyển
+                rtl: false, // Không hỗ trợ RTL
+            }
         );
-       
+
     };
 
 
-   
+
 
 
     const handleCheckout = (product) => {
-       
-       const productsData = {};
-       productsData[product._id] = bookDetail;
-       const itemData = {
-        bookId: productsData[product._id],
-        title: product.title,
-        quantity: 1,
-        price: priceDiscount
-    };
+        if (bookSale.quantity > 0) {
+            const productsData = {};
+            productsData[product._id] = bookDetail;
+            const itemData = {
+                bookId: productsData[product._id],
+                title: product.title,
+                quantity: amount,
+                price: priceDiscount
+            };
 
-    // Lưu vào localStorage
-    localStorage.setItem('itemsPayment', JSON.stringify([itemData])); // Giả sử chỉ có 1 sản phẩm trong lúc này
+            // Lưu vào localStorage
+            localStorage.setItem('itemsPayment', JSON.stringify([itemData])); // Giả sử chỉ có 1 sản phẩm trong lúc này
 
-    // Sau khi lưu xong, chuyển hướng đến trang thanh toán
-    navigate('/checkout');
+            // Sau khi lưu xong, chuyển hướng đến trang thanh toán
+            navigate('/checkout');
+        }
+        else{
+            toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                Sản phẩm đã hết hàng vui lòng quay lại sau
+    
+            </div>,
+                {
+                    position: "top-center",
+                    autoClose: 1500,
+                    hideProgressBar: true,
+                    closeButton: false, 
+                    className: "custom-toast", 
+                    draggable: false,
+                    rtl: false, 
+                }
+            );
+        }
     }
 
     return (
@@ -180,12 +197,12 @@ const ProductDetail = () => {
                             style={{ height: "300px", objectFit: "cover" }}
                         />
                     </div>
-                    <div className="d-flex align-items-center mt-3">
-                        <label className="me-2" htmlFor="quantity">Số lượng:</label>
+                    <div className="d-flex justify-content-center align-items-center mt-3">
+
                         <button className="btn btn-outline-secondary" onClick={decreaseAmount}>-</button>
                         <input className="form-control mx-2 text-center" id="quantity" type="text" value={amount} style={{ width: "50px" }} onChange={(e) => {
                             const value = (Number(e.target.value))
-                            if (value <= 50) {
+                            if (value <= bookSale.quantity) {
                                 setAmount(value)
                             }
                         }
@@ -193,45 +210,74 @@ const ProductDetail = () => {
                         />
                         <button className="btn btn-outline-secondary" onClick={increaseAmount}>+</button>
                     </div>
-                    <div className="mt-3">
-                        <button className="btn btn-outline-danger me-2" onClick={() => addToCart(bookDetail)}><i className="fas fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
-                        <button className="btn btn-danger w-50" onClick={() => handleCheckout(bookDetail)}>Mua ngay</button>
-                    </div>
+                    <div className="d-flex justify-content-between mt-3">
+    <button 
+        className="btn btn-outline-danger w-50 me-2 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap" 
+        onClick={() => addToCart(bookDetail)}
+    >
+        <i className="fas fa-shopping-cart me-2"></i> Thêm vào giỏ hàng
+    </button>
+    <button 
+        className="btn btn-danger w-50 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap" 
+        onClick={() => handleCheckout(bookDetail)}
+    >
+        Mua ngay
+    </button>
+</div>
+
 
                 </div>
 
                 {/* Phần chi tiết sản phẩm với cuộn riêng */}
                 <div className="col-md-8">
                     <div className="bg-white p-3 rounded shadow-sm" style={{ height: "600px", overflowY: "auto" }}>
-                        <h1 className="fs-4 fw-bold">{bookDetail.title}</h1>
-                        <p>Nhà xuất bản: <strong>{bookDetail.publisher}</strong></p>
-                        <p>Hình thức bìa: <strong>Bìa Mềm</strong></p>
-                        <p>Tác giả: <strong>{bookDetail.author}</strong></p>
-                        <div className="d-flex align-items-center mb-2">
-                            <div className="text-muted">
-                                <i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i>
-                            </div>
-                            <span className="ms-2">(0 đánh giá)</span>
+                        <div className="mb-4">
+                            <h1 className="fs-4 fw-bold text-primary mb-3">{bookDetail.title}</h1>
+
+                            <p className="mb-2">
+                                <i className="bi bi-building me-2"></i>
+                                Nhà xuất bản: <strong>{bookDetail.publisher}</strong>
+                            </p>
+
+                            <p className="mb-2">
+                                <i className="bi bi-book-half me-2"></i>
+                                Hình thức bìa: <strong>Bìa Mềm</strong>
+                            </p>
+
+                            <p className="mb-2">
+                                <i className="bi bi-person-fill me-2"></i>
+                                Tác giả: <strong>{bookDetail.author}</strong>
+                            </p>
                         </div>
+
+                        <div className="d-flex align-items-center mb-2">
+                            {( bookSale.quantity > 10) ? <></>: (bookSale.quantity > 0 && bookSale.quantity < 10) ? (
+                                <>
+                                    <span className="me-2 text-warning">
+                                        <i className="bi bi-check-circle"></i> Sắp hết hàng
+                                    </span>
+                                    <span className="badge bg-success text-white">
+                                        (SL còn lại: {bookSale.quantity})
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="me-2 text-danger">
+                                        <i className="bi bi-x-circle"></i> Hết hàng
+                                    </span>
+                                    <span className="badge bg-danger text-white">
+                                        (SL còn lại: 0)
+                                    </span>
+                                </>
+                            )}
+                        </div>
+
                         <div className="d-flex align-items-center mb-3">
                             <span className="fs-3 text-danger fw-bold">{formatCurrency(priceDiscount)}</span>
                             <span className="ms-2 text-muted text-decoration-line-through">{formatCurrency(bookSale.price)}</span>
                             <span className="ms-2 bg-danger text-white px-2 rounded">{bookSale.discount} %</span>
                         </div>
-                        <div className="bg-light p-3 rounded">
-                            <h5>Thông tin vận chuyển</h5>
-                            <p>Giao hàng đến <strong>Phường Bến Nghé, Quận 1, Hồ Chí Minh</strong> <a className="text-primary" href="#">Thay đổi</a></p>
-                            <p><i className="fas fa-truck"></i> Giao hàng tiêu chuẩn</p>
-                            <p>Dự kiến giao <strong>Thứ năm - 31/10</strong></p>
-                        </div>
-                        <div className="bg-light p-3 rounded mt-3">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <span className="ms-2">Mã giảm 10k - đơn từ 100k</span>
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center">
-                                <span className="ms-2">Mã giảm 25k - đơn từ 200k</span>
-                            </div>
-                        </div>
+
                         <div className="container my-5">
                             <div className="card shadow-sm p-4">
                                 <h1 className="card-title fs-4 fw-bold text-dark mb-4">Thông tin chi tiết</h1>
@@ -257,25 +303,25 @@ const ProductDetail = () => {
 
 
                         <div className="card p-4 shadow-lg">
-    <h1 className="card-title fs-3 fw-bold mb-3 text-center">Mô tả sản phẩm</h1>
+                            <h1 className="card-title fs-3 fw-bold mb-3 text-center">Mô tả sản phẩm</h1>
 
-    <div
-        style={{
-            maxHeight: expanded ? 'none' : '100px', // Điều chỉnh chiều cao tối đa
-            overflow: 'hidden',
-            transition: 'max-height 0.3s ease',
-        }}
-        dangerouslySetInnerHTML={{ __html: fullText }}  // Set HTML content here
-    />
+                            <div
+                                style={{
+                                    maxHeight: expanded ? 'none' : '100px', // Điều chỉnh chiều cao tối đa
+                                    overflow: 'hidden',
+                                    transition: 'max-height 0.3s ease',
+                                }}
+                                dangerouslySetInnerHTML={{ __html: fullText }}  // Set HTML content here
+                            />
 
-    {showMoreButton && (
-        <div className="text-center mt-3">
-            <button className="btn-link" onClick={toggleExpanded}>
-                {expanded ? "Rút gọn" : "Xem thêm"}
-            </button>
-        </div>
-    )}
-</div>
+                            {showMoreButton && (
+                                <div className="text-center mt-3">
+                                    <button className="btn-link" onClick={toggleExpanded}>
+                                        {expanded ? "Rút gọn" : "Xem thêm"}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
 
                     </div>
 
@@ -284,10 +330,10 @@ const ProductDetail = () => {
             </div>
             <div className="container-fluid d-flex justify-content-center align-items-center mt-5">
                 <div className="bg-white p-5 rounded shadow w-100" >
-                    <BookReviews bookId = {productId}/>
+                    <BookReviews bookId={productId} />
                 </div>
             </div>
-            <ToastContainer/>
+            <ToastContainer />
         </div>
     );
 }
