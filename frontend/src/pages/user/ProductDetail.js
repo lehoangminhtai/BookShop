@@ -61,12 +61,10 @@ const ProductDetail = () => {
     if (error) return <p>{error}</p>;
     if (!bookDetail) return <p>Không tìm thấy sách</p>;
 
-    const getBook = () => {
-        alert(productId);
-    }
-
     const increaseAmount = () => {
-        setAmount((prevAmount) => prevAmount + 1);
+        setAmount((prevAmount) => {
+            return prevAmount < bookSale.quantity ? prevAmount + 1 : prevAmount;
+        });
     };
 
     const decreaseAmount = () => {
