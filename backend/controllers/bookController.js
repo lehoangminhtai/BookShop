@@ -1,6 +1,7 @@
 const { default: mongoose } = require('mongoose');
 const cloudinary = require("../utils/cloudinary");
 const Book = require('../models/bookModel');
+const BookSaleController = require('../controllers/bookSaleController')
 
 const createBook = async (req,res, next) =>{
     const { title, author, description,images, publisher, categoryId } = req.body;
@@ -19,14 +20,39 @@ const createBook = async (req,res, next) =>{
             publisher,
             categoryId
         });
+        if(book){
+            const responseBookSale = await BookSaleController.createBookSale(
+                {
+                    body: {bookId: book._id, quantity: 0, price: 0, discount: 0}
+                }
+            )
+            
+            if (responseBookSale.success) {
+               
+            } else  if (!responseBookSale.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Lỗi tạo sách bán' 
+                });
+            }
+        }
+        else{
+            return res.status(400).json({
+                success: false,
+                message: 'Tạo sách thất bại'
+            })
+        }
         res.status(201).json({
             success: true,
+            message: 'Đã ghi mới thông tin sách và tạo sách bán',
             book
-        })
+        });
 
     } catch (error) {
-        console.log(error);
-        next(error);
+        return res.status(400).json({
+            success: false,
+            message: 'Tạo sách thất bại' + error
+        })
 
     }
 }
@@ -64,35 +90,58 @@ const deleteBook = async(req, res) =>{
 
     res.status(200).json(book);
 }
-const updateBook = async(req, res) => {
-    const {id} = req.params;
-
-    // Kiểm tra id có hợp lệ không
-    if(!mongoose.Types.ObjectId.isValid(id)){
-        return res.status(404).json({error: 'No such book'});
-    }
-
-    // Xử lý việc upload file
-    let images = req.body.images; // giữ nguyên ảnh cũ nếu không có ảnh mới
-    if (req.file) {
-        images = `/uploads/${req.file.filename}`; // cập nhật ảnh mới
-    }
+const updateBook = async (req, res, next) => {
+    const { bookId } = req.params; // ID của sách cần cập nhật
+    const { title, author, description, images, publisher, categoryId } = req.body;
 
     try {
-        const book = await Book.findOneAndUpdate({_id: id}, {
-            ...req.body,
-            images // Cập nhật trường images trong MongoDB
-        }, {new: true}); // {new: true} trả về bản ghi đã cập nhật
+        // Tìm sách theo bookId
+        const book = await Book.findById(bookId);
 
         if (!book) {
-            return res.status(404).json({error: 'No such book'});
+            return res.status(404).json({
+                success: false,
+                message: 'Sách không tồn tại'
+            });
         }
 
-        res.status(200).json(book);
+        // Nếu có ảnh mới, upload ảnh lên Cloudinary
+        let imageUrl = book.images; // Nếu không thay đổi ảnh, sử dụng ảnh cũ
+
+        if (images) {
+            const result = await cloudinary.uploader.upload(images, {
+                folder: "uploads",
+            });
+            imageUrl = result.secure_url; // Cập nhật ảnh mới
+        }
+
+        // Cập nhật thông tin sách
+        book.title = title || book.title;
+        book.author = author || book.author;
+        book.description = description || book.description;
+        book.images = imageUrl; // Cập nhật ảnh mới (nếu có)
+        book.publisher = publisher || book.publisher;
+        book.categoryId = categoryId || book.categoryId;
+
+        // Lưu sách đã cập nhật
+        await book.save();
+
+    
+
+        res.status(200).json({
+            success: true,
+            message: 'Cập nhật sách thành công',
+            book
+        });
+
     } catch (error) {
-        res.status(400).json({error: error.message});
+        return res.status(400).json({
+            success: false,
+            message: 'Cập nhật sách thất bại: ' + error.message
+        });
     }
-}
+};
+
 
 module.exports = {
    createBook,

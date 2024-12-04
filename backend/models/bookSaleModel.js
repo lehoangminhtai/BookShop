@@ -22,8 +22,8 @@ const bookSaleSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['available', 'out_of_stock'],
-        default: 'available'
+        enum: ['available', 'out_of_stock', 'hide'],
+        default: 'hide'
     }
     
     

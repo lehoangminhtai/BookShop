@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+//component
 import AdSidebar from '../../components/admin/AdSidebar';
-import BookForm from '../../components/BookForm'; // Import BookForm component
+import BookForm from '../../components/BookForm';
+import BookFormEdit from '../../components/admin/AdBookFormEdit';
 
 const AdBook = () => {
     const [books, setBooks] = useState([]);
-    const [showModal, setShowModal] = useState(false); // Trạng thái hiển thị modal
+    const [book, setBook] = useState()
+    const [showModal, setShowModal] = useState(false);
+    const [showModalEdit, setShowModalEdit] = useState(false);
     const navigate = useNavigate();
 
 
@@ -41,9 +45,7 @@ const AdBook = () => {
         }
     };
 
-    const handleEdit = (bookId) => {
-        navigate(`/edit/${bookId}`);
-    };
+  
 
     const handleCreateBook = () => {
         setShowModal(true);
@@ -51,6 +53,15 @@ const AdBook = () => {
 
     const closeModal = () => {
         setShowModal(false);
+        fetchBooks();
+    };
+    const handleUpdateBook = (book) => {
+        setBook(book)
+        setShowModalEdit(true);
+    };
+
+    const closeModalEdit = () => {
+        setShowModalEdit(false);
         fetchBooks();
     };
 
@@ -97,14 +108,16 @@ const AdBook = () => {
                                 <td>{book.publisher}</td>
                                 <td>{new Date(book.createdAt).toLocaleDateString("vi-VN")}</td>
                                 <td>
-                                    <button className="btn btn-link text-primary" onClick={() => handleEdit(book._id)}>
+                                    <button className="btn btn-link text-primary" onClick={() => handleUpdateBook(book)}>
                                         <i className="fas fa-edit"></i>
                                     </button>
                                     <button className="btn btn-link text-danger" onClick={() => handleDelete(book._id)}>
                                         <i className="fas fa-trash"></i>
                                     </button>
                                 </td>
+
                             </tr>
+
                         ))}
                     </tbody>
                 </table>
@@ -138,6 +151,16 @@ const AdBook = () => {
                         </div>
                     </div>
                 )}
+                {showModalEdit && (
+                    <div className="modal-overlay ">
+                        <div className="modal-content">
+                            <button className="close-btn" onClick={closeModalEdit}>&times;</button>
+                            <BookFormEdit book={book} onClose={closeModalEdit} />
+                            <button className="" onClick={closeModalEdit}>Quay lại</button>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </div>
     );

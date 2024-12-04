@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import AdSidebar from '../../components/admin/AdSidebar';
 import { getBookSales } from "../../services/bookSaleService";
 
 const AdBookSale = () => {
     const [bookSales, setBookSales] = useState([]);  // State lưu trữ dữ liệu sách bán
     const [loading, setLoading] = useState(true);  // State cho việc loading
+    const [isEdit, setIsEdit] = useState(false);
 
     useEffect(() => {
         const fetchBookSales = async () => {
@@ -81,41 +83,49 @@ const AdBookSale = () => {
                                     <th className="text-start">STT <i className="fas fa-sort"></i></th>
                                     <th className="text-start">Ảnh</th>
                                     <th className="text-start">Sách</th>
-                                    <th className="text-start">Giá gốc</th>
-                                    <th className="text-start">Giảm</th>
-                                    <th className="text-start">Giá giảm</th>
+                                    <th className="text-start">Số lượng (Tồn kho)</th>
+                                    <th className="text-start">Giá gốc (VNĐ)</th> 
+                                    <th className="text-start">Giảm (%)</th>
+                                    <th className="text-start">Giá giảm (VNĐ)</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {bookSales.map((bookSale, index) => (
-                                    <tr key={bookSale._id}>
+                                    <tr key={bookSale._id} >
                                         <td>{index + 1}</td>
                                         <td>
+                                            <Link to ={`/chi-tiet/${bookSale.bookId._id}`}>
                                             <img
                                                 src={bookSale.bookId?.images[0] || "https://placehold.co/50x50"}
                                                 alt="Product image"
                                                 className="img-fluid"
                                                 style={{ width: "50px" }}
                                             />
+                                            </Link>
                                         </td>
                                         <td>
                                             <div className="text-primary">{bookSale.bookId.title}</div>
                                             <div className="text-muted">{bookSale.bookId.author}</div>
                                         </td>
                                         <td>
+                                            <div className={`${bookSale.quantity ===0 ? 'bg-danger text-light' : 'text-primary'} `} >{bookSale.quantity}</div>
+                                           
+                                        </td>
+                                        <td>
                                             <div className="d-flex align-items-center">
-                                                <span>VND</span>
+                                                
                                                 <input
                                                     type="number"
                                                     className="form-control w-75 ms-2"
-                                                    value={bookSale.price}
+                                                    value={bookSale.price.toLocaleString()}
                                                     onChange={(e) => handlePriceChange(index, e)}  // Cập nhật giá khi thay đổi
                                                 />
                                             </div>
                                         </td>
                                         <td>
                                             <div className="d-flex align-items-center">
-                                                <span>%</span>
+                                               
                                                 <input
                                                     type="number"
                                                     className="form-control w-75 ms-2"
@@ -127,16 +137,19 @@ const AdBookSale = () => {
                                         </td>
                                         <td>
                                             <div className="d-flex align-items-center">
-                                                <span>VND</span>
+                                                
                                                 <input
                                                     type="text"
                                                     className="form-control w-75 ms-2"
                                                     value={bookSale.price !== "" && bookSale.discount !== "" 
-                                                        ? bookSale.price - (bookSale.price * bookSale.discount) / 100 
+                                                        ? (bookSale.price - (bookSale.price * bookSale.discount) / 100 ).toLocaleString()
                                                         : ""}
                                                     readOnly
                                                 />
                                             </div>
+                                        </td>
+                                        <td>
+                                            <button></button>
                                         </td>
                                     </tr>
                                 ))}

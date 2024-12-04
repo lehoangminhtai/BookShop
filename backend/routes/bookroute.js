@@ -12,7 +12,7 @@ router.post('/',createBook);
 
 router.delete('/:id',deleteBook);
 
-//router.patch('/:id', updateBook);
+router.put('/:bookId',updateBook)
 
 
 module.exports = router;

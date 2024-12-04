@@ -2,35 +2,26 @@ const mongoose = require('mongoose');
 const BookSale = require('../models/bookSaleModel');
 
 // Tạo mới một sách để bán
-const createBookSale = async (req, res, next) => {
-    const { bookSales } = req.body; // Lấy dữ liệu từ body request
-
+const createBookSale = async (req, res) => {
     try {
-        // Thực hiện upsert (cập nhật hoặc tạo mới nếu không có)
-        const createdBookSales = await Promise.all(bookSales.map(async (bookSale) => {
-            const { bookId, quantity, price, discount } = bookSale;
-            const updatedBookSale = await BookSale.findOneAndUpdate(
-                { bookId }, // Tìm theo bookId
-                { $set: { quantity, price, discount, status: 'available' } }, // Cập nhật thông tin
-                { new: true, upsert: true } // Trả về bản ghi mới và tạo mới nếu không tìm thấy
-            );
-            return updatedBookSale;
-        }));
+        
+        const bookSale = new BookSale(req.body);
+        await bookSale.save();
 
-        res.status(201).json({
+       return{
             success: true,
-            message: 'Books Sale Added or Updated Successfully!',
-            data: createdBookSales
-        });
+            message: 'BookSale created successfully',
+            bookSale
+        }
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
+        res.status(400).json({
             success: false,
-            message: 'Failed to add or update books sale',
-            error: error.message
+            message: error.message
         });
     }
 };
+
 
 // Lấy tất cả sách để bán
 const getBookSales = async (req, res) => {

@@ -1,29 +1,29 @@
 import { useEffect, useState } from "react";
-import { useBookContext } from "../hooks/useBookContext";
-import axios from 'axios';
-import { toast, ToastContainer } from 'react-toastify'; 
-import { EditorState, convertToRaw } from 'draft-js';
+import { toast, ToastContainer } from 'react-toastify';
+import { EditorState, convertToRaw, convertFromHTML, ContentState } from 'draft-js';
 import { Editor } from 'react-draft-wysiwyg';
 import draftToHtml from 'draftjs-to-html';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import 'react-toastify/dist/ReactToastify.css';
-import { useDropzone } from 'react-dropzone'; // Import Dropzone
+import { useDropzone } from 'react-dropzone';
+import { updateBook, fetchBooks } from "../../services/bookService";
 
-import { createBook, fetchBooks } from "../services/bookService";
-
-const BookForm = ({onClose}) => {
-    const { dispatch } = useBookContext();
-
-    const [title, setTitle] = useState('');
-    const [author, setAuthor] = useState('');
-    const [description, setDescription] = useState(EditorState.createEmpty());
-    const [images, setImages] = useState('');
-    const [publisher, setPublisher] = useState('');
-    const [categoryId, setCategoryId] = useState('');
+const BookFormEdit = ({ book, onClose }) => {
+    const [title, setTitle] = useState(book.title || '');
+    const [author, setAuthor] = useState(book.author || '');
+    const [description, setDescription] = useState(
+        book.description
+            ? EditorState.createWithContent(ContentState.createFromBlockArray(convertFromHTML(book.description)))
+            : EditorState.createEmpty()
+    );
+    
+    const [images, setImages] = useState(book.images || '');
+    const [publisher, setPublisher] = useState(book.publisher || '');
+    const [categoryId, setCategoryId] = useState(book.categoryId._id || '');
     const [categories, setCategories] = useState([]);
     const [errors, setErrors] = useState({});
 
-    // Xử lý hình ảnh khi kéo thả hoặc chọn tệp
+    // Handle image drop
     const onDrop = (acceptedFiles) => {
         if (acceptedFiles.length > 0) {
             const file = acceptedFiles[0];
@@ -34,7 +34,7 @@ const BookForm = ({onClose}) => {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: 'image/*',
-        multiple: false, // Chỉ cho phép một hình ảnh
+        multiple: false, // Only allow one image
     });
 
     const setFileToBase = (file) => {
@@ -43,7 +43,7 @@ const BookForm = ({onClose}) => {
         reader.onloadend = () => {
             setImages(reader.result);
             const updatedErrors = { ...errors };
-            delete updatedErrors.images; // Xóa lỗi nếu ảnh được chọn
+            delete updatedErrors.images; // Remove error if image is selected
             setErrors(updatedErrors);
         };
     };
@@ -57,16 +57,17 @@ const BookForm = ({onClose}) => {
             } else {
                 console.error('Failed to fetch categories');
             }
+           
         };
         fetchCategories();
     }, []);
-    
+
     const handleInputChange = (e, field) => {
         const value = e.target.value;
         const updatedErrors = { ...errors };
 
         if (value.trim() !== '') {
-            delete updatedErrors[field]; // Xóa lỗi nếu input không rỗng
+            delete updatedErrors[field]; // Remove error if input is not empty
         }
 
         setErrors(updatedErrors);
@@ -74,7 +75,9 @@ const BookForm = ({onClose}) => {
         if (field === "title") setTitle(value);
         if (field === "author") setAuthor(value);
         if (field === "publisher") setPublisher(value);
-        if (field === "categoryId") setCategoryId(value);
+        if (field === "categoryId"){
+            setCategoryId(value) 
+            console.log(value)};
     };
 
     const onEditorStateChange = (editorState) => {
@@ -82,7 +85,7 @@ const BookForm = ({onClose}) => {
 
         const updatedErrors = { ...errors };
         if (editorState.getCurrentContent().hasText()) {
-            delete updatedErrors.description; // Xóa lỗi nếu mô tả không trống
+            delete updatedErrors.description; // Remove error if description is not empty
         }
         setErrors(updatedErrors);
     };
@@ -107,34 +110,34 @@ const BookForm = ({onClose}) => {
         try {
             const descriptionHtml = draftToHtml(convertToRaw(description.getCurrentContent()));
             
-            const bookData = { title, author, description: descriptionHtml, images, publisher, categoryId}
-            const responseCreateBook = await createBook(bookData)
-            console.log(responseCreateBook)
-            if (responseCreateBook.success) {
+            const bookData = { title, author, description: descriptionHtml, images, publisher, categoryId };
+            const responseUpdateBook = await updateBook(book._id, bookData);
+            console.log(responseUpdateBook)
+            if (responseUpdateBook.success) {
                 setTitle('');
                 setDescription(EditorState.createEmpty());
                 setImages('');
                 setPublisher('');
                 setAuthor('');
                 setCategoryId('');
-                toast.success('Thêm sách thành công');
-                fetchBooks(); 
+                toast.success('Cập nhật thành công');
+                fetchBooks();
                 onClose();
-                              
             } else {
-                toast.error('Lỗi thêm sách');
+                toast.error('Lỗi cập nhật sách');
             }
         } catch (error) {
             console.error(error);
-            toast.error('Lỗi thêm sách');
+            toast.error('Lỗi cập nhật sách');
         }
     };
 
     return (
-        <div className="">
+        <div>
             <form className="create container mt-4" onSubmit={handleSubmit}>
-                <h3 className="text-center mb-4">Thêm sách mới</h3>
+                <h3 className="text-center mb-4">Cập nhật sách</h3>
 
+                {/* Title input */}
                 <div className="mb-3">
                     <label className="form-label">Tên sách: </label>
                     <input
@@ -146,6 +149,7 @@ const BookForm = ({onClose}) => {
                     {errors.title && <div className="invalid-feedback">{errors.title}</div>}
                 </div>
 
+                {/* Author input */}
                 <div className="mb-3">
                     <label className="form-label">Tác giả: </label>
                     <input
@@ -157,6 +161,7 @@ const BookForm = ({onClose}) => {
                     {errors.author && <div className="invalid-feedback">{errors.author}</div>}
                 </div>
 
+                {/* Description Editor */}
                 <div className="form-group col-md-12 editor" style={{ border: '2px solid #ccc', padding: '10px', borderRadius: '5px' }}>
                     <label className="font-weight-bold">
                         Mô tả <span className="required"> * </span>
@@ -171,10 +176,11 @@ const BookForm = ({onClose}) => {
                     {errors.description && <div className="text-danger">{errors.description}</div>}
                 </div>
 
+                {/* Image Dropzone */}
                 <div className="mb-3">
                     <label className="form-label">Hình ảnh: </label>
-                    <div 
-                        {...getRootProps()} 
+                    <div
+                        {...getRootProps()}
                         className={`dropzone ${isDragActive ? 'active-dropzone' : ''}`}
                         style={{
                             border: '2px dashed #007bff',
@@ -185,8 +191,8 @@ const BookForm = ({onClose}) => {
                         }}
                     >
                         <input {...getInputProps()} />
-                        {isDragActive 
-                            ? <p>Thả file của bạn vào đây...</p> 
+                        {isDragActive
+                            ? <p>Thả file của bạn vào đây...</p>
                             : <p>Kéo và thả hình ảnh vào đây, hoặc nhấn để chọn</p>
                         }
                     </div>
@@ -198,8 +204,9 @@ const BookForm = ({onClose}) => {
                     )}
                 </div>
 
+                {/* Publisher input */}
                 <div className="mb-3">
-                    <label className="form-label">Nhà sản xuất: </label>
+                    <label className="form-label">Nhà xuất bản: </label>
                     <input
                         type="text"
                         className={`form-control ${errors.publisher ? 'is-invalid' : ''}`}
@@ -209,6 +216,7 @@ const BookForm = ({onClose}) => {
                     {errors.publisher && <div className="invalid-feedback">{errors.publisher}</div>}
                 </div>
 
+                {/* Category input */}
                 <div className="mb-3">
                     <label className="form-label">Thể loại: </label>
                     <select
@@ -216,7 +224,7 @@ const BookForm = ({onClose}) => {
                         onChange={(e) => handleInputChange(e, 'categoryId')}
                         value={categoryId}
                     >
-                        <option value="">Chọn thể loại</option>
+                        
                         {categories.map((category) => (
                             <option key={category._id} value={category._id}>
                                 {category.nameCategory}
@@ -226,7 +234,7 @@ const BookForm = ({onClose}) => {
                     {errors.categoryId && <div className="invalid-feedback">{errors.categoryId}</div>}
                 </div>
 
-                <button type="submit" className="btn btn-primary w-100 mt-3">Thêm</button>
+                <button type="submit" className="btn btn-primary w-100 mt-3">Cập nhật</button>
             </form>
 
             <ToastContainer />
@@ -234,4 +242,4 @@ const BookForm = ({onClose}) => {
     );
 };
 
-export default BookForm;
+export default BookFormEdit;
