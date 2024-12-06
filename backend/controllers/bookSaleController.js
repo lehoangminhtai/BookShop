@@ -26,6 +26,17 @@ const createBookSale = async (req, res) => {
 // Lấy tất cả sách để bán
 const getBookSales = async (req, res) => {
     try {
+        const bookSales = await BookSale.find({status: { $ne: 'hide' }})
+            .sort({ createdAt: -1 })
+            .populate('bookId', 'title author images'); // Liên kết với thông tin cơ bản của sách
+
+        res.status(200).json(bookSales);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+const getBookSalesAdmin = async (req, res) => {
+    try {
         const bookSales = await BookSale.find({})
             .sort({ createdAt: -1 })
             .populate('bookId', 'title author images'); // Liên kết với thông tin cơ bản của sách
@@ -89,7 +100,7 @@ const updateBookSale = async (req, res) => {
 
     try {
         const bookSale = await BookSale.findByIdAndUpdate(id, req.body, { new: true });
-        
+
         if (!bookSale) {
             return res.status(404).json({ error: 'No such book sale record' });
         }
@@ -100,10 +111,12 @@ const updateBookSale = async (req, res) => {
     }
 };
 
+
 module.exports = {
     createBookSale,
     getBookSales,
     getBookSale,
     deleteBookSale,
-    updateBookSale
+    updateBookSale,
+    getBookSalesAdmin
 };

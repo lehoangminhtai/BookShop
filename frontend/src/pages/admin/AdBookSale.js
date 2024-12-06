@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import AdSidebar from '../../components/admin/AdSidebar';
 import AdBookSaleEdit from "../../components/admin/AdBookSaleEdit";
 //service
-import { getBookSales } from "../../services/bookSaleService";
+import {  getBookSalesAdmin,updateBookSale } from "../../services/bookSaleService";
 
 const AdBookSale = () => {
     const [bookSales, setBookSales] = useState([]);
@@ -15,7 +15,7 @@ const AdBookSale = () => {
 
     const fetchBookSales = async () => {
         try {
-            const response = await getBookSales();
+            const response = await getBookSalesAdmin();
             setBookSales(response.data);
             setLoading(false);  // Thay đổi trạng thái loading
         } catch (err) {
@@ -30,48 +30,22 @@ const AdBookSale = () => {
         fetchBookSales();
     }, []);
 
-    // Hàm xử lý khi thay đổi giá
-    const handlePriceChange = (index, event) => {
-        const newPrice = event.target.value;
-
-        // Nếu giá trị là chuỗi rỗng thì không thay đổi, nếu không thì kiểm tra xem có phải là số hợp lệ
-        if (newPrice === "" || !isNaN(newPrice) && newPrice >= 0) {
-            const updatedBookSales = [...bookSales];
-            updatedBookSales[index].price = newPrice === "" ? "" : parseFloat(newPrice);  // Giữ giá trị trống nếu người dùng xóa
-            setBookSales(updatedBookSales);
-        }
-    };
-
-    // Hàm xử lý khi thay đổi giảm giá
-    const handleDiscountChange = (index, event) => {
-        const newDiscount = event.target.value;
-
-        // Nếu là chuỗi trống, giữ giá trị trống; nếu không kiểm tra nếu là số hợp lệ và <= 100
-        if (newDiscount === "" || (!isNaN(newDiscount) && newDiscount >= 0 && newDiscount <= 100)) {
-            const updatedBookSales = [...bookSales];
-            updatedBookSales[index].discount = newDiscount === "" ? "" : parseFloat(newDiscount);  // Giữ giá trị trống nếu người dùng xóa
-            setBookSales(updatedBookSales);
-        } else if (newDiscount > 100) {
-            // Nếu giá trị phần trăm vượt quá 100, thì trả về 100
-            const updatedBookSales = [...bookSales];
-            updatedBookSales[index].discount = 100;
-            setBookSales(updatedBookSales);
-        }
-    };
-
-    const handleChangeActive = (bookSaleId) => {
-        const updatedBookSales = bookSales.map((bookSale) => {
-            if (bookSale._id === bookSaleId) {
-                // Toggle trạng thái giữa 'hide' và trạng thái khác
-                return {
-                    ...bookSale,
-                    status: bookSale.status === 'hide' ? 'active' : 'hide',
-                };
+    
+    const handleChangeActive = async (bookSale) => {
+        try {
+            let status = 'hide'
+            if(bookSale.status ==='hide'){
+                status = 'available'
             }
-            return bookSale;
-        });
-
-        setBookSales(updatedBookSales); // Cập nhật lại state
+            const dataBookSale = {status: status}
+            const response = await updateBookSale(bookSale._id,dataBookSale)
+            if(response.data.success){
+                fetchBookSales();
+            }
+        } catch (error) {
+            
+        }
+       
     };
 
     const handleShowEdit = (bookSale) => {
@@ -172,7 +146,7 @@ const AdBookSale = () => {
                                                     type="checkbox"
                                                     id={`isAcitve-${bookSale._id}`}
                                                     checked={bookSale.status !== 'hide'}
-                                                    onChange={() => handleChangeActive(bookSale._id)}
+                                                    onChange={() => handleChangeActive(bookSale)}
                                                 />
                                             </div>
                                         </td>

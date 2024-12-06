@@ -1,16 +1,60 @@
 import React, { useState, useEffect } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+//service
+import { updateBookSale } from '../../services/bookSaleService';
 
-const AdBookSaleEdit = ({ bookSale }) => {
+
+const AdBookSaleEdit = ({ bookSale, onClose }) => {
     const [bookSaleUpdate, setBookSaleUpdate] = useState()
-    const [quantity, setQuantity] = useState(bookSale.quantity || 0);
-    const [price, setPrice] = useState(bookSale.price || 0);
-    const [discount, setDiscount] = useState(bookSale.discount || 0);
+    const [quantity, setQuantity] = useState(bookSale.quantity);
+    const [price, setPrice] = useState(bookSale.price);
+    const [discount, setDiscount] = useState(bookSale.discount);
      const [status, setStatus] = useState(bookSale.status || 'active');
     const [errors, setErrors] = useState({});
 
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const newErrors = {};
+        
+        if (quantity === '' || quantity === null || quantity === undefined) {
+            newErrors.quantity = 'Vui lòng nhập số lượng';
+        }
+        if (price === '' || price === null || price === undefined) {
+            newErrors.price = 'Vui lòng nhập giá';
+        }
+        if (discount === '' || discount === null || discount === undefined) {
+            newErrors.discount = 'Vui lòng nhập giảm giá';
+        }        
+
+        setErrors(newErrors);
+
+
+        if (Object.keys(newErrors).length > 0) {
+            return;
+        }
+
+        try {
+            const bookSaleData = {quantity: quantity, price: price, discount: discount}
+            const responseUpdateBookSale = await updateBookSale(bookSale._id, bookSaleData)
+
+            if(responseUpdateBookSale.data.success){
+                toast.success('Đã cập nhật sách', {
+                    autoClose: false, 
+                  });
+                  
+                  setTimeout(() => {
+                    onClose()  
+                  }, 1500);  
+                  
+            }
+            else if(responseUpdateBookSale.data.success){
+                toast.error('Lỗi cập nhật sách')
+            }
+        } catch (error) {
+            toast.error('Lỗi cập nhật sách' + error)
+        }
     };
 
     const formatCurrency = (value) => {
@@ -55,7 +99,7 @@ const AdBookSaleEdit = ({ bookSale }) => {
                                         <span className="fs-3 text-danger fw-bold">
                                             {discount === 0 ? formatCurrency(price) : formatCurrency(price - (price *discount)/100)}
                                         </span>
-                                        {(price && discount > 0) && (
+                                        {(price > 0 && discount > 0) && (
                                             <div>
                                                 <span className="ms-2 text-muted text-decoration-line-through">{formatCurrency(price)}</span>
                                                 <span className="ms-2 bg-danger text-white px-2 rounded">{discount} %</span>
@@ -83,6 +127,7 @@ const AdBookSaleEdit = ({ bookSale }) => {
                                         onChange={(e) => handleInputChange(e, 'quantity')}
                                         min="0"
                                     />
+                                    {errors.quantity && <div className="invalid-feedback">{errors.quantity}</div>}
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">Giá gốc (VNĐ)</label>
@@ -93,6 +138,7 @@ const AdBookSaleEdit = ({ bookSale }) => {
                                         onChange={(e) => handleInputChange(e, 'price')}
                                         min="0"
                                     />
+                                    {errors.price && <div className="invalid-feedback">{errors.price}</div>}
                                 </div>
 
                                 {/* Trường giảm giá */}
@@ -106,6 +152,7 @@ const AdBookSaleEdit = ({ bookSale }) => {
                                         min="0"
                                         max="100"
                                     />
+                                    {errors.discount && <div className="invalid-feedback">{errors.discount}</div>}
                                 </div>
 
 
@@ -121,6 +168,7 @@ const AdBookSaleEdit = ({ bookSale }) => {
                     </div>
                 </div>
             </div>
+            <ToastContainer/>
         </div>
     );
 };

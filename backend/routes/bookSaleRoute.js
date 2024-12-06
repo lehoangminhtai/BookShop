@@ -1,11 +1,13 @@
 const express = require('express');
-const { createBookSale, getBookSale, getBookSales, deleteBookSale, updateBookSale } = require('../controllers/bookSaleController');
+const { createBookSale, getBookSale, getBookSales, deleteBookSale, updateBookSale, getBookSalesAdmin } = require('../controllers/bookSaleController');
 
 
 const router = express.Router();
 
 // Lấy tất cả các sách đang bán
 router.get('/', getBookSales);
+
+router.get('/admin', getBookSalesAdmin);
 
 // Lấy một sách bán cụ thể
 router.get('/:bookId', getBookSale);
