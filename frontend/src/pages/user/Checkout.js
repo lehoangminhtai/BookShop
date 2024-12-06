@@ -669,6 +669,7 @@ function Checkout() {
                                                     value={address._id}
                                                     checked={addressSelected === address._id || (address.isDefault && addressSelected === null)}  // Chỉ chọn khi đúng
                                                     onChange={(e) => handleInputChange(e, 'addressSelected')}
+                                                    onClick={()=>handleChooseAddress(address)}
                                                 />
                                                 <label className="form-check-label " htmlFor={`address-${address?._id}`}>
                                                     {/* Icon Location */}
