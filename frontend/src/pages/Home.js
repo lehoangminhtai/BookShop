@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ToastContainer } from "react-toastify";
 import { useBookContext } from "../hooks/useBookContext";
 import { fetchBooks } from "../services/bookService";
 import { getBookSales } from "../services/bookSaleService";
@@ -251,6 +252,7 @@ const Home = () => {
                     </div>
                 </div>
             </div>
+            <ToastContainer/>
 
         </div>
         // <div classNameNameName="home">
