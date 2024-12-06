@@ -31,7 +31,7 @@ const ReviewsList = () => {
     }, [user]);
 
     if (loading) return <p>Đang tải dữ liệu...</p>;
-    if (error) return <p className="text-danger">{error}</p>;
+   
 
     return (
         <div className="auth-container">

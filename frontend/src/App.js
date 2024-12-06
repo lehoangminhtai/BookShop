@@ -14,6 +14,8 @@ import CustomerOrders from './pages/user/Orders';
 import MyAccount from './components/customer/MyAccount';
 import ReviewsList from './components/customer/ReviewsList';
 
+import Page404 from './pages/PageNotFound';
+
 //Admin
 import Dashboard from './pages/admin/Dashboard';
 import AdCategoryBook from './pages/admin/AdCategoryBook';
@@ -24,6 +26,20 @@ import AdOrder from './pages/admin/AdOrder';
 import AdOrderDetail from './pages/admin/AdOrderDetail';
 import AdDiscount from './pages/admin/AdDiscount';
 import AdShipping from './pages/admin/AdShipping';
+
+import AdminRoute from './components/ProtectedRoute';
+
+const AdminRoutes = [
+  { path: "/admin", element: <Dashboard /> },
+  { path: "/admin/category-book", element: <AdCategoryBook /> },
+  { path: "/admin/book", element: <AdBook /> },
+  { path: "/admin/book/create", element: <BookForm /> },
+  { path: "/admin/book-sale-price", element: <AdBookSale /> },
+  { path: "/admin/order", element: <AdOrder /> },
+  { path: "/admin/order/edit/:orderId", element: <AdOrderDetail /> },
+  { path: "/admin/discounts", element: <AdDiscount /> },
+  { path: "/admin/shipping", element: <AdShipping /> },
+];
 
 function AppContent() {
   const location = useLocation(); // Lấy thông tin về đường dẫn hiện tại
@@ -40,30 +56,31 @@ function AppContent() {
           <Route path='/auth' element={<Auth />} />
           <Route path='/upload' element={<SecureUpload />} />
           <Route path="/chi-tiet/:productId" element={<ProductDetail />} />
-         
+
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path='/payment/success' element={<SuccessPage/>}></Route>
+          <Route path='/payment/success' element={<SuccessPage />}></Route>
           <Route path="/account/orders" element={<CustomerOrders />} />
           <Route path="/account/reviews" element={<ReviewsList />} />
           <Route path="/account" element={<MyAccount />} />
 
-            {/* admin */}
 
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/admin/category-book" element={<AdCategoryBook />} />
-          <Route path="/admin/book" element={<AdBook />} />
-          <Route path="/admin/book/create" element={<BookForm/>} />
-          <Route path="/admin/book-sale-price" element={<AdBookSale />} />
-          <Route path="/admin/order" element={<AdOrder />} />
-          <Route path="/admin/order/edit/:orderId" element={<AdOrderDetail />} />
-          <Route path="/admin/discounts" element={<AdDiscount />} />
-          <Route path="/admin/shipping" element={<AdShipping />} />
+          <Route path="/not-found" element={<Page404 />} />
+          <Route path="*" element={<Page404 />} />
+        
+          {/* admin */}
+          {AdminRoutes.map(({ path, element }) => (
+      <Route
+        key={path}
+        path={path}
+        element={<AdminRoute>{element}</AdminRoute>}
+      />
+    ))}
         </Routes>
       </div>
       {location.pathname !== '/checkout' && !isAdminRoute && <Footer />} {/* Chỉ hiển thị Footer khi không phải là trang /checkout */}
       <Routes>
-        
+
       </Routes>
     </>
   );
