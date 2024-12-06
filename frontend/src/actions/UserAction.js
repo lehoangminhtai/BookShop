@@ -70,7 +70,16 @@ export const login = (userData, navigate, setErrorObj, setUserFormData, redirect
             setErrorObj(initialErrorObj);
             setUserFormData(initialUserState);
             handleAddItemToCart(data.result._id);
-            navigate(redirectPath, { replace: true });
+
+            const userRole = data.result.role;
+
+            // Kiểm tra role và điều hướng
+            if (userRole === 1) {
+                navigate('/admin', { replace: true });
+            } else {
+                navigate('/', { replace: true });
+            }
+            
             window.location.reload();
         } else {
             setErrorObj({ ...initialErrorObj, login: data.message });
