@@ -10,7 +10,7 @@ import validator from 'email-validator'
 // import { motion } from 'framer-motion'
 import Input from '../components/Input'
 import '../css/user/Auth.scss'
-import React from 'react'
+import React, { useRef } from 'react'
 
 
 const Auth = () => {
@@ -18,6 +18,12 @@ const Auth = () => {
   const { result, isLoading, isError, error } = useSelector(state => state.user)
 
   const { users, setUser } = useStateContext()
+  const passwordInputRef = useRef(null);
+  const confirmPasswordInputRef = useRef(null);
+  const emailInputRef = useRef(null);
+  const phoneInputRef = useRef(null);
+  const loginButtonRef = useRef(null);
+  const registerButtonRef = useRef(null);
 
   ////////////////////////////////////////////////////  Variables  ///////////////////////////////////////////////////////
   const navigate = useNavigate()
@@ -87,8 +93,18 @@ const Auth = () => {
     dispatch(changePassword(userData, setPage, setErrorObj, setUserFormData))
   }
 
-
-
+  const handleKeyDown = (event, nextInputRef) => {
+    if (event.key === "Enter" && nextInputRef) {
+      event.preventDefault();
+      nextInputRef.current.focus();
+    }
+  };
+  const handleKeyDownClick = (event, nextButtonRef) => {
+    if (event.key === "Enter" && nextButtonRef?.current) {
+      event.preventDefault();
+      nextButtonRef.current.click();
+    }
+  };
 
   const nameBlur = () => {
     if (userFormData.name == ``) {
@@ -219,6 +235,7 @@ const Auth = () => {
                             type="text"
                             placeholder="Họ tên..."
                             blurFunction={nameBlur}
+                            onKeyDown={(e) => handleKeyDown(e, emailInputRef)}
                             className="tw-pl-10 tw-transition-all tw-duration-200 tw-ease-in-out tw-border-b-2 tw-border-gray-300 focus:tw-border-blue-500 focus:tw-shadow-md"
                           />
                         </div>
@@ -232,6 +249,8 @@ const Auth = () => {
                             type="email"
                             placeholder="Email..."
                             blurFunction={emailBlur}
+                            ref={emailInputRef}
+                            onKeyDown={(e) => handleKeyDown(e, phoneInputRef)}
                             className="tw-pl-10 tw-transition-all tw-duration-200 tw-ease-in-out tw-border-b-2 tw-border-gray-300 focus:tw-border-blue-500 focus:tw-shadow-md"
                           />
                         </div>
@@ -245,6 +264,8 @@ const Auth = () => {
                             type="tel"
                             placeholder="Số điện thoại..."
                             blurFunction={phoneBlur}
+                            ref={phoneInputRef}
+                            onKeyDown={(e) => handleKeyDown(e, passwordInputRef)}
                             className="tw-pl-10 tw-transition-all tw-duration-200 tw-ease-in-out tw-border-b-2 tw-border-gray-300 focus:tw-border-blue-500 focus:tw-shadow-md"
                           />
                         </div>
@@ -260,6 +281,8 @@ const Auth = () => {
                             type="password"
                             placeholder="Mật khẩu..."
                             blurFunction={passwordBlur}
+                            ref={passwordInputRef}
+                            onKeyDown={(e) => handleKeyDown(e, confirmPasswordInputRef)}
                             showEyeIcon
                             className="tw-pl-10 tw-transition-all tw-duration-200 tw-ease-in-out tw-border-b-2 tw-border-gray-300 focus:tw-border-blue-500 focus:tw-shadow-md"
                           />
@@ -274,6 +297,8 @@ const Auth = () => {
                             type="password"
                             placeholder="Xác nhận mật khẩu..."
                             blurFunction={confirmPasswordBlur}
+                            ref={confirmPasswordInputRef}
+                            onKeyDown = {registerButtonRef}
                             showEyeIcon
                             className="tw-pl-10 tw-transition-all tw-duration-200 tw-ease-in-out tw-border-b-2 tw-border-gray-300 focus:tw-border-blue-500 focus:tw-shadow-md"
                           />
@@ -287,7 +312,7 @@ const Auth = () => {
                             type="checkbox"
                             className="tw-w-4 tw-h-4 tw-border tw-border-gray-300 tw-rounded tw-bg-gray-50 tw-focus:ring-3 tw-focus:ring-blue-300 tw-dark:bg-gray-700 tw-dark:border-gray-600 tw-dark:focus:ring-blue-600 tw-dark:ring-offset-gray-800"
                             required
-
+                            
                           />
                           <label
                             htmlFor="terms"
@@ -305,7 +330,7 @@ const Auth = () => {
 
 
                         <div className="tw-mt-6">
-                          <button onClick={handleSendRegisterOTP} className="tw-w-full tw-text-white tw-bg-gradient-to-r tw-from-blue-600 tw-to-blue-500 tw-hover:tw-from-blue-700 tw-hover:tw-to-blue-600 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-lg tw-px-5 tw-py-3 tw-transition-all tw-duration-200 tw-ease-in-out">
+                          <button ref={registerButtonRef} onClick={handleSendRegisterOTP} className="tw-w-full tw-text-white tw-bg-gradient-to-r tw-from-blue-600 tw-to-blue-500 tw-hover:tw-from-blue-700 tw-hover:tw-to-blue-600 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-lg tw-px-5 tw-py-3 tw-transition-all tw-duration-200 tw-ease-in-out">
                             Đăng ký
                           </button>
                         </div>
@@ -335,9 +360,10 @@ const Auth = () => {
                             attribute="registerOTP"
                             type="text"
                             placeholder="Verification Code"
+                            onKeyDown={(e) => handleKeyDownClick(e, registerButtonRef)}
                           />
                         </div>
-                        <button onClick={handleRegister} className="tw-w-full tw-text-white tw-bg-gradient-to-r tw-from-blue-600 tw-to-blue-500 tw-hover:tw-from-blue-700 tw-hover:tw-to-blue-600 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-lg tw-px-5 tw-py-3 tw-transition-all tw-duration-200 tw-ease-in-out">Xác nhận</button>
+                        <button onClick={handleRegister} ref={registerButtonRef}  className="tw-w-full tw-text-white tw-bg-gradient-to-r tw-from-blue-600 tw-to-blue-500 tw-hover:tw-from-blue-700 tw-hover:tw-to-blue-600 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-lg tw-px-5 tw-py-3 tw-transition-all tw-duration-200 tw-ease-in-out">Xác nhận</button>
                         <p onClick={() => setPage('register')} className="tw-text-sm tw-font-medium tw-text-blue-700 tw-hover:underline tw-dark:text-blue-500 tw-cursor-pointer">Email không chính xác?</p>
                         {
                           errorObj.register &&
@@ -364,6 +390,7 @@ const Auth = () => {
                             type="email"
                             placeholder="name@company.com"
                             blurFunction={emailBlur}
+                            onKeyDown={(e) => handleKeyDown(e, passwordInputRef)}
                           />
                         </div>
                         <div>
@@ -373,7 +400,8 @@ const Auth = () => {
                             attribute="password"
                             type="password"
                             placeholder="••••••••"
-
+                            ref={passwordInputRef}
+                            onKeyDown={(e) => handleKeyDownClick(e, loginButtonRef)}
                             showEyeIcon
                           />
                         </div>
@@ -381,7 +409,7 @@ const Auth = () => {
                           <a onClick={() => setPage('forget_password_email')} className="tw-ms-auto tw-text-sm tw-text-blue-700 tw-hover:underline tw-dark:text-blue-500">Quên mật khẩu?</a>
                         </div>
 
-                        <button onClick={handleLogin} className="tw-w-full tw-text-white tw-bg-blue-700 tw-hover:bg-blue-800 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-sm tw-px-5 tw-py-2.5 tw-text-center tw-dark:bg-blue-600 tw-dark:hover:bg-blue-700 tw-dark:focus:ring-blue-800">Đăng nhập</button>
+                        <button onClick={handleLogin} ref={loginButtonRef} className="tw-w-full tw-text-white tw-bg-blue-700 tw-hover:bg-blue-800 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-sm tw-px-5 tw-py-2.5 tw-text-center tw-dark:bg-blue-600 tw-dark:hover:bg-blue-700 tw-dark:focus:ring-blue-800">Đăng nhập</button>
                         <div class="tw-text-sm tw-font-medium tw-text-gray-500 tw-dark:text-gray-300">
                           Bạn chưa có tài khoản? <span onClick={() => setPage('register')} class=" tw-cursor-pointer tw-text-blue-700 tw-hover:underline tw-dark:text-blue-500">Đăng kí ngay!!!</span>
                         </div>
@@ -404,11 +432,13 @@ const Auth = () => {
                           type="email"
                           placeholder="name@company.com"
                           blurFunction={emailBlur}
+                          onKeyDown={(e) => handleKeyDownClick(e, loginButtonRef)}
                         />
                       </div>
                       <div className="tw-mb-4">
                         <button
                           onClick={handleSendForgetPasswordOTP}
+                          ref={loginButtonRef}
                           className="tw-w-full tw-text-white tw-bg-blue-700 tw-hover:bg-blue-800 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-sm tw-px-5 tw-py-2.5 tw-text-center tw-dark:bg-blue-600 tw-dark:hover:bg-blue-700 tw-dark:focus:ring-blue-800"
                         >
                           Gửi OTP
@@ -433,6 +463,7 @@ const Auth = () => {
                             attribute="forgetPasswordOTP"
                             type="text"
                             placeholder="Verification Code"
+                            onKeyDown={(e) => handleKeyDown(e, passwordInputRef)}
                           />
                         </div>
                         <div>
@@ -443,9 +474,11 @@ const Auth = () => {
                             placeholder="New Password..."
                             blurFunction={passwordBlur}
                             showEyeIcon
+                            ref={passwordInputRef}
+                            onKeyDown={(e) => handleKeyDownClick(e, loginButtonRef)}
                           />
                         </div>
-                        <button onClick={handleChangePassword} className="tw-w-full tw-text-white tw-bg-blue-700 tw-hover:bg-blue-800 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-sm tw-px-5 tw-py-2.5 tw-text-center tw-dark:bg-blue-600 tw-dark:hover:bg-blue-700 tw-dark:focus:ring-blue-800">Đặt mật khẩu</button>
+                        <button ref={loginButtonRef} onClick={handleChangePassword} className="tw-w-full tw-text-white tw-bg-blue-700 tw-hover:bg-blue-800 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-sm tw-px-5 tw-py-2.5 tw-text-center tw-dark:bg-blue-600 tw-dark:hover:bg-blue-700 tw-dark:focus:ring-blue-800">Đặt mật khẩu</button>
                         <p onClick={() => setPage('forget_password_email')} className="tw-text-sm tw-font-medium tw-text-blue-700 tw-hover:underline tw-dark:text-blue-500 tw-cursor-pointer">Email không chính xác?</p>
                         {
                           errorObj.changePassword &&

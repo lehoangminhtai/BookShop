@@ -1,9 +1,9 @@
 import { useStateContext } from '../context/UserContext'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 // import {motion} from 'framer-motion'
 import { VisibilityOff, RemoveRedEye } from '@mui/icons-material'
 
-const Input = ({ type, placeholder, attribute, blurFunction, showEyeIcon }) => {      // attribute may either of 'email', 'name', 'password', 'confirmPassword'
+const Input = React.forwardRef(({ type, placeholder, attribute, blurFunction, showEyeIcon,onKeyDown },ref) => {      // attribute may either of 'email', 'name', 'password', 'confirmPassword'
 
     const { userFormData, setUserFormData, validationMessage, setValidationMessage } = useStateContext()
     const [showPassword, setShowPassword] = useState(false)
@@ -23,6 +23,8 @@ const Input = ({ type, placeholder, attribute, blurFunction, showEyeIcon }) => {
                     value={userFormData[attribute]}
                     onChange={handleChange}
                     onBlur={blurFunction}
+                    onKeyDown={onKeyDown}
+                    ref={ref}
                     className="tw-bg-inherit tw-w-full tw-text-black tw-border-b-[1px] tw-border-textGray tw-p-[6px] tw-outline-none tw-pl-0"
                     required
                 />
@@ -43,5 +45,6 @@ const Input = ({ type, placeholder, attribute, blurFunction, showEyeIcon }) => {
     )
 
 }
+)
 
 export default Input
