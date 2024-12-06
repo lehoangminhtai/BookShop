@@ -38,96 +38,112 @@ const BookDetail = ({ book }) => {
 
   const handleAddItemToCart = async (itemData) => {
     try {
-        await addItemToCart(itemData);
+      await addItemToCart(itemData);
     }
     catch (error) {
-        console.log("lỗi, không thể thêm giỏ hàng", error)
+      console.log("lỗi, không thể thêm giỏ hàng", error)
     }
-}
+  }
 
   const addToCart = () => {
     if (user) {
-        const itemData = { userId: user._id, bookId: book._id, quantity: 1, price: priceDiscount }
-        handleAddItemToCart(itemData);
+      const itemData = { userId: user._id, bookId: book._id, quantity: 1, price: priceDiscount }
+      handleAddItemToCart(itemData);
     }
     else {
 
 
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-        const existingProduct = cart.find(item => item.id === book._id);
-        if (existingProduct) {
-            // Nếu có, cập nhật số lượng sản phẩm trong giỏ hàng
-            existingProduct.quantity += 1;
-        } else {
-            // Nếu không, thêm sản phẩm mới vào giỏ hàng
-            cart.push({ id: book._id, quantity: 1, price: priceDiscount });
-        }
+      // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+      const existingProduct = cart.find(item => item.id === book._id);
+      if (existingProduct) {
+        // Nếu có, cập nhật số lượng sản phẩm trong giỏ hàng
+        existingProduct.quantity += 1;
+      } else {
+        // Nếu không, thêm sản phẩm mới vào giỏ hàng
+        cart.push({ id: book._id, quantity: 1, price: priceDiscount });
+      }
 
-        // Lưu giỏ hàng vào Local Storage
-        localStorage.setItem('cart', JSON.stringify(cart));
+      // Lưu giỏ hàng vào Local Storage
+      localStorage.setItem('cart', JSON.stringify(cart));
     }
-   
-};
+
+  };
 
 
   const handleAddToCart = () => {
     addToCart()
+
     toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
       Sản phẩm đã được thêm vào giỏ hàng
-     
-    </div>, 
-    {
-      position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
-      autoClose: 1500, // Đóng sau 3 giây
-      hideProgressBar: true, // Ẩn thanh tiến độ
-      closeButton: false, // Ẩn nút đóng
-      className: "custom-toast", // Thêm class để tùy chỉnh CSS
-      draggable: false, // Tắt kéo di chuyển
-      rtl: false, // Không hỗ trợ RTL
-    }
-  );
+
+    </div>,
+      {
+        position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+        autoClose: 1500, // Đóng sau 3 giây
+        hideProgressBar: true, // Ẩn thanh tiến độ
+        closeButton: false, // Ẩn nút đóng
+        className: "custom-toast", // Thêm class để tùy chỉnh CSS
+        draggable: false, // Tắt kéo di chuyển
+        rtl: false, // Không hỗ trợ RTL
+      }
+    );
   };
 
 
   return (
-    <div className="tw-w-full tw-max-w-sm tw-bg-white tw-border tw-border-gray-200 tw-rounded-lg tw-shadow tw-dark:bg-gray-800 tw-dark:border-gray-700" onClick={() => handleProductClick(book._id)}>
-      <div>
+    <div className=" mt-3 card tw-w-full tw-max-w-sm tw-bg-white tw-border tw-border-gray-200 tw-rounded-lg tw-shadow-lg tw-dark:bg-gray-800 tw-dark:border-gray-700 hover:tw-shadow-xl transition-shadow duration-300"
+      onClick={() => handleProductClick(book._id)}>
+
+      {/* Hình ảnh chiếm toàn bộ chiều rộng của thẻ với padding để có thể nhìn thấy toàn bộ ảnh */}
+      <div className="d-flex justify-content-center tw-px-2 tw-pt-2">
         <img
           src={book.images}
           alt={`Book image`}
-          className="tw-w-full tw-rounded-lg"
-          style={{ objectFit: 'cover', height: '200px' }}
+          className="card-img-top tw-rounded-t-lg tw-object-cover"
+          style={{ height: '190px', width: '140px' }} // Điều chỉnh chiều cao của ảnh nhỏ hơn để thẻ nhỏ hơn
         />
       </div>
-      <div className="tw-px-5 tw-pb-5">
-        <h5 className="tw-text-xl tw-font-semibold tw-tracking-tight tw-text-gray-900 tw-dark:text-white">
+
+      <div className="card-body tw-px-2 tw-py-2">
+        <h5 className="card-title tw-text-sm tw-font-semibold tw-tracking-tight tw-text-gray-900 tw-dark:text-white">
           {book.title}
         </h5>
-        <p><strong>Tác giả:</strong> {book.author}</p>
-      
-        <div className="tw-flex tw-items-center tw-mt-2.5 tw-mb-5"></div>
-        <div className="d-flex align-items-center mb-3">
-          <span className="fs-3 text-danger fw-bold">{formatCurrency(priceDiscount)}</span>
-          <span className="ms-2 text-muted text-decoration-line-through">{formatCurrency(bookSale.price)}</span>
-          
+        <p className="card-text tw-text-xs"><strong>Tác giả:</strong> {book.author}</p>
+
+        {/* Hiển thị giá bán */}
+        <div className="tw-mt-2">
+          {bookSale.discount > 0 ? (
+            <div className="d-flex align-items-center mb-1">
+              <span className="fs-5 text-danger fw-bold">{formatCurrency(priceDiscount)}</span>
+              <span className="ms-2 text-muted text-decoration-line-through">{formatCurrency(bookSale.price)}</span>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center mb-1">
+              <span className="fs-5 text-danger fw-bold">{formatCurrency(bookSale.price)}</span>
+            </div>
+          )}
         </div>
-        <div className="tw-flex tw-items-center tw-justify-between">
+
+        {/* Nút thêm vào giỏ hàng */}
+        <div className="d-flex justify-content-between mt-2">
           <button
-            className="tw-text-white tw-bg-blue-700 tw-hover:bg-blue-800 tw-focus:ring-4 tw-focus:outline-none tw-focus:ring-blue-300 tw-font-medium tw-rounded-lg tw-text-sm tw-px-5 tw-py-2.5 tw-text-center tw-dark:bg-blue-600 tw-dark:hover:bg-blue-700 tw-dark:focus:ring-blue-800"
+            className="btn btn-primary tw-flex tw-items-center tw-px-3 tw-py-1 tw-rounded-lg tw-shadow-sm tw-bg-blue-600 tw-hover:bg-blue-700 tw-focus:ring-2 tw-focus:ring-blue-300"
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
               handleAddToCart();
-            }}
-          >
-            <i className="fa fa-shopping-cart" aria-hidden="true"></i>
+            }}>
+            <i className="fas fa-cart-plus me-2"></i> Thêm vào giỏ
           </button>
         </div>
       </div>
-      <ToastContainer/>
+
+      <ToastContainer />
     </div>
+
+
   );
 };
 
