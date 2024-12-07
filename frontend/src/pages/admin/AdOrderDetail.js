@@ -454,9 +454,10 @@ const AdOrderDetail = () => {
                                             <i className="fas fa-truck me-2"></i> Cập nhật trạng thái
                                         </button>
                                     )}
-                                    <button className="btn btn-danger d-flex align-items-center" onClick={openCancelOrder}>
+                                    {payment.orderId.orderStatus !== 'completed' && ( <button className="btn btn-danger d-flex align-items-center" onClick={openCancelOrder}>
                                         <i className="fas fa-times me-2"></i> Hủy Đơn Hàng
-                                    </button>
+                                    </button>)}
+                                   
                                 </div>
                                 )}
                                 {showModal && (
