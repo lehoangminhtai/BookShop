@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const BookSale = require('../models/bookSaleModel');
+const Book  = require("../models/bookModel")
+
 
 // Tạo mới một sách để bán
 const createBookSale = async (req, res) => {
@@ -35,6 +37,18 @@ const getBookSales = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+const getBookSalesNotAvailable = async (req, res) => {
+    try {
+        const bookSales = await BookSale.find({status: 'hide'})
+            .sort({ createdAt: -1 })
+            .populate('bookId', 'title author images'); // Liên kết với thông tin cơ bản của sách
+
+        res.status(200).json(bookSales);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 const getBookSalesAdmin = async (req, res) => {
     try {
         const bookSales = await BookSale.find({})
@@ -111,6 +125,33 @@ const updateBookSale = async (req, res) => {
     }
 };
 
+const searchBookSalesByTitle = async (req, res) => {
+    const { title } = req.query; // Nhận tên sách từ query params
+    try {
+        // Tìm các sách có title khớp với từ khóa tìm kiếm
+        const books = await Book.find({
+            title: { $regex: title, $options: 'i' } // Tìm kiếm không phân biệt chữ hoa/thường
+        });
+
+        if (!books.length) {
+            return res.status(200).json({ success: true, bookSales: [] });
+        }
+
+        // Lấy danh sách bookId từ kết quả tìm kiếm
+        const bookIds = books.map(book => book._id);
+
+        // Tìm các bản ghi BookSale dựa trên danh sách bookId
+        const bookSales = await BookSale.find({ bookId: { $in: bookIds } })
+            .sort({ createdAt: -1 })
+            .populate('bookId', 'title author images'); // Đưa thông tin cơ bản của sách vào kết quả
+
+        res.status(200).json({success: true, bookSales: bookSales});
+    } catch (error) {
+        res.status(500).json({success:false, error: error.message });
+    }
+};
+
+
 
 module.exports = {
     createBookSale,
@@ -118,5 +159,7 @@ module.exports = {
     getBookSale,
     deleteBookSale,
     updateBookSale,
-    getBookSalesAdmin
+    getBookSalesAdmin,
+    getBookSalesNotAvailable,
+    searchBookSalesByTitle
 };
