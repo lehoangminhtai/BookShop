@@ -90,8 +90,8 @@ const deleteBook = async(req, res) =>{
 
     res.status(200).json(book);
 }
-const updateBook = async (req, res, next) => {
-    const { bookId } = req.params; // ID của sách cần cập nhật
+const updateBook = async (req, res) => {
+    const { bookId } = req.params; // Lấy ID của sách cần cập nhật
     const { title, author, description, images, publisher, categoryId } = req.body;
 
     try {
@@ -105,29 +105,36 @@ const updateBook = async (req, res, next) => {
             });
         }
 
-        // Nếu có ảnh mới, upload ảnh lên Cloudinary
-        let imageUrl = book.images; // Nếu không thay đổi ảnh, sử dụng ảnh cũ
+        // Kiểm tra xem có hình ảnh mới không, nếu có thì upload lên Cloudinary
+        let imageUrls = book.images; // Nếu không có hình ảnh mới, giữ nguyên danh sách ảnh cũ
 
         if (images) {
-            const result = await cloudinary.uploader.upload(images, {
-                folder: "uploads",
-            });
-            imageUrl = result.secure_url; // Cập nhật ảnh mới
+            if (Array.isArray(images)) {
+                // Nếu images là một mảng, ta upload từng ảnh lên Cloudinary
+                const uploadPromises = images.map(image => 
+                    cloudinary.uploader.upload(image, { folder: 'uploads' })
+                );
+                const uploadResults = await Promise.all(uploadPromises);
+                imageUrls = uploadResults.map(result => result.secure_url); // Lấy các URL của ảnh đã upload
+            } else {
+                // Nếu images chỉ là một ảnh đơn, ta upload nó lên Cloudinary
+                const result = await cloudinary.uploader.upload(images, { folder: 'uploads' });
+                imageUrls = [result.secure_url]; // Chỉ có một ảnh
+            }
         }
 
         // Cập nhật thông tin sách
         book.title = title || book.title;
         book.author = author || book.author;
         book.description = description || book.description;
-        book.images = imageUrl; // Cập nhật ảnh mới (nếu có)
+        book.images = imageUrls; // Cập nhật danh sách ảnh mới (nếu có)
         book.publisher = publisher || book.publisher;
         book.categoryId = categoryId || book.categoryId;
 
         // Lưu sách đã cập nhật
         await book.save();
 
-    
-
+        // Trả về thông báo thành công cùng thông tin sách đã cập nhật
         res.status(200).json({
             success: true,
             message: 'Cập nhật sách thành công',
@@ -135,6 +142,7 @@ const updateBook = async (req, res, next) => {
         });
 
     } catch (error) {
+        // Xử lý lỗi
         return res.status(400).json({
             success: false,
             message: 'Cập nhật sách thất bại: ' + error.message

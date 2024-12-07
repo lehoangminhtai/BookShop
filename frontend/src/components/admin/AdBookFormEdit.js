@@ -111,7 +111,8 @@ const BookFormEdit = ({ book, onClose }) => {
             const descriptionHtml = draftToHtml(convertToRaw(description.getCurrentContent()));
             
             const bookData = { title, author, description: descriptionHtml, images, publisher, categoryId };
-            const responseUpdateBook = await updateBook(book._id, bookData);
+            const bookId = book._id
+            const responseUpdateBook = await updateBook(bookId, bookData);
             console.log(responseUpdateBook)
             if (responseUpdateBook.success) {
                 setTitle('');
@@ -237,7 +238,7 @@ const BookFormEdit = ({ book, onClose }) => {
                 <button type="submit" className="btn btn-primary w-100 mt-3">Cập nhật</button>
             </form>
 
-            <ToastContainer />
+           
         </div>
     );
 };

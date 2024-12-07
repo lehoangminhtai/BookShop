@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { ToastContainer } from 'react-toastify';
 //component
 import AdSidebar from '../../components/admin/AdSidebar';
 import BookForm from '../../components/BookForm';
@@ -162,6 +163,7 @@ const AdBook = () => {
                 )}
 
             </div>
+            <ToastContainer />
         </div>
     );
 };
