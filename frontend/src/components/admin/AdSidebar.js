@@ -86,19 +86,12 @@ const AdSidebar = () => {
                 <i className="fas fa-truck me-2"></i> <span>Vận chuyển</span>
               </Link>
             </li>
-            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <a href="#payments" className="nav-link text-dark d-flex justify-content-between align-items-center">
-                <span className="d-flex align-items-center">
-                  <i className="fas fa-credit-card me-2"></i> Thanh toán
-                </span>
-                <span className="badge bg-primary">11</span>
-              </a>
-            </li>
+            
             
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <a href="#contact" className="nav-link text-dark d-flex align-items-center">
+              <Link to={"/admin/users"} className="nav-link text-dark d-flex align-items-center">
                 <i className="fas  fa-user me-2"></i> <span>Khách hàng</span>
-              </a>
+              </Link>
             </li>
             
            

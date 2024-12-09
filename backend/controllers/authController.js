@@ -195,6 +195,10 @@ const register = async (req, res) => {
 
         const existingUser = await User.findOne({ email })
         if (!existingUser) return res.status(400).json({ message: `Email chưa đăng ký`, success: false })
+        
+            if (existingUser.status === 'lock') {
+                return res.status(403).json({ message: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.', success: false });
+            }
 
         const plainPassword = password
         const hashedPassword = existingUser?.password

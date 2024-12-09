@@ -85,7 +85,12 @@ const userSchema = new Schema({
         type: [{ name: String, token: String }],
         required: true
     },
-});
+    status:{
+        type: String,
+        enum:['active', 'lock'],
+        default: 'active'
+    }
+},{timestamps:true});
 
 
 userSchema.methods.generateAuthToken = async function () {

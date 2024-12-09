@@ -6,10 +6,13 @@ const {  getAllUsers,
     changePassword,
     login,
     deleteAllUsers} = require('../controllers/authController');
+const UserController = require('../controllers/userController')
 
 const router = express.Router();
 
-router.get('/get-all-users', getAllUsers)
+router.get('/get-all-users', UserController.getAllUser)
+
+router.post('/create-user', UserController.createUser)
 
 router.post('/send-register-otp', sendRegisterOTP)
 router.post('/register', register)
