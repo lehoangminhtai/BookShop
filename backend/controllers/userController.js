@@ -18,6 +18,42 @@ exports.getAllUser = async (req,res) =>{
     }
 }
 
+exports.getFilterUser = async (req,res) =>{
+    try {
+        const {status} = req.body
+        const users = await User.find({status: status}).sort({createdAt:-1})
+        res.status(200).json({
+            success: true,
+            users
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+exports.searchUsers = async (req, res) => {
+    try {
+        const { query } = req.query; // Lấy giá trị từ query string
+
+        // Tìm kiếm trong fullName, email hoặc phone
+        const users = await User.find({
+            $or: [
+                { fullName: { $regex: query, $options: 'i' } }, // Không phân biệt chữ hoa/thường
+                { email: { $regex: query, $options: 'i' } },
+                { phone: { $regex: query, $options: 'i' } }
+            ]
+        });
+
+        return res.status(200).json({ success: true, users: users });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: 'Lỗi máy chủ' });
+    }
+};
+
 exports.createUser = async (req, res) => {
     try {
         const { fullName, email, phone,image, status, password, dateOfBirth, role } = req.body;

@@ -11,6 +11,9 @@ const UserController = require('../controllers/userController')
 const router = express.Router();
 
 router.get('/get-all-users', UserController.getAllUser)
+router.get('/search-user', UserController.searchUsers)
+
+router.post('/filter-users', UserController.getFilterUser)
 
 router.post('/create-user', UserController.createUser)
 

@@ -1,8 +1,22 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useStateContext } from '../../context/UserContext';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../actions/UserAction';
 
 const AdSidebar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const { users, setUser } = useStateContext()
+
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const logoutFunc = () => {
+    dispatch(logout())
+    setUser(null)
+    navigate('/')
+  }
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -93,7 +107,12 @@ const AdSidebar = () => {
                 <i className="fas  fa-user me-2"></i> <span>Khách hàng</span>
               </Link>
             </li>
-            
+            <li className="nav-item" onClick={logoutFunc} style={{ borderBottom: '1px solid #e0e0e0' }}>
+            <Link to="/logout" className="nav-link text-dark d-flex align-items-center">
+                <i className="fas fa-sign-out-alt me-2"></i> <span>Đăng xuất</span>
+              </Link>
+            </li>
+           
            
           </ul>
         </nav>
