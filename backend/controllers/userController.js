@@ -26,7 +26,7 @@ exports.createUser = async (req, res) => {
     
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({success:false, error: 'Email đã được sử dụng' });
+            return res.status(400).json({success:false, message: 'Email đã được sử dụng' });
         }
         let result = null
         if(image){
@@ -53,6 +53,7 @@ exports.createUser = async (req, res) => {
         await newUser.save();
 
         res.status(201).json({
+            success:true,
             message: 'User được tạo thành công!',
             user: {
                 id: newUser._id,

@@ -5,8 +5,7 @@ import {ToastContainer } from "react-toastify";
 //component
 import AdSidebar from '../../components/admin/AdSidebar';
 import AdUserForm from '../../components/admin/AdUserForm';
-import BookForm from '../../components/BookForm';
-import BookFormEdit from '../../components/admin/AdBookFormEdit';
+
 //service
 import { getAllUsers } from '../../services/userService';
 
@@ -51,6 +50,10 @@ const AdUser = () => {
 
     const closeModal = () => {
         setShowModal(false);
+    };
+    const closeModalWithSuccess = () => {
+        setShowModal(false);
+        fetchUsers()
     };
     const handleUpdateUser = (user) => {
         setUserSelected(user)
@@ -141,7 +144,7 @@ const AdUser = () => {
                     <div className="modal-overlay ">
                         <div className="modal-content">
                             <button className="close-btn" onClick={closeModal}>&times;</button>
-                           <AdUserForm onClose ={closeModal}/>
+                           <AdUserForm onClose ={closeModalWithSuccess}/>
                             <button className="" onClick={closeModal}>Quay lại</button>
                         </div>
                     </div>

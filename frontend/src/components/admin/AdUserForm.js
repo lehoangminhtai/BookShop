@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { createUser } from "../../services/userService";
-import { toast } from "react-toastify";
+import { toast,ToastContainer } from "react-toastify";
 
-const AdUserForm = () => {
+const AdUserForm = ({onClose}) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,8 +22,7 @@ const AdUserForm = () => {
     password: "",
     passwordConfirm: "",
   });
-  const [showModal, setShowModal] = useState(false);
-  const [avatarURL, setAvatarURL] = useState("");
+
   const [showPassword, setShowPassword] = useState(false); // Trạng thái hiển thị mật khẩu
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
@@ -59,7 +58,7 @@ const AdUserForm = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFileToBase(file); // Gọi hàm để chuyển file thành base64
+      setFileToBase(file);
     }
   };
   
@@ -78,12 +77,6 @@ const AdUserForm = () => {
       default:
         return 255;
     }
-  };
-
-  // Xử lý lưu ảnh từ URL
-  const handleSaveAvatar = () => {
-    setFormData({ ...formData, avatar: avatarURL });
-    setShowModal(false);
   };
 
 
@@ -146,15 +139,19 @@ const AdUserForm = () => {
         role: formData.isAdmin ? 1 : 0}
 
         const response = await createUser(userData);
-        console.log(formData)
-        console.log(response)
-        if(response.success){
-          toast.success('Đã tạo người dùng mới')
        
+        if(response.success){
+          toast.success('Thêm người dùng thành công', {
+            autoClose: 1000,
+            onClose: () => {
+                // Đảm bảo đóng modal sau khi thông báo đã hoàn thành
+                onClose();
+            }
+        })
         }
-        else  if(response.false){
-          console.log(response.message)
-          toast.error(response.message)
+        else if(!response.success){
+         
+          toast.error(response.data.message)
         }
 
     } catch (error) {
@@ -185,11 +182,6 @@ const AdUserForm = () => {
                       onChange={handleImageUpload}
                     />
 
-
-                    /{" "}
-                    <a href="#" className="text-primary" onClick={() => setShowModal(true)}>
-                      Thêm từ URL
-                    </a>
                   </div>
                 </div>
                 <div className="col-md-6">
@@ -334,10 +326,7 @@ const AdUserForm = () => {
             </div>
           </div>
         </div>
-
-        {/* Modal để thêm ảnh */}
-
-
+          <ToastContainer/>
       </div>
     </div>
   );
