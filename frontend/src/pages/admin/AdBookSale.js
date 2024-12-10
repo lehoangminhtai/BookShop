@@ -174,8 +174,8 @@ const AdBookSale = () => {
                             </Link>
                         </td>
                         <td onClick={() => handleShowEdit(bookSale)} style={{ cursor: "pointer" }}>
-                            <div className="text-primary">{bookSale.bookId.title}</div>
-                            <div className="text-muted">{bookSale.bookId.author}</div>
+                            <div className="text-primary">{bookSale.bookId?.title}</div>
+                            <div className="text-muted">{bookSale.bookId?.author}</div>
                         </td>
                         <td>
                             <div className={`${bookSale.quantity === 0 ? 'text-danger' : 'text-primary'}`}>
@@ -183,18 +183,18 @@ const AdBookSale = () => {
                             </div>
                         </td>
                         <td>
-                            {bookSale.discount !== 0 ? (
+                            {bookSale?.discount !== 0 ? (
                                 <div className="d-flex align-items-center mb-3">
                                     <span className="fs-5 text-danger fw-bold">
-                                        {formatCurrency(bookSale.price - (bookSale.price * bookSale.discount) / 100)}
+                                        {formatCurrency(bookSale?.price - (bookSale?.price * bookSale?.discount) / 100)}
                                     </span>
-                                    {bookSale.price && bookSale.discount > 0 && (
+                                    {bookSale?.price && bookSale?.discount > 0 && (
                                         <div>
                                             <span className="ms-2 text-muted text-decoration-line-through">
-                                                {formatCurrency(bookSale.price)}
+                                                {formatCurrency(bookSale?.price)}
                                             </span>
                                             <span className="ms-2 bg-danger text-white px-2 rounded">
-                                                {bookSale.discount} %
+                                                {bookSale?.discount} %
                                             </span>
                                         </div>
                                     )}
@@ -202,7 +202,7 @@ const AdBookSale = () => {
                             ) : (
                                 <div>
                                     <span className="fs-5 text-danger fw-bold">
-                                        {formatCurrency(bookSale.price)}
+                                        {formatCurrency(bookSale?.price)}
                                     </span>
                                 </div>
                             )}
@@ -212,8 +212,8 @@ const AdBookSale = () => {
                                 <input
                                     className="form-check-input"
                                     type="checkbox"
-                                    id={`isActive-${bookSale._id}`}
-                                    checked={bookSale.status !== 'hide'}
+                                    id={`isActive-${bookSale?._id}`}
+                                    checked={bookSale?.status !== 'hide'}
                                     onChange={() => handleChangeActive(bookSale)}
                                 />
                             </div>
