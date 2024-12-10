@@ -20,3 +20,19 @@ export const createUser = async (userData) =>
             }
         }
     };
+export const updateUser = async (userId,userData) =>
+    {
+        try {
+            const response =  await API.put(`/${userId}`, userData)
+            return response.data;
+        } catch (error) {
+    
+            if (error.response) {
+    
+                return error.response;
+            } else {
+    
+                return { success: false, message: 'Có lỗi xảy ra khi kết nối tới server.' };
+            }
+        }
+    };

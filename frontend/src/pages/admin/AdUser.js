@@ -16,6 +16,7 @@ const AdUser = () => {
     const [userSelected, setUserSelected] = useState()
     const [showModal, setShowModal] = useState(false);
     const [showModalEdit, setShowModalEdit] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
     const navigate = useNavigate();
     const {user} = useStateContext()
     const userId = user._id
@@ -45,23 +46,29 @@ const AdUser = () => {
     }, [showModal]);
 
     const handleCreateUser = () => {
+        setIsEdit(false)
+        setUserSelected()
         setShowModal(true);
     };
 
     const closeModal = () => {
         setShowModal(false);
+        setIsEdit(false)
     };
     const closeModalWithSuccess = () => {
         setShowModal(false);
+        setIsEdit(false)
         fetchUsers()
     };
     const handleUpdateUser = (user) => {
         setUserSelected(user)
-        setShowModalEdit(true);
+        setIsEdit(true)
+        setShowModal(true);
     };
 
     const closeModalEdit = () => {
-        setShowModalEdit(false);
+        setShowModal(false);
+        setIsEdit(false)
         fetchUsers();
     };
 
@@ -109,9 +116,7 @@ const AdUser = () => {
                                     <button className="btn btn-link text-primary" onClick={() => handleUpdateUser(user)}>
                                         <i className="fas fa-edit"></i>
                                     </button>
-                                    <button className="btn btn-link text-danger" >
-                                        <i className="fas fa-trash"></i>
-                                    </button>
+                                   
                                 </td>
 
                             </tr>
@@ -144,7 +149,7 @@ const AdUser = () => {
                     <div className="modal-overlay ">
                         <div className="modal-content">
                             <button className="close-btn" onClick={closeModal}>&times;</button>
-                           <AdUserForm onClose ={closeModalWithSuccess}/>
+                           <AdUserForm onClose ={closeModalWithSuccess} isEdit = {isEdit} user = {userSelected}/>
                             <button className="" onClick={closeModal}>Quay lại</button>
                         </div>
                     </div>

@@ -1,18 +1,29 @@
 import React, { useState } from "react";
-import { createUser } from "../../services/userService";
-import { toast,ToastContainer } from "react-toastify";
+import { createUser, updateUser } from "../../services/userService";
+import { toast, ToastContainer } from "react-toastify";
 
-const AdUserForm = ({onClose}) => {
+const AdUserForm = ({ onClose, isEdit, user }) => {
+  const formatDate = (date) => {
+    if (!date) return ""; // Trả về chuỗi rỗng nếu không có giá trị
+    const d = new Date(date); // Chuyển chuỗi ISO thành đối tượng Date
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Thêm số 0 nếu tháng < 10
+    const day = String(d.getDate()).padStart(2, '0'); // Thêm số 0 nếu ngày < 10
+    return `${year}-${month}-${day}`; // Trả về chuỗi theo định dạng YYYY-MM-DD
+  };
+
+  const dob = formatDate(user?.dateOfBirth || "");
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    dob: "",
+    name: user?.fullName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    dob: dob,
     password: "",
     passwordConfirm: "",
-    isAdmin: false,
-    status: "active",
+    isAdmin: user?.role === 0 ? false : true || false,
+    status: user?.status || "active",
     avatar: "",
+    isChangePass: false
   });
 
   const [errors, setErrors] = useState({
@@ -50,18 +61,18 @@ const AdUserForm = ({onClose}) => {
       setFormData((prevFormData) => ({
         ...prevFormData,
         avatar: reader.result, // Cập nhật avatar với hình ảnh đã đọc
-    })); // Lưu base64 vào state
-  
+      })); // Lưu base64 vào state
+
     };
   };
-  
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFileToBase(file);
     }
   };
-  
+
 
   const getMaxLength = (field) => {
     switch (field) {
@@ -101,27 +112,27 @@ const AdUserForm = ({onClose}) => {
     } else if (!/^\d{10,11}$/.test(formData.phone)) {
       newErrors.phone = "Số điện thoại phải có 10-11 chữ số";
     }
+    if (!isEdit || formData.isChangePass) {
+      if (!formData.password.trim()) {
+        newErrors.password = "Mật khẩu không được để trống";
+      } else if (formData.password.length < 8) {
+        newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự";
+      } else if (
+        !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(
+          formData.password
+        )
+      ) {
+        newErrors.password =
+          "Mật khẩu phải chứa ít nhất 1 ký tự hoa, 1 ký tự thường, 1 chữ số và 1 ký tự đặc biệt";
+      }
 
-    if (!formData.password.trim()) {
-      newErrors.password = "Mật khẩu không được để trống";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự";
-    } else if (
-      !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(
-        formData.password
-      )
-    ) {
-      newErrors.password =
-        "Mật khẩu phải chứa ít nhất 1 ký tự hoa, 1 ký tự thường, 1 chữ số và 1 ký tự đặc biệt";
+
+      if (!formData.passwordConfirm.trim()) {
+        newErrors.passwordConfirm = "Xác nhận mật khẩu không được để trống";
+      } else if (formData.password !== formData.passwordConfirm) {
+        newErrors.passwordConfirm = "Mật khẩu và xác nhận mật khẩu không khớp";
+      }
     }
-
-
-    if (!formData.passwordConfirm.trim()) {
-      newErrors.passwordConfirm = "Xác nhận mật khẩu không được để trống";
-    } else if (formData.password !== formData.passwordConfirm) {
-      newErrors.passwordConfirm = "Mật khẩu và xác nhận mật khẩu không khớp";
-    }
-
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
@@ -129,36 +140,70 @@ const AdUserForm = ({onClose}) => {
     }
 
     try {
-      const userData = { fullName: formData.name, 
-        email: formData.email , 
-        phone: formData.phone,
-        image: formData.avatar, 
-        status: formData.status, 
-        password: formData.password,
-        dateOfBirth:formData.dob, 
-        role: formData.isAdmin ? 1 : 0}
+      if (!isEdit) {
+        const userData = {
+          fullName: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          image: formData.avatar,
+          status: formData.status,
+          password: formData.password,
+          dateOfBirth: formData.dob,
+          role: !formData.isAdmin ? 0 : 1
+        }
 
         const response = await createUser(userData);
-       
-        if(response.success){
+
+        if (response.success) {
           toast.success('Thêm người dùng thành công', {
             autoClose: 1000,
             onClose: () => {
-                // Đảm bảo đóng modal sau khi thông báo đã hoàn thành
-                onClose();
+              // Đảm bảo đóng modal sau khi thông báo đã hoàn thành
+              onClose();
             }
-        })
+          })
         }
-        else if(!response.success){
-         
+        else if (!response.success) {
+
           toast.error(response.data.message)
         }
+      }
+      else if (isEdit) {
+        const userData = {
+          fullName: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          image: formData.avatar,
+          status: formData.status,
+          dateOfBirth: formData.dob,
+          role: !formData.isAdmin ? 0 : 1,
+        };
+        if (formData.isChangePass && formData.password) {
+          userData.password = formData.password; // Nếu đổi mật khẩu
+        }
+
+        const response = await updateUser(user._id, userData);
+
+        if (response.success) {
+          toast.success('Cập nhật người dùng thành công', {
+            autoClose: 1000,
+            onClose: () => {
+              // Đảm bảo đóng modal sau khi thông báo đã hoàn thành
+              onClose();
+            }
+          })
+        } else {
+          toast.error(response.data.message);
+        }
+      }
 
     } catch (error) {
       console.log(error)
     }
   };
+  const handleUpdate = () => {
 
+  }
   return (
     <div className="container py-5">
       <div className="rounded-lg">
@@ -171,7 +216,7 @@ const AdUserForm = ({onClose}) => {
                     <h5 className="card-title text-primary mb-3">Ảnh đại diện</h5>
                     <div className="d-flex justify-content-center mb-3">
                       <img
-                        src={formData.avatar || 'https://placehold.co/100x100'}
+                        src={user?.image || formData.avatar || 'https://placehold.co/100x100'}
                         alt="Avatar"
                         className="rounded-circle"
                         style={{ width: "100px", height: "100px" }}
@@ -242,6 +287,25 @@ const AdUserForm = ({onClose}) => {
                     onChange={handleChange}
                   />
                 </div>
+                {isEdit && (
+                  <div className="col-md-12 mt-3">
+                    <div className="d-flex">
+                      <div className="form-check form-switch">
+                        <input
+                          id="isChangePass"
+                          className="form-check-input"
+                          type="checkbox"
+                          value={formData.isChangePass}
+                          onChange={handleChange}
+                        />
+                      </div>
+                      <label htmlFor="changPass" className="form-label">
+                        Đổi mật khẩu ?
+                      </label>
+                    </div>
+                  </div>
+                )}
+
                 <div className="col-md-6 mt-3">
                   <label htmlFor="password" className="form-label">
                     Mật khẩu<span className="text-danger">*</span>
@@ -312,21 +376,40 @@ const AdUserForm = ({onClose}) => {
                   </select>
                 </div>
               </div>
+              <div className="col-md-12 mt-2 mb-2">
+                <div className="d-flex">
+                  <div className="form-check form-switch">
+                    <input
+                      id="isAdmin"
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={formData.isAdmin}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <label htmlFor="changPass" className="form-label">
+                    Là admin ?
+                  </label>
+                </div>
+              </div>
               <div className="card shadow-sm mb-4">
                 <div className="card-body">
                   <h5 className="card-title text-primary mb-3">Tạo</h5>
                   <div className="d-flex justify-content-end">
-                    <button className="btn btn-primary me-2" onClick={handleSubmit}>
+                    {isEdit ? <button className="btn btn-warning me-2" onClick={handleSubmit}>
+                      Cập nhật
+                    </button> : <button className="btn btn-primary me-2" onClick={handleSubmit}>
                       Lưu
-                    </button>
-                    <button className="btn btn-danger">Thoát</button>
+                    </button>}
+
+
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-          <ToastContainer/>
+        <ToastContainer />
       </div>
     </div>
   );
