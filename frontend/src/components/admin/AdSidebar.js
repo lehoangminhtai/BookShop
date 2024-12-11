@@ -89,11 +89,6 @@ const AdSidebar = () => {
                 <i className="fas fa-cogs me-2"></i> <span>Giảm giá</span>
               </Link>
             </li>
-            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <a href="#pages" className="nav-link text-dark d-flex align-items-center">
-                <i className="fas fa-file-alt me-2"></i> <span>Báo cáo</span>
-              </a>
-            </li>
             
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
               <Link to={'/admin/shipping'} className="nav-link text-dark d-flex align-items-center">
@@ -104,7 +99,7 @@ const AdSidebar = () => {
             
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
               <Link to={"/admin/users"} className="nav-link text-dark d-flex align-items-center">
-                <i className="fas  fa-user me-2"></i> <span>Khách hàng</span>
+                <i className="fas  fa-user me-2"></i> <span>Người dùng</span>
               </Link>
             </li>
             <li className="nav-item" onClick={logoutFunc} style={{ borderBottom: '1px solid #e0e0e0' }}>

@@ -1,18 +1,81 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Bar, Line } from 'react-chartjs-2';
 import AdSidebar from '../../components/admin/AdSidebar';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement } from 'chart.js';
 
+//service
+import { getReportToday, getRevenueWeek, getUsersWeek } from "../../services/reportService";
+
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
-    //Bar
+    const [revenue, setRevenue] = useState();
+    const [revenueData, setRevenueData] = useState([]);
+    const [revenueTotal, setRevenueTotal] = useState();
+    const [user, setUser] = useState();
+    const [usersData, setUsersData] = useState([]);
+    const [userTotal, setUserTotal] = useState();
+    const [orders, setOrders] = useState();
+    const [bookSales, setBookSales] = useState();
+
+    const getWeekRange = (currentDate) => {
+        const startOfWeek = new Date(currentDate); // Bắt đầu bằng ngày hiện tại
+        startOfWeek.setDate(currentDate.getDate() - currentDate.getDay()); // Chủ Nhật
+
+        const endOfWeek = new Date(currentDate); // Kết thúc bằng ngày hiện tại
+        endOfWeek.setDate(currentDate.getDate() + (6 - currentDate.getDay())); // Thứ Bảy
+
+        const formatDate = (date) => {
+            const day = String(date.getDate()).padStart(2, '0'); // Lấy ngày, thêm số 0 nếu cần
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Lấy tháng, thêm 1 vì tháng bắt đầu từ 0
+            const year = date.getFullYear(); // Lấy năm
+        
+            return `${day}/${month}/${year}`;
+        };
+
+        return {
+            startOfWeek: formatDate(startOfWeek),
+            endOfWeek: formatDate(endOfWeek),
+        };
+    };
+
+    
+    const today = new Date();
+    const { startOfWeek, endOfWeek } = getWeekRange(today);
+
+    const getReport = async () => {
+        const response = await getReportToday();
+        setRevenue(response.totalRevenue)
+        setUser(response.users)
+        setOrders(response.orders)
+        setBookSales(response.bookSalesCount)
+    }
+
+    const getRevenueWeekData = async (req, res) => {
+        const response = await getRevenueWeek();
+        setRevenueData(response.revenueByDay)
+        setRevenueTotal(response.totalRevenue)
+    }
+    const getUserWeekData = async (req, res) => {
+        const response = await getUsersWeek();
+        setUsersData(response.userRegistrationsByDay)
+        setUserTotal(response.totalRegistrations)
+    }
+
+    useEffect(() => {
+        getReport();
+        getRevenueWeekData();
+        getUserWeekData();
+    }, [])
+
     const chartData = {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        labels: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
         datasets: [
             {
-                label: 'Website Views',
-                data: [500, 700, 800, 1000, 950, 1200, 1100], // Dữ liệu cụ thể
+                label: '(tài khoản)',
+                data: usersData,
                 backgroundColor: 'rgba(54, 162, 235, 0.5)',
                 borderColor: 'rgba(54, 162, 235, 1)',
                 borderWidth: 1,
@@ -29,24 +92,31 @@ const Dashboard = () => {
             },
             title: {
                 display: true,
-                text: 'Weekly Website Views',
+                text: 'Người dùng',
             },
         },
         scales: {
             y: {
                 beginAtZero: true,
+                ticks: {
+                    stepSize: 1, // Đảm bảo các bước chia trục y là số nguyên
+                    callback: function(value) {
+                        return Number.isInteger(value) ? value : ''; // Chỉ hiển thị giá trị nguyên
+                    }
+                },
             },
         },
     };
+    
 
     //Line
 
     const lineChartData = {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], // Giả sử đây là các ngày trong tuần
+        labels: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'], // Giả sử đây là các ngày trong tuần
         datasets: [
             {
-                label: 'Sales',
-                data: [120, 190, 170, 210, 240, 220, 260], // Dữ liệu bán hàng giả lập
+                label: '(VNĐ)',
+                data: revenueData,
                 fill: true,
                 borderColor: '#4CAF50',
                 backgroundColor: 'rgba(76, 175, 80, 0.2)',
@@ -78,20 +148,38 @@ const Dashboard = () => {
         },
     };
 
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+    };
 
     return (
         <div className="d-flex">
             <AdSidebar />
             <main className="container my-4  p-6">
                 <h5 className="display-4 ">Bảng điều khiển</h5>
-                <p className="text-secondary">Thống kê</p>
+                <div className="d-flex justify-content-between align-items-center bg-light p-3 rounded shadow-sm">
+                    <div className="d-flex align-items-center">
+                        <i className="fas fa-chart-bar text-primary me-2"></i>
+                        <p className="mb-0 text-secondary fw-bold">Thống kê</p>
+                    </div>
+                    <select
+                        className="form-select w-auto border-primary text-primary fw-bold"
+                        style={{ maxWidth: "200px" }}
+
+                    >
+                        <option value="today">Hôm nay</option>
+                        <option value="today">Hôm qua</option>
+                    </select>
+                </div>
+
                 <div className="row g-4 mt-3">
                     <div className="col-12 col-sm-6 col-lg-3">
                         <div className="bg-white p-4 rounded shadow-sm d-flex justify-content-between align-items-center">
                             <div>
-                                <p className="text-primary mb-1">Today's Money</p>
-                                <p className="h4 fw-bold">$53k</p>
-                                <p className="text-success mb-0">+55% than last week</p>
+                                <p className="text-primary mb-1">Doanh thu</p>
+                                <p className="h4 fw-bold">{formatCurrency(revenue)}</p>
+                                <Link><p className="text-success mb-0">Chi Tiết</p></Link>
+
                             </div>
                             <div className="bg-dark p-3 rounded-circle" style={{ width: '50px', height: '50px' }}>
                                 <i className="fas fa-briefcase text-white"></i>
@@ -101,21 +189,9 @@ const Dashboard = () => {
                     <div className="col-12 col-sm-6 col-lg-3">
                         <div className="bg-white p-4 rounded shadow-sm d-flex justify-content-between align-items-center">
                             <div>
-                                <p className="text-primary mb-1">Today's Users</p>
-                                <p className="h4 fw-bold">2300</p>
-                                <p className="text-success mb-0">+3% than last month</p>
-                            </div>
-                            <div className="bg-dark p-3 rounded-circle" style={{ width: '50px', height: '50px' }}>
-                                <i className="fas fa-user text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-12 col-sm-6 col-lg-3">
-                        <div className="bg-white p-4 rounded shadow-sm d-flex justify-content-between align-items-center">
-                            <div>
-                                <p className="text-primary mb-1">Ads Views</p>
-                                <p className="h4 fw-bold">3,462,000</p>
-                                <p className="text-danger mb-0">-2% than yesterday</p>
+                                <p className="text-primary mb-1">Đơn Hàng</p>
+                                <p className="h4 fw-bold">{orders}</p>
+                                <Link><p className="text-success mb-0">Chi Tiết</p></Link>
                             </div>
                             <div className="bg-dark p-3 rounded-circle" style={{ width: '50px', height: '50px' }}>
                                 <i className="fas fa-chart-bar text-white"></i>
@@ -125,12 +201,25 @@ const Dashboard = () => {
                     <div className="col-12 col-sm-6 col-lg-3">
                         <div className="bg-white p-4 rounded shadow-sm d-flex justify-content-between align-items-center">
                             <div>
-                                <p className="text-primary mb-1">Sales</p>
-                                <p className="h4 fw-bold">$103,430,000,000</p>
-                                <p className="text-success mb-0">+5% than yesterday</p>
+                                <p className="text-primary mb-1">Người Dùng</p>
+                                <p className="h4 fw-bold">{user}</p>
+                                <Link><p className="text-success mb-0">Chi Tiết</p></Link>
+                            </div>
+                            <div className="bg-dark p-3 rounded-circle" style={{ width: '50px', height: '50px' }}>
+                                <i className="fas fa-user text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-12 col-sm-6 col-lg-3">
+                        <div className="bg-white p-4 rounded shadow-sm d-flex justify-content-between align-items-center">
+                            <div>
+                                <p className="text-primary mb-1">Số sách đang bán</p>
+                                <p className="h4 fw-bold">{bookSales}</p>
+                                <p className="text-success mb-0"><hr /></p>
                             </div>
                             <div className="bg-dark p-3 rounded-circle w-500" style={{ width: '50px', height: '50px' }}>
-                                <i className="fas fa-briefcase text-white"></i>
+                                <i className="fas fa-book text-white"></i>
                             </div>
                         </div>
                     </div>
@@ -140,8 +229,8 @@ const Dashboard = () => {
                         <div className="col-lg-4 col-md-6 mt-4 mb-4">
                             <div className="card">
                                 <div className="card-body">
-                                    <h6 className="mb-0">Website Views</h6>
-                                    <p className="text-sm">Last Campaign Performance</p>
+                                    <h6 className="mb-0">{startOfWeek} - {endOfWeek}</h6>
+
                                     <div className="pe-2">
                                         <div className="chart">
                                             <Bar data={chartData} options={chartOptions} height={250} />
@@ -149,8 +238,7 @@ const Dashboard = () => {
                                     </div>
                                     <hr className="dark horizontal" />
                                     <div className="d-flex">
-                                        <i className="material-symbols-rounded text-sm my-auto me-1">schedule</i>
-                                        <p className="mb-0 text-sm">campaign sent 2 days ago</p>
+                                        <p className="mb-0 text-sm">Số người dùng đăng kí tuần này: <span className="text-danger">{userTotal}</span></p>
                                     </div>
                                 </div>
                             </div>
@@ -158,10 +246,7 @@ const Dashboard = () => {
                         <div className="col-lg-4 col-md-6 mt-4 mb-4">
                             <div className="card">
                                 <div className="card-body">
-                                    <h6 className="mb-0">Daily Sales</h6>
-                                    <p className="text-sm">
-                                        (<span className="font-weight-bolder">+15%</span>) increase in today sales.
-                                    </p>
+                                <h6 className="mb-0">Doanh thu tuần</h6>
                                     <div className="pe-2">
                                         <div className="chart" style={{ height: '250px' }}>
                                             <Line data={lineChartData} options={lineChartOptions} />
@@ -169,8 +254,8 @@ const Dashboard = () => {
                                     </div>
                                     <hr className="dark horizontal" />
                                     <div className="d-flex">
-                                        <i className="material-symbols-rounded text-sm my-auto me-1">schedule</i>
-                                        <p className="mb-0 text-sm">updated 4 min ago</p>
+                                    <p className="mb-0 text-sm">Tổng doanh thu tuần này: <span className="text-danger">{formatCurrency(revenueTotal)}</span></p>
+                                   
                                     </div>
                                 </div>
                             </div>

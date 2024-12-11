@@ -21,6 +21,7 @@ const paymentRoutes = require('./routes/paymentRoute')
 const reviewRoute = require('./routes/reviewRoute');
 const accountRoute = require('./routes/accountRoute');
 const addressRoutes = require('./routes/addressRoute');
+const reportRoutes = require('./routes/reportRoute');
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
@@ -55,6 +56,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoute);
 app.use('/api/account', accountRoute);
 app.use('/api/user/addresses', addressRoutes);
+app.use('/api/reports', reportRoutes);
 
 
 app.use((req, res, next) => {
