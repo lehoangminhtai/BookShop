@@ -22,10 +22,12 @@ router.post('/register', register)
 
 router.put('/login', login)
 
-router.put('/:userId', UserController.updateUser);
+router.put('/change-password', changePassword)
+
+router.put('/update-user/:userId', UserController.updateUser);
 
 router.post('/send-forget-pass-otp', sendForgetPasswordOTP)
-router.put('/change-password', changePassword)
+
 
 router.delete('/delete_all_users', deleteAllUsers)
 
