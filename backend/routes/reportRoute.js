@@ -4,8 +4,14 @@ const reportController = require('../controllers/reportController')
 
 router.get('/report-today', reportController.calculateTodayRevenue)
 
+router.get('/report', reportController.calculateRevenue)
+
 router.get('/revenue-week', reportController.getOrderRevenueData)
 
 router.get('/users-week', reportController.calculateWeeklyUserRegistrations)
+
+router.get('/orders-week', reportController.getOrderCountData)
+
+router.get('/top-books', reportController.getTopBooks)
 
 module.exports = router;
