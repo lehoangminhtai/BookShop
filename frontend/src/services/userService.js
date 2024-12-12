@@ -57,7 +57,7 @@ export const createUser = async (userData) =>
 export const updateUser = async (userId,userData) =>
     {
         try {
-            const response =  await API.put(`/${userId}`, userData)
+            const response =  await API.put(`/update-user/${userId}`, userData)
             return response.data;
         } catch (error) {
     
