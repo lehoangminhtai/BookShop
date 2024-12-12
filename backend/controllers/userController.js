@@ -91,13 +91,7 @@ exports.createUser = async (req, res) => {
         res.status(201).json({
             success:true,
             message: 'User được tạo thành công!',
-            user: {
-                id: newUser._id,
-                fullName: newUser.fullName,
-                email: newUser.email,
-                image: newUser.image,
-                status: newUser.status
-            }
+            user: newUser
         });
     } catch (error) {
         console.error(error);
@@ -108,7 +102,7 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
     try {
         const { userId } = req.params; // Lấy user ID từ params
-        const { fullName, email, phone, image, status, dateOfBirth, role } = req.body;
+        const { fullName, email, phone, image, status, dateOfBirth, role,password } = req.body;
 
         // Kiểm tra xem user có tồn tại không
         const existingUser = await User.findById(userId);
@@ -143,6 +137,10 @@ exports.updateUser = async (req, res) => {
             }
         }
         
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 12);
+            existingUser.password = hashedPassword;
+        }
 
         // Cập nhật thông tin user
         existingUser.fullName = fullName || existingUser.fullName;

@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import { createUser, updateUser } from "../../services/userService";
 import { toast, ToastContainer } from "react-toastify";
+//service
+import { createUser, updateUser } from "../../services/userService";
+import { createCartSer } from "../../services/cartService";
+
 
 const AdUserForm = ({ onClose, isEdit, user }) => {
   const formatDate = (date) => {
@@ -155,6 +158,7 @@ const AdUserForm = ({ onClose, isEdit, user }) => {
         const response = await createUser(userData);
 
         if (response.success) {
+          await createCartSer(response.user._id)
           toast.success('Thêm người dùng thành công', {
             autoClose: 1000,
             onClose: () => {
