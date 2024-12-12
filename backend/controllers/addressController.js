@@ -76,9 +76,7 @@ exports.getAllAddresses = async (req, res) => {
     try {
         // Tìm tất cả địa chỉ của người dùng
         const addresses = await Address.findOne({ userId }).sort({ createdAt: -1 });
-        if (addresses.length === 0) {
-            return res.status(404).json({ message: 'No addresses found for this user' });
-        }
+       
 
 if (addresses && addresses.addresses) {
     // Sắp xếp mảng `addresses` theo trường `createdAt` của từng địa chỉ
