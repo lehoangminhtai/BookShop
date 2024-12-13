@@ -83,9 +83,27 @@ export const getOrdersWeek = async () => {
 
 export const getTopBooks = async (dateData) => {
     try {
-
+       
         const response = await API.get('/top-books',{
             params:{startOfMonth: dateData.startOfMonth, endOfMonth: dateData.endOfMonth}
+        });
+        return response.data;
+    } catch (error) {
+
+        if (error.response) {
+
+            return error.response;
+        } else {
+
+            return { success: false, message: 'Có lỗi xảy ra khi kết nối tới server.' };
+        }
+    }
+};
+export const getTopCustomers = async (dateData) => {
+    try {
+       
+        const response = await API.get('/top-customers',{
+            params:{startOfYear: dateData.startOfYear, endOfYear: dateData.endOfYear}
         });
         return response.data;
     } catch (error) {

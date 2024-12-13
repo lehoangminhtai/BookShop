@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Bar, Line } from 'react-chartjs-2';
-import moment from "moment";
 import AdSidebar from '../../components/admin/AdSidebar';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement } from 'chart.js';
 
 //service
-import { getReportToday, getReport, getRevenueWeek, getUsersWeek, getOrdersWeek, getTopBooks } from "../../services/reportService";
+import { getReportToday, getReport, getRevenueWeek, getUsersWeek, getOrdersWeek, getTopBooks, getTopCustomers } from "../../services/reportService";
 
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
+    
+
     const [revenue, setRevenue] = useState();
     const [revenueData, setRevenueData] = useState([]);
     const [revenueTotal, setRevenueTotal] = useState();
@@ -26,28 +27,78 @@ const Dashboard = () => {
     const [bookSales, setBookSales] = useState();
 
     const [topBooks, setTopBooks] = useState([])
-
+    const [topCustomers, setTopCustomers] = useState([])
 
     const today = new Date();
+    const currentMonth = today.getMonth() + 1;
     const formattedDate = today.toLocaleDateString('en-CA');
 
+    const year = today.getFullYear();
+
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toLocaleDateString("en-CA"); // Ngày đầu tiên
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toLocaleDateString("en-CA"); // Ngày cuối cùng
+
+    const currentQuarter = Math.ceil(currentMonth / 3); // Quý = làm tròn lên của (tháng / 3)
+
+    // Tính tháng bắt đầu và kết thúc của quý
+    const startMonth = (currentQuarter - 1) * 3; // Tháng bắt đầu: 0, 3, 6, 9
+    const endMonth = startMonth + 2; // Tháng kết thúc: 2, 5, 8, 11
+
+    // Tính ngày bắt đầu và ngày kết thúc của quý hiện tại
+    const startOfQuarter = new Date(year, startMonth, 1).toLocaleDateString("en-CA"); // Ngày đầu tiên
+    const endOfQuarter = new Date(year, endMonth + 1, 0).toLocaleDateString("en-CA");
 
     const [date, setDate] = useState({
         startDate: formattedDate,
         endDate: formattedDate
     })
-    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+    const [monthTopBook, setMonthTopBook] = useState({
+        startOfMonth,
+        endOfMonth
+    })
+    const [quarterTopCustomer, setQuarterTopCustomer] = useState({
+        startOfQuarter,
+        endOfQuarter,
+    })
 
-    const handleMonthChange = async (e) => {
-        const newMonth = parseInt(e.target.value, 10); // Lấy giá trị từ select
-        setSelectedMonth(newMonth); // Cập nhật state
-        const startOfMonth = moment().month(newMonth - 1).startOf("month").toISOString(); // ISO string cho backend
-        const endOfMonth = moment().month(newMonth - 1).endOf("month").toISOString();
+    const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+    const [selectedQuarter, setSelectedQuarter] = useState(currentQuarter);
 
-        const dateData = { startOfMonth, endOfMonth }
-        const response = await getTopBooks(dateData);
-        setTopBooks(response)
+    const handleMonthChange = (e) => {
+        const selectedMonth = parseInt(e.target.value, 10);
+        setSelectedMonth(selectedMonth);
+        const year = today.getFullYear(); // Lấy năm hiện tại
 
+        // Tính ngày bắt đầu và kết thúc của tháng
+        const startOfMonth = new Date(year, selectedMonth - 1, 1).toISOString().split("T")[0]; // Ngày đầu tiên
+        const endOfMonth = new Date(year, selectedMonth, 0).toISOString().split("T")[0]; // Ngày cuối cùng
+
+        // Cập nhật state
+        setMonthTopBook({
+            startOfMonth,
+            endOfMonth,
+        });
+
+    };
+
+    const handleQuarterChange = (e) => {
+        const selectedQuarter = parseInt(e.target.value, 10); // Lấy quý được chọn
+        setSelectedQuarter(selectedQuarter);
+        const year = today.getFullYear(); // Lấy năm hiện tại
+
+        // Xác định tháng bắt đầu và kết thúc của quý
+        const startMonth = (selectedQuarter - 1) * 3; // Tháng bắt đầu: 0, 3, 6, 9
+        const endMonth = startMonth + 2; // Tháng kết thúc: 2, 5, 8, 11
+
+        // Tính ngày bắt đầu và ngày kết thúc của quý
+        const startOfQuarter = new Date(year, startMonth, 1).toISOString().split("T")[0]; // Ngày đầu tiên của quý
+        const endOfQuarter = new Date(year, endMonth + 1, 0).toISOString().split("T")[0]; // Ngày cuối cùng của quý
+
+        // Cập nhật state
+        setQuarterTopCustomer({
+            startOfQuarter,
+            endOfQuarter,
+        });
     };
 
 
@@ -96,6 +147,15 @@ const Dashboard = () => {
         setOrders(response.orders)
         setBookSales(response.totalQuantity)
     }
+    const getTopBookInMonth = async () => {
+        const response = await getTopBooks(monthTopBook);
+        setTopBooks(response)
+    }
+    const getTopCustomersInQuarter = async () => {
+        const dataQuarter = {startOfYear: quarterTopCustomer.startOfQuarter, endOfYear: quarterTopCustomer.endOfQuarter}
+        const response = await getTopCustomers(dataQuarter)
+        setTopCustomers(response)
+    }
 
     const getRevenueWeekData = async (req, res) => {
         const response = await getRevenueWeek();
@@ -114,14 +174,23 @@ const Dashboard = () => {
         setOrdersCompletedData(response.completedOrders.orderCountByDay)
         setOrdersCompletedWeekCount(response.completedOrders.totalCount)
     }
-   
+
 
     useEffect(() => {
         getReportShow();
     }, [date])
+    useEffect(() => {
+        getTopBookInMonth();
+    }, [monthTopBook])
+    useEffect(() => {
+        getTopBookInMonth();
+    }, [monthTopBook])
+    useEffect(() => {
+       getTopCustomersInQuarter();
+    }, [quarterTopCustomer])
 
     useEffect(() => {
-       // getTopBookInMonth();
+        // getTopBookInMonth();
         getRevenueWeekData();
         getUserWeekData();
         getOrderWeekData();
@@ -411,15 +480,10 @@ const Dashboard = () => {
                     <div className="col bg-white p-3 rounded shadow-sm">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <h2 className="h6 fw-semibold">Sách bán chạy</h2>
-                            <select
-                                id="month"
-                                value={selectedMonth}
-                                onChange={handleMonthChange}
-                                className="form-select w-25"
-                            >
-                                {Array.from({ length: 12 }, (_, index) => (
-                                    <option key={index + 1} value={index + 1}>
-                                        Tháng {index + 1}
+                            <select onChange={handleMonthChange} value={selectedMonth} className="form-select w-25">
+                                {Array.from({ length: 12 }, (_, i) => (
+                                    <option key={i + 1} value={i + 1}>
+                                        Tháng {i + 1}
                                     </option>
                                 ))}
                             </select>
@@ -447,31 +511,34 @@ const Dashboard = () => {
                     </div>
                     <div className="col bg-white p-3 rounded shadow-sm">
                         <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h2 className="h6 fw-semibold">Khách hàng tiêu biểu</h2>
-                            <span className="text-secondary">Tháng {new Date().getMonth() + 1}</span>
+                            <h2 className="h6 fw-semibold">Khách hàng tiêu biểu </h2>
+                            <select onChange={handleQuarterChange} value={selectedQuarter} className="form-select w-25">
+                                {Array.from({ length: 4 }, (_, i) => (
+                                    <option key={i + 1} value={i + 1}>
+                                        Quý {i + 1}
+                                    </option>
+                                ))}
+                            </select>
+
                         </div>
                         <table className="table">
                             <thead>
                                 <tr className="text-secondary">
                                     <th scope="col">#</th>
-                                    <th scope="col">BROWSER</th>
-                                    <th scope="col">SESSIONS</th>
+                                    <th scope="col">Khách hàng</th>
+                                    <th scope="col" className="text-center text-nowrap">Số đơn hàng</th>
+                                    <th scope="col" className="text-center text-nowrap">Tổng chi tiêu</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {[
-                                    { id: 1, browser: 'Chrome', sessions: 284 },
-                                    { id: 2, browser: 'Safari', sessions: 27 },
-                                    { id: 3, browser: 'Edge', sessions: 19 },
-                                    { id: 4, browser: 'Firefox', sessions: 18 },
-                                    { id: 5, browser: 'Opera', sessions: 17 },
-                                    { id: 6, browser: 'Samsung Internet', sessions: 2 },
-                                    { id: 7, browser: 'Safari (in-app)', sessions: 1 },
-                                ].map((item, index) => (
+                                {topCustomers.map((cus, index) => (
                                     <tr key={index}>
-                                        <td>{item.id}</td>
-                                        <td>{item.browser}</td>
-                                        <td>{item.sessions}</td>
+                                        <td>{index+1}</td>
+                                        <td>{cus.customerDetails.fullName}
+                                            <p className="small"><i>({cus.customerDetails.email})</i></p>
+                                        </td>
+                                        <td className="text-center">{cus.totalOrders}</td>
+                                        <td className="text-center">{formatCurrency(cus.totalSpent)}</td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -301,13 +301,31 @@ exports.calculateRevenue = async (req, res) => {
 exports.getTopBooks = async (req, res) => {
     try {
         // Lấy ngày bắt đầu và kết thúc của tháng hiện tại
-        const startOfMonth = moment().startOf('month').toDate(); // Ngày đầu tiên của tháng
-        const endOfMonth = moment().endOf('month').toDate(); // Ngày cuối cùng của tháng
-        //const {startOfMonth, endOfMonth}= req.query
+       //const startOfMonth = moment().startOf('month').toDate(); // Ngày đầu tiên của tháng
+        //const endOfMonth = moment().endOf('month').toDate(); // Ngày cuối cùng của tháng
+        const {startOfMonth, endOfMonth}= req.query
+
+        if (!startOfMonth || !endOfMonth) {
+            return res.status(400).json({ message: "Vui lòng cung cấp ngày bắt đầu và ngày kết thúc." });
+        }
+
+        // Chuyển đổi chuỗi ngày sang đối tượng Date
+        const startMonth = new Date(startOfMonth);
+        const endMonth = new Date(endOfMonth);
+
+        // Kiểm tra xem ngày bắt đầu có nhỏ hơn ngày kết thúc hay không
+        if (startMonth > endMonth) {
+            return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc." });
+        }
+
+        // Đảm bảo thời gian của startDate là đầu ngày và endDate là cuối ngày
+        startMonth.setHours(0, 0, 0, 0);
+        endMonth.setHours(23, 59, 59, 999);
+
         const topBooks = await Order.aggregate([
             {
                 $match: {
-                    createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+                    createdAt: { $gte: startMonth, $lte: endMonth },
                     orderStatus: 'completed'
                 }
             },
@@ -356,6 +374,83 @@ exports.getTopBooks = async (req, res) => {
         res.status(200).json(topBooks);
     } catch (error) {
         console.error('Lỗi khi lấy top 10 sách bán chạy nhất:', error);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+};
+
+exports.getTopCustomers = async (req, res) => {
+    try {
+        const { startOfYear, endOfYear } = req.query;
+
+        if (!startOfYear || !endOfYear) {
+            return res.status(400).json({ message: "Vui lòng cung cấp ngày bắt đầu và ngày kết thúc." });
+        }
+
+        // Chuyển đổi chuỗi ngày sang đối tượng Date
+        const startYear = new Date(startOfYear);
+        const endYear = new Date(endOfYear);
+
+        // Kiểm tra xem ngày bắt đầu có nhỏ hơn ngày kết thúc hay không
+        if (startYear > endYear) {
+            return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc." });
+        }
+
+        // Đảm bảo thời gian của startDate là đầu ngày và endDate là cuối ngày
+        startYear.setHours(0, 0, 0, 0);
+        endYear.setHours(23, 59, 59, 999);
+
+        const topCustomers = await Order.aggregate([
+            {
+                $match: {
+                    updatedAt: { $gte: startYear, $lte: endYear },
+                    orderStatus: 'completed'
+                }
+            },
+            {
+                $group: {
+                    _id: "$userId", // Gom nhóm theo `userId`
+                    totalSpent: { $sum: "$finalAmount" },
+                    totalOrders: { $count: {} }
+                }
+            },
+            {
+                $sort: { totalSpent: -1 } // Sắp xếp giảm dần theo tổng tiền
+            },
+            {
+                $limit: 10 // Lấy top 10 khách hàng
+            },
+            {
+                $lookup: { // Liên kết với model User để lấy thông tin khách hàng
+                    from: 'users', // Tên collection `users`
+                    localField: '_id', // `_id` là `userId`
+                    foreignField: '_id', // `_id` trong model User
+                    as: 'customerDetails' // Tên trường chứa thông tin khách hàng
+                }
+            },
+            {
+                $project: {
+                    _id: 0, // Ẩn `_id`
+                    userId: "$_id", // Hiển thị `userId`
+                    totalSpent: 1, 
+                    totalOrders: 1,
+                    customerDetails: {
+                        $let: {
+                            vars: { customer: { $arrayElemAt: ["$customerDetails", 0] } },
+                            in: {
+                                fullName: "$$customer.fullName",
+                                email: "$$customer.email",
+                                phone: "$$customer.phone",
+                                image: "$$customer.image"
+                            }
+                        }
+                    }
+                }
+            }
+        ]);
+
+        res.status(200).json(topCustomers);
+    } catch (error) {
+        console.error('Lỗi khi lấy top 10 khách hàng:', error);
         res.status(500).json({ message: 'Lỗi server' });
     }
 };

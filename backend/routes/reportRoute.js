@@ -14,4 +14,6 @@ router.get('/orders-week', reportController.getOrderCountData)
 
 router.get('/top-books', reportController.getTopBooks)
 
+router.get('/top-customers', reportController.getTopCustomers)
+
 module.exports = router;
