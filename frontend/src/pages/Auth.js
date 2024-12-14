@@ -298,7 +298,7 @@ const Auth = () => {
                             placeholder="Xác nhận mật khẩu..."
                             blurFunction={confirmPasswordBlur}
                             ref={confirmPasswordInputRef}
-                            onKeyDown = {registerButtonRef}
+                            onKeyDown = {(e) => handleKeyDownClick(e, registerButtonRef)}
                             showEyeIcon
                             className="tw-pl-10 tw-transition-all tw-duration-200 tw-ease-in-out tw-border-b-2 tw-border-gray-300 focus:tw-border-blue-500 focus:tw-shadow-md"
                           />

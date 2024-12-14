@@ -3,12 +3,13 @@ const Discount = require('../models/discountModel');
 const Payment = require('../models/paymentModel');
 const discountController = require('../controllers/discountController')
 const moment = require('moment');
+const { logAction } = require('../middleware/logMiddleware.js');
 // Tạo đơn hàng mới
 
 exports.createOrder = async (req, res) => {
     try {
         const { userId, address, itemsPayment, discountCode, shippingFee, totalPrice,paymentMethod} = req.body;
-
+        const idUser = req.userId
         let discountAmount = 0;
         let discountId = null;
 
@@ -47,7 +48,14 @@ exports.createOrder = async (req, res) => {
                 paymentMethod: paymentMethod,
                 finalAmount: finalAmount,
             });
-            await payment.save();
+            if(await payment.save()){
+                await logAction(
+                    'Mua hàng',
+                    idUser,
+                    `Người dùng ${idUser} đặt hàng: ${newOrder.finalAmount} vnđ`,
+                    {newOrder,payment}
+                  );
+            }
             res.status(201).json({ success: true, data: newOrder, payment });
         }
         
@@ -85,12 +93,12 @@ exports.getOrdersByUser = async (req, res) => {
     }
 };
 
-// Cập nhật trạng thái đơn hàng
+// Cập nhật trạng thái đơn hàng (admin)
 exports.updateOrderStatus = async (req, res) => {
     try {
         const {orderId} = req.params;
         const { orderStatus, deliveryAt } = req.body;
-        
+        const idUser = req.userId
         // Nếu trạng thái đơn hàng là 'completed' thì thêm thời gian giao hàng
         const updateData = { orderStatus, deliveryAt };
         if (orderStatus === 'completed') {
@@ -110,7 +118,12 @@ exports.updateOrderStatus = async (req, res) => {
         if (!updatedOrder) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
-
+        await logAction(
+            'Cập nhật trạng thái đơn hàng',
+            idUser,
+            `Quản trị ${idUser} cập nhật trạng thái đơn hàng: ${orderId + " " + updateData.orderStatus} `,
+            {updatedOrder}
+          );
         res.status(200).json({ success: true, data: updatedOrder });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

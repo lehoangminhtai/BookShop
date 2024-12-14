@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken');
         if (token) {
             const decodedToken = jwt.verify(token, process.env.AUTH_TOKEN_SECRET_KEY)
             req.userId = decodedToken._id
+            
         }
     }
     catch (err) {

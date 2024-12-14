@@ -1,4 +1,4 @@
-
+const { logAction } = require('../middleware/logMiddleware.js');
 const User = require('../models/userModel.js');
 const OTP = require('../models/otp.js');
 const bcrypt = require('bcryptjs');
@@ -6,8 +6,9 @@ const jwt = require('jsonwebtoken');
 const validator = require('validator');
 const nodemailer = require('nodemailer');
 const otpGenerator = require('otp-generator');
+const Log = require('../models/Log');
 
- const getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
     try {
         const result = await User.find()
         res.status(200).json({ result, message: 'all users get successfully', success: true })
@@ -20,7 +21,7 @@ const otpGenerator = require('otp-generator');
 
 
 
- const sendRegisterOTP = async (req, res) => {
+const sendRegisterOTP = async (req, res) => {
     try {
         const { email } = req.body;
         if (!email) return res.status(400).json({ message: 'Email bắt buộc', success: false })
@@ -32,7 +33,7 @@ const otpGenerator = require('otp-generator');
         if (isEmailAlreadyReg) return res.status(400).json({ message: `Người dùng với ${email} đã đăng kí `, success: false })
 
 
-        
+
         const otp = otpGenerator.generate(6, { digits: true, lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false })
         const hashedOTP = await bcrypt.hash(otp, 12)
         const newOTP = await OTP.create({ email, otp: hashedOTP, name: 'register_otp' })
@@ -124,7 +125,7 @@ const otpGenerator = require('otp-generator');
                 </html>
             `
         };
-        
+
         transporter.sendMail(mailOptions, function (err, info) {
             if (err) console.log(err)
             else return null        //console.log(info);
@@ -140,7 +141,7 @@ const otpGenerator = require('otp-generator');
 
 const register = async (req, res) => {
     try {
-        const {name, email, phone, password,  otp } = req.body
+        const { name, email, phone, password, otp } = req.body
         if (!name || !email || !password || !otp) return res.status(400).json({ message: 'Vui lòng nhập đầy đủ thông tin', success: false })
         if (!validator.isEmail(email)) return res.status(400).json({ message: `Vui lòng nhập email hợp lệ`, success: false })
 
@@ -162,13 +163,18 @@ const register = async (req, res) => {
         const fullName = name;
         if (isValidOTP) {
             const hashedPassword = await bcrypt.hash(password, 12)
-            const newUser = new User({ fullName, email, phone, password:hashedPassword  })
+            const newUser = new User({ fullName, email, phone, password: hashedPassword })
 
             await newUser.generateAuthToken()
 
             await OTP.deleteMany({ email: findedOTP.email })
 
             await newUser.save()
+            await logAction(
+                'Đăng ký',
+                newUser._id,
+                `Người dùng ${newUser.fullName} đăng ký với email: ${email}`
+            );
             return res.status(200).json({ result: newUser, message: 'Đăng kí thành công', success: true })
         }
         else {
@@ -177,14 +183,14 @@ const register = async (req, res) => {
 
     }
     catch (error) {
-        res.status(404).json({ message:  'Lỗi đăng kí người dùng', error, success: false })
+        res.status(404).json({ message: 'Lỗi đăng kí người dùng', error, success: false })
     }
 }
 
 
 
 
- const login = async (req, res) => {
+const login = async (req, res) => {
     try {
         const auth_token = 'auth_token'
         const { email, password } = req.body;
@@ -194,24 +200,33 @@ const register = async (req, res) => {
         if (emailValidationFailed) return res.status(400).json({ message: `Vui lòng nhập email hợp lệ`, success: false })
 
         const existingUser = await User.findOne({ email })
+       
+       
         if (!existingUser) return res.status(400).json({ message: `Email chưa đăng ký`, success: false })
         
-            if (existingUser.status === 'lock') {
-                return res.status(403).json({ message: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.', success: false });
-            }
 
-        const plainPassword = password
-        const hashedPassword = existingUser?.password
-        const isPasswordCorrect = await bcrypt.compare(plainPassword, hashedPassword)
-        if (!isPasswordCorrect) return res.status(400).json({ message: `Sai mật khẩu`, success: false })
-
+        if (existingUser.status === 'lock') {
+            return res.status(403).json({ message: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.', success: false });
+        }
+        
+        const plainPassword = password;
+        const hashedPassword = existingUser?.password;
+        const isPasswordCorrect = await bcrypt.compare(plainPassword, hashedPassword);
+        if (!isPasswordCorrect) return res.status(400).json({ message: `Sai mật khẩu`, success: false });
+        await logAction(
+            'Đăng nhập',
+            existingUser._id,
+            `${existingUser.role === 0 ? 'Người dùng' : 'Quản trị viên'} ${existingUser.fullName} đăng nhập với email: ${email}`
+        );
         const isTokenExist = Boolean(existingUser?.tokens?.find(token => token.name == auth_token))
-        if (isTokenExist) return res.status(201).json({ result: existingUser, message: `Người dùng với ${email} đã đăng nhập`, success: true })
-
-        const token = jwt.sign({ email, password, _id: existingUser._id }, process.env.AUTH_TOKEN_SECRET_KEY)
-        const tokenObj = { name: auth_token, token }
-        existingUser.tokens = existingUser.tokens.push(tokenObj)
+        if (isTokenExist) return res.status(201).json({ result: existingUser, message: `Người dùng với ${email} đã đăng nhập`, success: true });
+        const token = jwt.sign({ email, password, _id: existingUser._id }, process.env.AUTH_TOKEN_SECRET_KEY);
+        const tokenObj = { name: auth_token, token };
+        existingUser.tokens = existingUser.tokens.push(tokenObj);
+        
+        
         const result = await User.findByIdAndUpdate(existingUser._id, existingUser, { new: true })
+
 
         res.status(200).json({ result, message: 'Đăng nhập thành thông', success: true })
     }
@@ -223,7 +238,7 @@ const register = async (req, res) => {
 
 
 
- const sendForgetPasswordOTP = async (req, res) => {
+const sendForgetPasswordOTP = async (req, res) => {
     try {
         const { email } = req.body;
 
@@ -343,7 +358,7 @@ const register = async (req, res) => {
 
 
 
- const changePassword = async (req, res) => {
+const changePassword = async (req, res) => {
     try {
 
         const { email, password, otp } = req.body
@@ -390,7 +405,7 @@ const register = async (req, res) => {
 
 
 
- const deleteAllUsers = async (req, res) => {
+const deleteAllUsers = async (req, res) => {
     try {
 
         const result = await User.deleteMany()
@@ -402,20 +417,20 @@ const register = async (req, res) => {
     }
 }
 
- const getBook = async (req,res) =>{
-    const{id} =req.params;
-    if(!mongoose.Types.ObjectId.isValid(id)){
-        return(res.status(404).json({error: 'No such book'}));
+const getBook = async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return (res.status(404).json({ error: 'No such book' }));
     }
-    const book = await Book.findById(id).populate('categoryId','nameCategory');
+    const book = await Book.findById(id).populate('categoryId', 'nameCategory');
 
-    if(!book){
-        return res.status(404).json({error: 'No such book'});
+    if (!book) {
+        return res.status(404).json({ error: 'No such book' });
 
     }
     res.status(200).json(book);
 }
-module.exports ={
+module.exports = {
     getAllUsers,
     register,
     sendRegisterOTP,

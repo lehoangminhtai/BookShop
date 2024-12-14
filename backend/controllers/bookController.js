@@ -2,10 +2,12 @@ const { default: mongoose } = require('mongoose');
 const cloudinary = require("../utils/cloudinary");
 const Book = require('../models/bookModel');
 const BookSaleController = require('../controllers/bookSaleController')
+const { logAction } = require('../middleware/logMiddleware.js');
 
 const createBook = async (req,res, next) =>{
     const { title, author, description,images, publisher, categoryId } = req.body;
-
+   
+    const userId = req.userId
     try {
         const result = await cloudinary.uploader.upload(images, {
             folder: "uploads",
@@ -28,7 +30,11 @@ const createBook = async (req,res, next) =>{
             )
             
             if (responseBookSale.success) {
-               
+                await logAction(
+                    'Thêm sách',
+                    userId,
+                    `Quản trị viên ${userId} đã thêm sách mới với tiêu đề: ${title}`
+                  );
             } else  if (!responseBookSale.success) {
                 return res.status(400).json({
                     success: false,
@@ -94,6 +100,8 @@ const updateBook = async (req, res) => {
     const { bookId } = req.params; // Lấy ID của sách cần cập nhật
     const { title, author, description, images, publisher, categoryId } = req.body;
 
+    const userId = req.userId
+    
     try {
         // Tìm sách theo bookId
         const book = await Book.findById(bookId);
@@ -132,7 +140,16 @@ const updateBook = async (req, res) => {
         book.categoryId = categoryId || book.categoryId;
 
         // Lưu sách đã cập nhật
-        await book.save();
+        if(await book.save())
+        {
+            await logAction(
+                'Cập nhật sách',
+                userId,
+                `Quản trị viên ${userId} đã cập nhật sách: ${book.title}`,
+                book
+              );
+        }
+
 
         // Trả về thông báo thành công cùng thông tin sách đã cập nhật
         res.status(200).json({

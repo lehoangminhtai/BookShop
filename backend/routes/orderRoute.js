@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const orderController = require('../controllers/orderController');
+const auth = require('../middleware/auth')
 
 // Tạo đơn hàng mới
-router.post('/', orderController.createOrder);
+router.post('/',auth, orderController.createOrder);
 
 // Lấy đơn hàng theo ID
 router.get('/:orderId', orderController.getOrderById);
@@ -12,7 +13,7 @@ router.get('/:orderId', orderController.getOrderById);
 router.get('/user/:userId', orderController.getOrdersByUser);
 
 // Cập nhật trạng thái đơn hàng
-router.put('/:orderId', orderController.updateOrderStatus);
+router.put('/:orderId',auth, orderController.updateOrderStatus);
 
 // Cập nhật phương thức thanh toán
 router.put('/:id/payment-method', orderController.updatePaymentMethod);

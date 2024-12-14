@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const BookSale = require('../models/bookSaleModel');
 const Book  = require("../models/bookModel")
-
+const { logAction } = require('../middleware/logMiddleware.js');
 
 // Tạo mới một sách để bán
 const createBookSale = async (req, res) => {
@@ -107,18 +107,23 @@ const deleteBookSale = async (req, res) => {
 // Cập nhật thông tin sách để bán
 const updateBookSale = async (req, res) => {
     const { id } = req.params;
-
+    const userId = req.userId
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(404).json({ error: 'No such book sale record' });
     }
 
     try {
-        const bookSale = await BookSale.findByIdAndUpdate(id, req.body, { new: true });
+        const bookSale = await BookSale.findByIdAndUpdate(id, req.body, { new: true }).populate('bookId', 'title author');
 
         if (!bookSale) {
             return res.status(404).json({ error: 'No such book sale record' });
         }
-
+        await logAction(
+            'Cập nhật sách',
+            userId,
+            `Quản trị viên ${userId} đã cập nhật sách bán: ${bookSale.bookId.title}`,
+            bookSale
+          );
         res.status(200).json({ success: true, bookSale });
     } catch (error) {
         res.status(500).json({ error: error.message });

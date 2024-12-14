@@ -1,6 +1,6 @@
 const express = require('express');
 const { createBookSale, getBookSale, getBookSales, deleteBookSale, updateBookSale, getBookSalesAdmin, getBookSalesNotAvailable, searchBookSalesByTitle } = require('../controllers/bookSaleController');
-
+const auth = require('../middleware/auth')
 
 const router = express.Router();
 
@@ -23,6 +23,6 @@ router.post('/', createBookSale);
 router.delete('/:id', deleteBookSale);
 
 // Cập nhật sách bán theo ID (nếu cần)
-router.patch('/:id', updateBookSale);
+router.patch('/:id',auth, updateBookSale);
 
 module.exports = router;
