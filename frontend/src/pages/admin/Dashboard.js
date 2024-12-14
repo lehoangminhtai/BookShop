@@ -6,12 +6,13 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 
 //service
 import { getReportToday, getReport, getRevenueWeek, getUsersWeek, getOrdersWeek, getTopBooks, getTopCustomers } from "../../services/reportService";
-
+//component
+import AdRevenueDetail from "../../components/admin/AdRevenueDetail";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
-    
+
 
     const [revenue, setRevenue] = useState();
     const [revenueData, setRevenueData] = useState([]);
@@ -63,6 +64,10 @@ const Dashboard = () => {
 
     const [selectedMonth, setSelectedMonth] = useState(currentMonth);
     const [selectedQuarter, setSelectedQuarter] = useState(currentQuarter);
+
+    const [showModal, setShowModal] = useState(false);
+    const [type, setType] = useState('');
+    const [title, setTitle] = useState('')
 
     const handleMonthChange = (e) => {
         const selectedMonth = parseInt(e.target.value, 10);
@@ -152,7 +157,7 @@ const Dashboard = () => {
         setTopBooks(response)
     }
     const getTopCustomersInQuarter = async () => {
-        const dataQuarter = {startOfYear: quarterTopCustomer.startOfQuarter, endOfYear: quarterTopCustomer.endOfQuarter}
+        const dataQuarter = { startOfYear: quarterTopCustomer.startOfQuarter, endOfYear: quarterTopCustomer.endOfQuarter }
         const response = await getTopCustomers(dataQuarter)
         setTopCustomers(response)
     }
@@ -186,7 +191,7 @@ const Dashboard = () => {
         getTopBookInMonth();
     }, [monthTopBook])
     useEffect(() => {
-       getTopCustomersInQuarter();
+        getTopCustomersInQuarter();
     }, [quarterTopCustomer])
 
     useEffect(() => {
@@ -341,6 +346,16 @@ const Dashboard = () => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
 
+    const handleShowDetail = (title, type) => {
+        setTitle(title);
+        setType(type)
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+    };
+
     return (
         <div className="d-flex">
             <AdSidebar />
@@ -369,7 +384,7 @@ const Dashboard = () => {
                                 <p className="text-primary mb-1">Doanh thu</p>
                                 <p className="h4 fw-bold">{formatCurrency(revenue)}</p>
                                 <p className="text-success mb-0"><hr /></p>
-                                <Link><p className="text-success mb-0">Chi Tiết</p></Link>
+                                <Link><p className="text-success mb-0" onClick={()=> handleShowDetail('Chi Tiết Doanh Thu', 'revenue')}>Chi Tiết</p></Link>
 
                             </div>
                             <div className="bg-dark p-3 rounded-circle" style={{ width: '50px', height: '50px' }}>
@@ -383,7 +398,7 @@ const Dashboard = () => {
                                 <p className="text-primary mb-1">Đơn Hàng</p>
                                 <p className="h4 fw-bold">{orders}</p>
                                 <p className="text-success mb-0"><hr /></p>
-                                <Link><p className="text-success mb-0">Chi Tiết</p></Link>
+                                <Link><p className="text-success mb-0" onClick={()=> handleShowDetail('Chi Tiết Đơn Hàng', 'orders')}>Chi Tiết</p></Link>
                             </div>
                             <div className="bg-dark p-3 rounded-circle" style={{ width: '50px', height: '50px' }}>
                                 <i className="fas fa-chart-bar text-white"></i>
@@ -396,7 +411,7 @@ const Dashboard = () => {
                                 <p className="text-primary mb-1">Người Dùng</p>
                                 <p className="h4 fw-bold">{user}</p>
                                 <p className="text-success mb-0"><hr /></p>
-                                <Link><p className="text-success mb-0">Chi Tiết</p></Link>
+                                <Link><p className="text-success mb-0"onClick={()=> handleShowDetail('Chi Tiết Người Dùng Mới', 'newUsers')}>Chi Tiết</p></Link>
                             </div>
                             <div className="bg-dark p-3 rounded-circle" style={{ width: '50px', height: '50px' }}>
                                 <i className="fas fa-user text-white"></i>
@@ -410,7 +425,7 @@ const Dashboard = () => {
                                 <p className="text-primary mb-1">Số sách được đặt</p>
                                 <p className="h4 fw-bold">{bookSales}</p>
                                 <p className="text-success mb-0"><hr /></p>
-                                <Link><p className="text-success mb-0">Chi Tiết</p></Link>
+                                <Link><p className="text-success mb-0" onClick={()=> handleShowDetail('Sách Được Đặt', 'booksOrdered')}>Chi Tiết</p></Link>
                             </div>
                             <div className="bg-dark p-3 rounded-circle w-500" style={{ width: '50px', height: '50px' }}>
                                 <i className="fas fa-book text-white"></i>
@@ -533,7 +548,7 @@ const Dashboard = () => {
                             <tbody>
                                 {topCustomers.map((cus, index) => (
                                     <tr key={index}>
-                                        <td>{index+1}</td>
+                                        <td>{index + 1}</td>
                                         <td>{cus.customerDetails.fullName}
                                             <p className="small"><i>({cus.customerDetails.email})</i></p>
                                         </td>
@@ -546,6 +561,15 @@ const Dashboard = () => {
                     </div>
                 </div>
             </main>
+            {showModal && (
+                <div className="modal-overlay ">
+                    <div className="modal-content">
+                        <button className="close-btn" onClick={closeModal}>&times;</button>
+                        <AdRevenueDetail type={type} title={title} />
+                        <button className="" onClick={closeModal}>Quay lại</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
