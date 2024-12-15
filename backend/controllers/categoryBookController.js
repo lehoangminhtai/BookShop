@@ -1,10 +1,11 @@
 const CategoryBook = require('../models/categoryBookModel');
 const cloudinary = require("../utils/cloudinary");
 const Book = require('../models/bookModel');
+const { logAction } = require('../middleware/logMiddleware.js');
 
 const createCategoryBook = async (req,res) =>{
     const {nameCategory, image} = req.body;
-
+    const userId = req.userId
     try{
         if(!nameCategory){
             return res.status(400).json({success:false, message: "Vui lòng nhập tên thể loại"});
@@ -17,6 +18,14 @@ const createCategoryBook = async (req,res) =>{
             folder: "uploadCategory"
         })
         const categoryBook = await CategoryBook.create({nameCategory, image: result.secure_url});
+        if(categoryBook){
+            await logAction(
+                'Thêm loại sách',
+                userId,
+                `Quản trị viên ${userId} đã thêm loại sách mới: ${nameCategory}`,
+                categoryBook
+              );
+        }
         res.status(200).json({success:true, categoryBook});
     }
     catch (error){
@@ -57,7 +66,7 @@ const getCategoryWithBookCount = async (req, res) => {
 const updateCategoryBook = async (req, res) => {
     const { categoryId } = req.params;  // Lấy categoryId từ params (URL)
     const { nameCategory, image } = req.body;  // Lấy thông tin cần cập nhật từ body
-
+    const userId = req.userId
     try {
         const result = await cloudinary.uploader.upload(image, {
             folder: "uploadCategory"
@@ -73,7 +82,12 @@ const updateCategoryBook = async (req, res) => {
         if (!updatedCategoryBook) {
             return res.status(404).json({success:false, message: 'Thể loại sách không tồn tại.' });
         }
-
+        await logAction(
+            'Cập nhật loại sách',
+            userId,
+            `Quản trị viên ${userId} đã cập nhật loại sách: ${categoryId}`,
+            updatedCategoryBook,
+          );
         // Trả về đối tượng đã cập nhật
         return res.status(200).json({success:true,
             message: 'Cập nhật thể loại sách thành công.',
@@ -88,10 +102,16 @@ const updateCategoryBook = async (req, res) => {
 
 const deleteCategoryBook = async (req,res) =>{
     const {categoryId} = req.params
-
+    const userId = req.userId
     try {
         const category = await CategoryBook.findByIdAndDelete(categoryId)
         if(category){
+            await logAction(
+                'Xóa loại sách',
+                userId,
+                `Quản trị viên ${userId} đã xóa loại sách: ${categoryId}`,
+                category,
+              );
             return res.status(200).json({success: true, message:"Xóa thể loại sách thành công"})
         }
         else{

@@ -1,10 +1,10 @@
 const Discount = require('../models/discountModel'); // Đường dẫn đúng với model của bạn
-
+const { logAction } = require('../middleware/logMiddleware.js');
 // Tạo mới mã giảm giá
 exports.createDiscount = async (req, res) => {
     try {
         const { discountCode } = req.body;
-
+        const userId = req.userId
         const existingDiscount = await Discount.findOne({ discountCode });
 
         if (existingDiscount) {
@@ -14,7 +14,14 @@ exports.createDiscount = async (req, res) => {
             });
         }
         const discount = new Discount(req.body);
-        await discount.save();
+        if(await discount.save()){
+            await logAction(
+                'Thêm mã khuyến mãi',
+                userId,
+                `Quản trị viên ${userId} đã thêm mã khuyến mãi mới: ${discount.discountName}`,
+                discount
+              );
+        }
 
         res.status(201).json({
             success: true,
@@ -72,6 +79,7 @@ exports.getDiscountById = async (req, res) => {
 // Cập nhật mã giảm giá
 exports.updateDiscount = async (req, res) => {
     const {discountId} = req.params
+    const userId = req.userId
     try {
 
         const discount = await Discount.findByIdAndUpdate(discountId, req.body, {
@@ -84,6 +92,12 @@ exports.updateDiscount = async (req, res) => {
                 message: 'Không tìm thấy giảm giá'
             });
         }
+        await logAction(
+            'Cập nhật mã khuyến mãi',
+            userId,
+            `Quản trị viên ${userId} đã cập nhật mã khuyến mãi: ${discount.discountName}`,
+            discount
+          );
         res.status(200).json({
             success: true,
             message: 'Discount updated successfully',
@@ -100,6 +114,7 @@ exports.updateDiscount = async (req, res) => {
 // Xóa mã giảm giá
 exports.deleteDiscount = async (req, res) => {
     const {discountId} = req.params
+    const userId = req.userId
     try {
         const discount = await Discount.findByIdAndDelete(discountId);
         if (!discount) {
@@ -108,6 +123,12 @@ exports.deleteDiscount = async (req, res) => {
                 message: 'Không tìm thấy mã giảm'
             });
         }
+        await logAction(
+            'Xóa mã khuyến mãi',
+            userId,
+            `Quản trị viên ${userId} đã xóa mã khuyến mãi: ${discount.discountName, discount.discountCode}`,
+            
+          );
         res.status(200).json({
             success: true,
             message: 'Xóa mã giảm thành công'

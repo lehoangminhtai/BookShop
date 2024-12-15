@@ -2,10 +2,11 @@ const User = require('../models/userModel')
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
 const cloudinary = require("../utils/cloudinary");
+const { logAction } = require('../middleware/logMiddleware.js');
 
-exports.getAllUser = async (req,res) =>{
+exports.getAllUser = async (req, res) => {
     try {
-        const users = await User.find().sort({createdAt:-1})
+        const users = await User.find().sort({ createdAt: -1 })
         res.status(200).json({
             success: true,
             users
@@ -18,10 +19,10 @@ exports.getAllUser = async (req,res) =>{
     }
 }
 
-exports.getFilterUser = async (req,res) =>{
+exports.getFilterUser = async (req, res) => {
     try {
-        const {status} = req.body
-        const users = await User.find({status: status}).sort({createdAt:-1})
+        const { status } = req.body
+        const users = await User.find({ status: status }).sort({ createdAt: -1 })
         res.status(200).json({
             success: true,
             users
@@ -56,19 +57,19 @@ exports.searchUsers = async (req, res) => {
 
 exports.createUser = async (req, res) => {
     try {
-        const { fullName, email, phone,image, status, password, dateOfBirth, role } = req.body;
+        const { fullName, email, phone, image, status, password, dateOfBirth, role } = req.body;
         if (!fullName || !email || !password || !phone) return res.status(400).json({ message: 'Vui lòng nhập đầy đủ thông tin', success: false })
         if (!validator.isEmail(email)) return res.status(400).json({ message: `Vui lòng nhập email hợp lệ`, success: false })
-    
+
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({success:false, message: 'Email đã được sử dụng' });
+            return res.status(400).json({ success: false, message: 'Email đã được sử dụng' });
         }
         let result = null
-        if(image){
+        if (image) {
             result = await cloudinary.uploader.upload(image, {
                 folder: "uploads",
-               
+
             })
         }
         // Mã hóa mật khẩu trước khi lưu
@@ -79,17 +80,25 @@ exports.createUser = async (req, res) => {
             fullName,
             email,
             phone,
-            image:image? result.secure_url  : undefined,
+            image: image ? result.secure_url : undefined,
             status: status,
             password: hashedPassword,
             dateOfBirth,
             role: role
         });
         await newUser.generateAuthToken()
-        await newUser.save();
+        if (await newUser.save()) {
+            const userId = req.userId
+            await logAction(
+                'Thêm người dùng',
+                userId,
+                `Quản trị viên ${userId} đã thêm người dùng mới: ${fullName}`,
+                newUser
+            );
+        }
 
         res.status(201).json({
-            success:true,
+            success: true,
             message: 'User được tạo thành công!',
             user: newUser
         });
@@ -102,7 +111,7 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
     try {
         const { userId } = req.params; // Lấy user ID từ params
-        const { fullName, email, phone, image, status, dateOfBirth, role,password } = req.body;
+        const { fullName, email, phone, image, status, dateOfBirth, role, password } = req.body;
 
         // Kiểm tra xem user có tồn tại không
         const existingUser = await User.findById(userId);
@@ -136,7 +145,7 @@ exports.updateUser = async (req, res) => {
                 updatedImage = result.secure_url;
             }
         }
-        
+
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 12);
             existingUser.password = hashedPassword;
@@ -149,10 +158,18 @@ exports.updateUser = async (req, res) => {
         existingUser.image = updatedImage;
         existingUser.status = status !== undefined ? status : existingUser.status;
         existingUser.dateOfBirth = dateOfBirth || existingUser.dateOfBirth;
-        existingUser.role = role ;
+        existingUser.role = role;
 
         // Lưu thông tin đã cập nhật
-        await existingUser.save();
+        if (await existingUser.save()) {
+            const userId = req.userId
+            await logAction(
+                'Cập nhật người dùng',
+                userId,
+                `Quản trị viên ${userId} đã cập nhật người dùng: ${existingUser.fullName}`,
+                existingUser
+            );
+        }
 
         res.status(200).json({
             success: true,

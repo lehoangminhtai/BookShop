@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const discountController = require('../controllers/discountController'); // Đảm bảo đường dẫn đúng với controller của bạn
+const auth = require('../middleware/auth')
 
-
-router.post('/create', discountController.createDiscount);
+router.post('/create', auth, discountController.createDiscount);
 
 router.get('/', discountController.getAllDiscounts);
 
@@ -17,9 +17,9 @@ router.get('/:id', discountController.getDiscountById);
 
 
 
-router.put('/:discountId', discountController.updateDiscount);
+router.put('/:discountId', auth, discountController.updateDiscount);
 
-router.delete('/:discountId', discountController.deleteDiscount);
+router.delete('/:discountId', auth, discountController.deleteDiscount);
 
 router.post('/apply', discountController.applyDiscount);
 

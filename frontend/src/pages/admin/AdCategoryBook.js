@@ -107,11 +107,11 @@ const AdCategoryBook = () => {
             
            
             if(!isEdit){
-                alert('dfjd')
                 const response = await createCategoryBook(categoryData);
                 console.log(response)
                 if(response.success){
                     toast.success('Thêm thành công')
+                    setIsEdit(true)
                     fetchCategoryBooks();
                 }
                 
@@ -161,6 +161,7 @@ const AdCategoryBook = () => {
             console.log(response)
             if(response.success){
                 toast.success('Xóa thành công thể loại: '+ selectedCategory.name)
+                setIsEdit(false)
                 fetchCategoryBooks()
                 setBookCount(0)
                 setCategoryBook()
