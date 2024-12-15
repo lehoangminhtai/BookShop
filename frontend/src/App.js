@@ -27,6 +27,7 @@ import AdOrderDetail from './pages/admin/AdOrderDetail';
 import AdDiscount from './pages/admin/AdDiscount';
 import AdShipping from './pages/admin/AdShipping';
 import AdUser from './pages/admin/AdUser';
+import AdLog from './pages/admin/AdLog';
 
 import AdminRoute from './components/ProtectedRoute';
 
@@ -41,6 +42,7 @@ const AdminRoutes = [
   { path: "/admin/discounts", element: <AdDiscount /> },
   { path: "/admin/shipping", element: <AdShipping /> },
   { path: "/admin/users", element: <AdUser /> },
+  { path: "/admin/logs", element: <AdLog /> },
 ];
 
 function AppContent() {

@@ -143,6 +143,15 @@ const AdSidebar = () => {
                 <i className="fas fa-user me-2"></i> <span>Người dùng</span>
               </Link>
             </li>
+            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
+              <Link
+                to="/admin/logs"
+                className={`nav-link ${isActive('/admin/logs') ? 'bg-primary text-white' : 'text-dark'} d-flex align-items-center`}
+              >
+                <i className="fas fa-history me-2"></i>
+                <span>Kiểm tra Log</span>
+              </Link>
+            </li>
             <li className="nav-item" onClick={logoutFunc} style={{ borderBottom: '1px solid #e0e0e0' }}>
               <Link
                 to="/logout"
