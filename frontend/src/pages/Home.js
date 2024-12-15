@@ -1,82 +1,120 @@
 import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
+import { Link } from "react-router-dom";
 import { useBookContext } from "../hooks/useBookContext";
+//service
 import { fetchBooks } from "../services/bookService";
-import { getBookSales } from "../services/bookSaleService";
-
+import { getBookSales, getTopCategoryBooks } from "../services/homeService";
 
 import '../css/bootstrap.min.css'
 import '../css/style.css'
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import Slider from "react-slick";
+
 //Component
 import BookDetail from '../components/BookDetail';
 import BookForm from "../components/BookForm";
+
 
 const Home = () => {
 
     const { books, dispatch } = useBookContext();
     const [bookSales, setBookSales] = useState([])
-    useEffect(() => {
-        const getBooks = async () => {
-            try {
-                const bookData = await fetchBooks();
-                dispatch({ type: 'SET_BOOKS', payload: bookData })
+    const [newBookSales, setNewBookSales] = useState([])
+    const [categoryBooks, setCategoryBooks] = useState([])
+
+    const fetchCategoryBooks = async () => {
+        try {
+            const response = await getTopCategoryBooks()
+            if (response.success) {
+                setCategoryBooks(response.topCategories)
             }
-            catch (error) {
-                console.error('Error fetching books:', error);
-            }
+        } catch (error) {
 
         }
-        getBooks()
-    }, [dispatch])
+    }
 
-    const icons = [
-        { src: "https://res.cloudinary.com/dyu419id3/image/upload/v1730310747/halloween_tegys2.webp", alt: "Halloween icon", label: "Halloween" },
-        { src: "https://placehold.co/64x64", alt: "Kinh Tế icon", label: "Kinh Tế" },
-
-        { src: "https://res.cloudinary.com/dyu419id3/image/upload/v1730310747/manga_kx6lvg.webp", alt: "Manga icon", label: "Manga" },
-        { src: "https://placehold.co/64x64", alt: "Flash Sale icon", label: "Flash Sale" },
-        { src: "https://placehold.co/64x64", alt: "Mã Giảm Giá icon", label: "Mã Giảm Giá" },
-        { src: "https://placehold.co/64x64", alt: "Ngoại Văn icon", label: "Ngoại Văn" },
-        { src: "https://placehold.co/64x64", alt: "Phiên Chợ Sách Cũ icon", label: "Phiên Chợ Sách Cũ" },
-        { src: "https://placehold.co/64x64", alt: "Sản Phẩm Mới icon", label: "Sản Phẩm Mới" }
-    ];
-   
-    const fetchBookSales = async () =>{
+    const fetchBookSales = async () => {
         try {
             const response = await getBookSales();
             setBookSales(response.data)
         } catch (error) {
-            
+
+        }
+    }
+    const fetchNewBookSales = async () => {
+        try {
+            const response = await getBookSales();
+            setNewBookSales(response.data)
+        } catch (error) {
+
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchBookSales()
-    })
+        fetchCategoryBooks();
+        fetchNewBookSales();
+    },[])
+
+    const settings = {
+        speed: 500,
+        slidesToShow: 5, // Số lượng item hiển thị cùng lúc
+        slidesToScroll: 4, // Số lượng item cuộn mỗi lần
+        arrows: true,
+        responsive: [
+            {
+                breakpoint: 1024, // Màn hình lớn
+                settings: {
+                    slidesToShow: 4,
+                },
+            },
+            {
+                breakpoint: 768, // Màn hình trung bình
+                settings: {
+                    slidesToShow: 3,
+                },
+            },
+            {
+                breakpoint: 576, // Màn hình nhỏ
+                settings: {
+                    slidesToShow: 2,
+                },
+            },
+        ],
+    };
 
     return (
         <div >
             <div className="container-fluid py-5 mb-5 hero-header">
-                <div className="container py-5 ">
-                    <div className="row align-items-center">
-                        <div className="col-md-12 col-lg-6">
-                            <h4 className="mb-3 text-primary">Healing Environment</h4>
-                            <h3 className="mb-3 display-5 text-secondary">Happy & Peaceful Books</h3>
-                            <div className="position-relative mx-auto">
-                                <input
-                                    className="form-control border-2 border-secondary w-75 py-3 px-4 rounded-pill"
-                                    type="text"
-                                    placeholder="Túp lều bác Tom"
-                                />
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary border-2 border-secondary py-3 px-4 position-absolute rounded-pill text-white h-100"
-                                    style={{ top: '0', right: '25%' }}
-                                >
-                                    <i className="fa fa-search fa-2x"></i>
-                                </button>
-                            </div>
+                <div className="container">
+                    <div className="d-flex justify-content-center mb-5">
+                        <div className="input-group" style={{ maxWidth: "500px" }}>
+                            <input
+                                type="text"
+                                className="form-control border-2 rounded-start-pill py-3 px-4"
+                                placeholder="Nhập tên sách bạn muốn tìm..."
+                                aria-label="Search"
+                            />
+                            <button
+                                className="btn btn-primary border-2 rounded-end-pill px-4"
+                                type="submit"
+                            >
+                                <i className="fa fa-search"></i>
+                            </button>
                         </div>
+                    </div>
+
+                    <div className="row align-items-center">
+                        <div
+                            className="col-md-12 col-lg-6"
+
+                        >
+                            <h4 className="mb-3 text-primary">Mở ra thế giới tri thức từ những trang sách</h4>
+                            <h3 className="mb-3 display-5 text-secondary">Một cuốn sách, muôn hành trình</h3>
+                        </div>
+
 
 
                         <div className="col-md-12 col-lg-6">
@@ -165,42 +203,111 @@ const Home = () => {
             </div>
             <div className=" bg-primary p-4 rounded-3 shadow container my-5 d-flex flex-wrap justify-content-center gap-5">
 
-                {icons.map((icon, index) => (
-                    <div
-                        key={index}
-                        className="d-inline-flex flex-column align-items-center text-center p-2  rounded"
-                        style={{ width: "90px" }}
-                    >
-                        <img
-                            src={icon.src}
-                            alt={icon.alt}
-                            className="mb-1"
-                            style={{ width: "64px", height: "64px" }}
-                        />
-                        <p className="small text-white m-0">{icon.label}</p>
-                    </div>
+                {categoryBooks.map((cate, index) => (
+                    <Link>
+                        <div
+                            key={index}
+                            className="d-inline-flex flex-column align-items-center text-center p-2  rounded"
+                            style={{ width: "90px" }}
+                        >
+                            <img
+                                src={cate.image}
+                                alt={'ảnh loại' + cate.nameCategory}
+                                className="mb-1 rounded"
+                                style={{ width: "64px", height: "64px" }}
+                            />
+                            <p className="small text-white m-0">{cate.nameCategory}</p>
+                        </div>
+                    </Link>
                 ))}
 
             </div>
             <div class="container mt-3">
                 <div class="d-flex align-items-center p-2" style={{ backgroundColor: "#fce4ec", borderRadius: "10px" }}>
                     <div class="d-flex align-items-center justify-content-center me-2" style={{ padding: "10px" }}>
-                        <img alt="Trending icon" height="24" src="https://res.cloudinary.com/dyu419id3/image/upload/v1730313193/icon_dealhot_new_zfmnum.webp" width="24" />
+                        
+                        <i class="fas fa-fire" style={{fontSize: "24px", color: "#dc3545"}}></i>
                     </div>
                     <div class="fw-bold text-dark">
                         Xu Hướng Mua Sắm
                     </div>
                 </div>
             </div>
-            <div className="container mt-5">
-                <div className="row">
-                    {bookSales && bookSales.map(book => (
-                        <div key={book._id} className="col-md-4 col-sm-6 col-lg-3">
-                            <BookDetail  book={book.bookId} />
-                        </div>
-                    ))}
+            <div className="container mt-2">
+                <Slider {...settings}>
+                    {bookSales &&
+                        bookSales.map((book) => (
+                            <div key={book._id} className="p-2 book-hover">
+                                <BookDetail book={book.bookId} />
+                            </div>
+                        ))}
+                </Slider>
+            </div>
+            <div className="d-flex justify-content-center mt-2">
+                <button className="btn  d-flex align-items-center">
+                    <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                    <span className="ms-2">Xem thêm</span>
+                </button>
+            </div>
+            <div class="container mt-3">
+                <div class="d-flex align-items-center p-2" style={{ backgroundColor: "#FFDAB9", borderRadius: "10px" }}>
+                    <div class="d-flex align-items-center justify-content-center me-2" style={{ padding: "10px" }}>
+                    <img alt="Trending icon" height="24" src="https://res.cloudinary.com/dyu419id3/image/upload/v1730313193/icon_dealhot_new_zfmnum.webp" width="24" />
+
+                    </div>
+                    <div class="fw-bold" style={{color:"#333333"}}>
+                        Khám phá sách mới
+                    </div>
                 </div>
             </div>
+            <div className="container mt-2">
+                <Slider {...settings}>
+                    {bookSales &&
+                        newBookSales.map((book) => (
+                            <div key={book._id} className="p-2 book-hover">
+                                <BookDetail book={book.bookId} />
+                            </div>
+                        ))}
+                </Slider>
+            </div>
+            <div className="d-flex justify-content-center mt-2">
+                <button className="btn  d-flex align-items-center">
+                    <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                    <span className="ms-2">Xem thêm</span>
+                </button>
+            </div>
+            <div className="container mt-3">
+  <div
+    className="d-flex align-items-center p-2"
+    style={{
+      backgroundColor: "#E6F7FF", // Nền xanh nhạt hiện đại
+      borderRadius: "10px",
+    }}
+  >
+    {/* Icon */}
+    <div
+      className="d-flex align-items-center justify-content-center me-2"
+      style={{ padding: "10px" }}
+    >
+      <i class="fa-solid fa-thumbs-up" style={{color:"#007BFF"}}></i>
+    </div>
+
+    {/* Text */}
+    <div
+      className="fw-bold"
+      style={{
+        color: "#007BFF", // Chữ màu xanh dương nổi bật
+        fontSize: "1.1rem", // Tăng kích cỡ chữ
+      }}
+    >
+      Có thể bạn sẽ thích
+    </div>
+  </div>
+</div>
 
             <div class="container-fluid features py-5">
                 <div class="container py-5">
@@ -252,7 +359,7 @@ const Home = () => {
                     </div>
                 </div>
             </div>
-            <ToastContainer/>
+            <ToastContainer />
 
         </div>
         // <div classNameNameName="home">

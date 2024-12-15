@@ -72,7 +72,11 @@ function Checkout() {
         momo: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731439476/momo_icon_ltl6ll.png'
     };
 
-
+    useEffect(() => {
+        if (!user) {
+            navigate('/auth?redirect=/checkout', { replace: true });
+        }
+    }, [user, navigate]);
     const handleInputChange = (e, field) => {
         const value = e.target.value;
         const updatedErrors = { ...errors };
@@ -295,11 +299,7 @@ function Checkout() {
         fetchUserAddresses();
     }, []);
 
-    useEffect(() => {
-        if (!user) {
-            navigate('/auth?redirect=/checkout', { replace: true });
-        }
-    }, [user, navigate]);
+   
 
     useEffect(() => {
         const defaultAddress = addresses.find((address) => address.isDefault);

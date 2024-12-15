@@ -13,7 +13,6 @@ const BookReviews = ({ bookId }) => {
       try {
         const { data } = await axios.get(`/api/reviews/${bookId}`);
         setReviewsData(data);
-        console.log(data);
       } catch (error) {
         console.error('Lỗi khi tải đánh giá:', error);
       }

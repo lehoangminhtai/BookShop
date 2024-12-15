@@ -63,6 +63,34 @@ const getCategoryWithBookCount = async (req, res) => {
     }
 };
 
+const getTopCategoryBooks = async (req, res) => {
+    try {
+        // Lấy tất cả các danh mục
+        const categories = await CategoryBook.find();
+
+        // Đếm số sách cho mỗi danh mục
+        const categoriesWithCounts = await Promise.all(categories.map(async (category) => {
+            const bookCount = await Book.countDocuments({ categoryId: category._id });
+            return {
+                _id: category._id,
+                nameCategory: category.nameCategory,
+                image: category?.image,
+                bookCount
+            };
+        }));
+
+        // Sắp xếp danh sách theo số lượng sách giảm dần và lấy top 8
+        const topCategories = categoriesWithCounts
+            .sort((a, b) => b.bookCount - a.bookCount) // Sắp xếp giảm dần
+            .slice(0, 8); // Lấy 8 danh mục đầu tiên
+
+        res.status(200).json({success:true,topCategories});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 const updateCategoryBook = async (req, res) => {
     const { categoryId } = req.params;  // Lấy categoryId từ params (URL)
     const { nameCategory, image } = req.body;  // Lấy thông tin cần cập nhật từ body
@@ -126,6 +154,7 @@ module.exports = {
     createCategoryBook,
     getCategoryBooks,
     getCategoryWithBookCount,
+    getTopCategoryBooks,
     updateCategoryBook,
     deleteCategoryBook
 }

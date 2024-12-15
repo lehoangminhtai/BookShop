@@ -16,6 +16,23 @@ API.interceptors.request.use((req) => {
 
 export const getCategoryBooks = async () => await API.get('/count-book')
 
+export const getTopCategoryBooks = async () =>{
+   
+    try {
+        const response =   await API.get('/get-top-category')
+
+        return response.data;
+    } catch (error) {
+
+        if (error.response) {
+
+            return error.response;
+        } else {
+
+            return { success: false, message: 'Có lỗi xảy ra khi kết nối tới server.' };
+        }
+    }
+} 
 export const createCategoryBook = async (categoryBookData) =>{
    
     try {

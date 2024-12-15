@@ -8613,6 +8613,38 @@ body.no-scroll {
     visibility: hidden !important
 }
 
+.slick-prev, .slick-next {
+    z-index: 1010;
+   
+  }
+  
+  .slick-prev {
+    left: -35px !important;
+  }
+  
+  .slick-next {
+    right: -15px !important
+  }
+  
+  .slick-prev::before, .slick-next::before {
+    color: gray !important;
+    font-size: 40px !important
+  }
+
+  .book-hover:hover{
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    background: transparent !important
+  }
+
+  .new-book-label:hover{
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  }
+    
+
 @media(min-width: 576px) {
     .float-sm-start {
         float: left !important
