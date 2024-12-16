@@ -199,7 +199,7 @@ const BookForm = ({onClose}) => {
                 </div>
 
                 <div className="mb-3">
-                    <label className="form-label">Nhà sản xuất: </label>
+                    <label className="form-label">Nhà xuất bản: </label>
                     <input
                         type="text"
                         className={`form-control ${errors.publisher ? 'is-invalid' : ''}`}
