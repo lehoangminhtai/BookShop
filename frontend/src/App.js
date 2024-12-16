@@ -13,6 +13,9 @@ import SuccessPage from './pages/user/Success';
 import CustomerOrders from './pages/user/Orders';
 import MyAccount from './components/customer/MyAccount';
 import ReviewsList from './components/customer/ReviewsList';
+import ListBook from './pages/user/ListBook';
+import CategoryListBook from './pages/user/CategoryListBook';
+import ShowMoreBook from './pages/user/ShowMoreBook';
 
 import Page404 from './pages/PageNotFound';
 
@@ -67,6 +70,9 @@ function AppContent() {
           <Route path="/account/orders" element={<CustomerOrders />} />
           <Route path="/account/reviews" element={<ReviewsList />} />
           <Route path="/account" element={<MyAccount />} />
+          <Route path="/search/:query" element={<ListBook />} />
+          <Route path="/book-categories/:nameCategory/:categoryId" element={<CategoryListBook />} />
+          <Route path="/:type" element={<ShowMoreBook />} />
 
 
           <Route path="/not-found" element={<Page404 />} />

@@ -15,7 +15,7 @@ const ProductDetail = () => {
     const [bookDetail, setBookDetail] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [amount, setAmount] = useState(1);
+    const [amount, setAmount] = useState(0);
     const [expanded, setExpanded] = useState(false);
     const { user } = useStateContext();
     const navigate = useNavigate();
@@ -29,7 +29,10 @@ const ProductDetail = () => {
             const data = await response.json();
 
             if (response.ok) {
-                setBookSale(data); // Cập nhật giá và trạng thái của sách từ bookSaleModel
+                setBookSale(data);
+                if (data.quantity > 0) {
+                    setAmount(1);
+                }
             }
         };
 
@@ -68,7 +71,7 @@ const ProductDetail = () => {
     };
 
     const decreaseAmount = () => {
-        setAmount((prevAmount) => (prevAmount > 1 ? prevAmount - 1 : 1));
+        setAmount((prevAmount) => (prevAmount > 1 ? prevAmount - 1 : 0));
     };
 
     const fullText = bookDetail.description;
@@ -125,21 +128,58 @@ const ProductDetail = () => {
             localStorage.setItem('cart', JSON.stringify(cart));
         }
 
-        setAmount(1);
-        toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
-            Sản phẩm đã được thêm vào giỏ hàng
 
-        </div>,
-            {
-                position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
-                autoClose: 1500, // Đóng sau 3 giây
-                hideProgressBar: true, // Ẩn thanh tiến độ
-                closeButton: false, // Ẩn nút đóng
-                className: "custom-toast", // Thêm class để tùy chỉnh CSS
-                draggable: false, // Tắt kéo di chuyển
-                rtl: false, // Không hỗ trợ RTL
-            }
-        );
+        if (amount > 0) {
+
+
+            toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                Sản phẩm đã được thêm vào giỏ hàng
+
+            </div>,
+                {
+                    position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                    autoClose: 1500, // Đóng sau 3 giây
+                    hideProgressBar: true, // Ẩn thanh tiến độ
+                    closeButton: false, // Ẩn nút đóng
+                    className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                    draggable: false, // Tắt kéo di chuyển
+                    rtl: false, // Không hỗ trợ RTL
+                }
+            );
+        }
+        else if (amount === 0 && bookSale.quantity <= 0) {
+            toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                Sản phẩm đã hết hàng vui lòng quay lại sau
+
+            </div>,
+                {
+                    position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                    autoClose: 1500, // Đóng sau 3 giây
+                    hideProgressBar: true, // Ẩn thanh tiến độ
+                    closeButton: false, // Ẩn nút đóng
+                    className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                    draggable: false, // Tắt kéo di chuyển
+                    rtl: false, // Không hỗ trợ RTL
+                }
+            );
+        }
+        else if (amount === 0 && bookSale.quantity > 0) {
+            toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                Vui lòng chọn số lượng
+
+            </div>,
+                {
+                    position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                    autoClose: 1500, // Đóng sau 3 giây
+                    hideProgressBar: true, // Ẩn thanh tiến độ
+                    closeButton: false, // Ẩn nút đóng
+                    className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                    draggable: false, // Tắt kéo di chuyển
+                    rtl: false, // Không hỗ trợ RTL
+                }
+            );
+        }
+        setAmount(0);
 
     };
 
@@ -164,19 +204,19 @@ const ProductDetail = () => {
             // Sau khi lưu xong, chuyển hướng đến trang thanh toán
             navigate('/checkout');
         }
-        else{
+        else {
             toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
                 Sản phẩm đã hết hàng vui lòng quay lại sau
-    
+
             </div>,
                 {
                     position: "top-center",
                     autoClose: 1500,
                     hideProgressBar: true,
-                    closeButton: false, 
-                    className: "custom-toast", 
+                    closeButton: false,
+                    className: "custom-toast",
                     draggable: false,
-                    rtl: false, 
+                    rtl: false,
                 }
             );
         }
@@ -209,19 +249,19 @@ const ProductDetail = () => {
                         <button className="btn btn-outline-secondary" onClick={increaseAmount}>+</button>
                     </div>
                     <div className="d-flex justify-content-between mt-3">
-    <button 
-        className="btn btn-outline-danger w-50 me-2 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap" 
-        onClick={() => addToCart(bookDetail)}
-    >
-        <i className="fas fa-shopping-cart me-2"></i> Thêm vào giỏ hàng
-    </button>
-    <button 
-        className="btn btn-danger w-50 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap" 
-        onClick={() => handleCheckout(bookDetail)}
-    >
-        Mua ngay
-    </button>
-</div>
+                        <button
+                            className="btn btn-outline-danger w-50 me-2 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                            onClick={() => addToCart(bookDetail)}
+                        >
+                            <i className="fas fa-shopping-cart me-2"></i> Thêm vào giỏ hàng
+                        </button>
+                        <button
+                            className="btn btn-danger w-50 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                            onClick={() => handleCheckout(bookDetail)}
+                        >
+                            Mua ngay
+                        </button>
+                    </div>
 
 
                 </div>
@@ -249,7 +289,14 @@ const ProductDetail = () => {
                         </div>
 
                         <div className="d-flex align-items-center mb-2">
-                            {( bookSale.quantity > 10) ? <></>: (bookSale.quantity > 0 && bookSale.quantity < 10) ? (
+                            {(bookSale.quantity >= 10) ? <>
+                                <span className="me-2 text-warning">
+                                        <i className="bi bi-check-circle"></i>
+                                    </span>
+                                    <span className="badge bg-success text-white">
+                                        (SL còn lại: {bookSale.quantity})
+                                    </span>
+                            </> : (bookSale.quantity > 0 && bookSale.quantity < 10) ? (
                                 <>
                                     <span className="me-2 text-warning">
                                         <i className="bi bi-check-circle"></i> Sắp hết hàng
@@ -271,9 +318,22 @@ const ProductDetail = () => {
                         </div>
 
                         <div className="d-flex align-items-center mb-3">
-                            <span className="fs-3 text-danger fw-bold">{formatCurrency(priceDiscount)}</span>
-                            <span className="ms-2 text-muted text-decoration-line-through">{formatCurrency(bookSale.price)}</span>
-                            <span className="ms-2 bg-danger text-white px-2 rounded">{bookSale.discount} %</span>
+                            {bookSale.discount > 0 ? (
+                                <div className="d-flex align-items-center">
+                                    <span className="fs-3 text-danger fw-bold">
+                                        {formatCurrency(priceDiscount)}
+                                    </span>
+                                    <span className="ms-2 text-muted text-decoration-line-through tw-text-sm">
+                                        {formatCurrency(bookSale.price)}
+                                    </span>
+                                    <span className="ms-2 bg-danger text-white px-2 rounded">{bookSale.discount} %</span>
+                                </div>
+                            ) : (
+                                <span className="fs-3 text-danger fw-bold">
+                                    {formatCurrency(bookSale.price)}
+                                </span>
+                            )}
+
                         </div>
 
                         <div className="container my-5">

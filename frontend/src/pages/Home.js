@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ToastContainer } from "react-toastify";
-import { Link } from "react-router-dom";
-import { useBookContext } from "../hooks/useBookContext";
+import { Link, useNavigate } from "react-router-dom";
 //service
 import { fetchBooks } from "../services/bookService";
-import { getBookSales, getTopCategoryBooks } from "../services/homeService";
+import { getBookSales, getTopCategoryBooks, getTopBooks, getLastBooks } from "../services/homeService";
 
 import '../css/bootstrap.min.css'
 import '../css/style.css'
@@ -14,18 +13,22 @@ import Slider from "react-slick";
 
 //Component
 import BookDetail from '../components/BookDetail';
-import BookForm from "../components/BookForm";
+
 
 
 const Home = () => {
 
-    const { books, dispatch } = useBookContext();
     const [bookSales, setBookSales] = useState([])
+    const [topBookSales, setTopBookSales] = useState([])
     const [newBookSales, setNewBookSales] = useState([])
     const [categoryBooks, setCategoryBooks] = useState([])
+    const [searchQuery, setSearchQuery] = useState('');
 
+    const navigate = useNavigate();
+    const searchButtonRef = useRef(null);
     const fetchCategoryBooks = async () => {
         try {
+
             const response = await getTopCategoryBooks()
             if (response.success) {
                 setCategoryBooks(response.topCategories)
@@ -37,16 +40,34 @@ const Home = () => {
 
     const fetchBookSales = async () => {
         try {
-            const response = await getBookSales();
-            setBookSales(response.data)
+            const data = { page: 1, limit: 8 }
+            const response = await getBookSales(data);
+            console.log(response.data)
+            if (response.data) {
+
+                const shuffled = [...response.data].filter(book => book?._id).sort(() => Math.random() - 0.5);
+                setBookSales(shuffled);
+            }
+
         } catch (error) {
 
         }
     }
     const fetchNewBookSales = async () => {
         try {
-            const response = await getBookSales();
-            setNewBookSales(response.data)
+            const data = { page: 1, limit: 10 }
+            const response = await getLastBooks(data);
+            setNewBookSales(response.books)
+        } catch (error) {
+
+        }
+    }
+    const fetchTopBookSales = async () => {
+        try {
+            const data = { page: 1, limit: 10 }
+            const response = await getTopBooks(data);
+            setTopBookSales(response.books)
+            console.log(topBookSales)
         } catch (error) {
 
         }
@@ -56,7 +77,16 @@ const Home = () => {
         fetchBookSales()
         fetchCategoryBooks();
         fetchNewBookSales();
-    },[])
+        fetchTopBookSales();
+    }, [])
+
+    const handleChangeInput = (e) => {
+        setSearchQuery(e.target.value)
+    }
+
+    const handleSearch = (e) => {
+        navigate(`/search/${searchQuery.replace(/\s+/g, '-').toLowerCase()}`)
+    }
 
     const settings = {
         speed: 500,
@@ -85,6 +115,13 @@ const Home = () => {
         ],
     };
 
+    const handleKeyDownClick = (event, nextButtonRef) => {
+        if (event.key === "Enter" && nextButtonRef?.current) {
+            event.preventDefault();
+            nextButtonRef.current.click();
+        }
+    };
+
     return (
         <div >
             <div className="container-fluid py-5 mb-5 hero-header">
@@ -94,12 +131,17 @@ const Home = () => {
                             <input
                                 type="text"
                                 className="form-control border-2 rounded-start-pill py-3 px-4"
-                                placeholder="Nhập tên sách bạn muốn tìm..."
+                                placeholder="Nhập tên sách, tác giả bạn muốn tìm..."
+                                value={searchQuery}
+                                onChange={handleChangeInput}
+                                onKeyDown={(e) => handleKeyDownClick(e, searchButtonRef)}
                                 aria-label="Search"
                             />
                             <button
                                 className="btn btn-primary border-2 rounded-end-pill px-4"
                                 type="submit"
+                                onClick={handleSearch}
+                                ref={searchButtonRef}
                             >
                                 <i className="fa fa-search"></i>
                             </button>
@@ -123,19 +165,19 @@ const Home = () => {
                                 <div className="carousel-inner" role="listbox">
                                     <div className="carousel-item active rounded">
                                         <img
-                                            src="https://i.pinimg.com/control/474x/b7/45/59/b74559537f4ea86ef4f6e79a732263ed.jpg"
+                                            src="https://res.cloudinary.com/dyu419id3/image/upload/v1734361592/panel_nvux1g.jpg"
                                             className="img-fluid w-100 bg-secondary rounded"
                                             alt="First slide"
                                         />
-                                        <a href="#" className="btn px-4 py-2 text-white rounded">50% sale</a>
+
                                     </div>
                                     <div className="carousel-item rounded">
                                         <img
-                                            src="https://i.pinimg.com/control/474x/57/cf/2f/57cf2f93ff49e1725fcc31af7ee0b77a.jpg"
+                                            src="https://res.cloudinary.com/dyu419id3/image/upload/v1734379774/panel1_caqyfo.jpg"
                                             className="img-fluid w-100 rounded"
                                             alt="Second slide"
                                         />
-                                        <a href="#" className="btn px-4 py-2 text-white rounded">Free ship</a>
+                                       
                                     </div>
                                 </div>
                                 <button
@@ -167,15 +209,15 @@ const Home = () => {
                                             className="img-fluid w-100 bg-secondary rounded"
                                             alt="First slide"
                                         />
-                                        <a href="#" className="btn px-4 py-2 text-white rounded">Flash Sale</a>
+                                        
                                     </div>
                                     <div className="carousel-item rounded">
                                         <img
-                                            src="https://i.pinimg.com/control/474x/b7/45/59/b74559537f4ea86ef4f6e79a732263ed.jpg"
+                                            src="https://res.cloudinary.com/dyu419id3/image/upload/v1734379774/panel2_oca4fc.jpg"
                                             className="img-fluid w-100 rounded"
                                             alt="Second slide"
                                         />
-                                        <a href="#" className="btn px-4 py-2 text-white rounded">Special Offer</a>
+                                        
                                     </div>
                                 </div>
                                 <button
@@ -204,7 +246,7 @@ const Home = () => {
             <div className=" bg-primary p-4 rounded-3 shadow container my-5 d-flex flex-wrap justify-content-center gap-5">
 
                 {categoryBooks.map((cate, index) => (
-                    <Link>
+                    <Link to={`/book-categories/${cate.nameCategory}/${cate._id}`}>
                         <div
                             key={index}
                             className="d-inline-flex flex-column align-items-center text-center p-2  rounded"
@@ -225,8 +267,8 @@ const Home = () => {
             <div class="container mt-3">
                 <div class="d-flex align-items-center p-2" style={{ backgroundColor: "#fce4ec", borderRadius: "10px" }}>
                     <div class="d-flex align-items-center justify-content-center me-2" style={{ padding: "10px" }}>
-                        
-                        <i class="fas fa-fire" style={{fontSize: "24px", color: "#dc3545"}}></i>
+
+                        <i class="fas fa-fire" style={{ fontSize: "24px", color: "#dc3545" }}></i>
                     </div>
                     <div class="fw-bold text-dark">
                         Xu Hướng Mua Sắm
@@ -235,80 +277,103 @@ const Home = () => {
             </div>
             <div className="container mt-2">
                 <Slider {...settings}>
-                    {bookSales &&
-                        bookSales.map((book) => (
-                            <div key={book._id} className="p-2 book-hover">
-                                <BookDetail book={book.bookId} />
+                    {topBookSales &&
+                        topBookSales.map((book) => book?._id && (
+                            <div key={book?._id} className="p-2">
+                                <BookDetail book={book} />
                             </div>
                         ))}
                 </Slider>
             </div>
             <div className="d-flex justify-content-center mt-2">
-                <button className="btn  d-flex align-items-center">
-                    <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M6 9l6 6 6-6"></path>
-                    </svg>
-                    <span className="ms-2">Xem thêm</span>
-                </button>
+                <Link to={`/hot-deal`}>
+                    <button className="btn  d-flex align-items-center">
+                        <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M6 9l6 6 6-6"></path>
+                        </svg>
+                        <span className="ms-2">Xem thêm</span>
+                    </button>
+                </Link>
             </div>
             <div class="container mt-3">
                 <div class="d-flex align-items-center p-2" style={{ backgroundColor: "#FFDAB9", borderRadius: "10px" }}>
                     <div class="d-flex align-items-center justify-content-center me-2" style={{ padding: "10px" }}>
-                    <img alt="Trending icon" height="24" src="https://res.cloudinary.com/dyu419id3/image/upload/v1730313193/icon_dealhot_new_zfmnum.webp" width="24" />
+                        <img alt="Trending icon" height="24" src="https://res.cloudinary.com/dyu419id3/image/upload/v1730313193/icon_dealhot_new_zfmnum.webp" width="24" />
 
                     </div>
-                    <div class="fw-bold" style={{color:"#333333"}}>
+                    <div class="fw-bold" style={{ color: "#333333" }}>
                         Khám phá sách mới
                     </div>
                 </div>
             </div>
             <div className="container mt-2">
                 <Slider {...settings}>
-                    {bookSales &&
-                        newBookSales.map((book) => (
-                            <div key={book._id} className="p-2 book-hover">
+                    {newBookSales &&
+                        newBookSales.map((book) => book?._id && (
+                            <div key={book?._id} className="p-2">
                                 <BookDetail book={book.bookId} />
                             </div>
                         ))}
                 </Slider>
             </div>
             <div className="d-flex justify-content-center mt-2">
-                <button className="btn  d-flex align-items-center">
-                    <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M6 9l6 6 6-6"></path>
-                    </svg>
-                    <span className="ms-2">Xem thêm</span>
-                </button>
+                <Link to={`/last-book`}>
+                    <button className="btn  d-flex align-items-center">
+                        <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M6 9l6 6 6-6"></path>
+                        </svg>
+                        <span className="ms-2">Xem thêm</span>
+                    </button>
+                </Link>
             </div>
             <div className="container mt-3">
-  <div
-    className="d-flex align-items-center p-2"
-    style={{
-      backgroundColor: "#E6F7FF", // Nền xanh nhạt hiện đại
-      borderRadius: "10px",
-    }}
-  >
-    {/* Icon */}
-    <div
-      className="d-flex align-items-center justify-content-center me-2"
-      style={{ padding: "10px" }}
-    >
-      <i class="fa-solid fa-thumbs-up" style={{color:"#007BFF"}}></i>
-    </div>
+                <div
+                    className="d-flex align-items-center p-2"
+                    style={{
+                        backgroundColor: "#E6F7FF", // Nền xanh nhạt hiện đại
+                        borderRadius: "10px",
+                    }}
+                >
+                    {/* Icon */}
+                    <div
+                        className="d-flex align-items-center justify-content-center me-2"
+                        style={{ padding: "10px" }}
+                    >
+                        <i class="fa-solid fa-thumbs-up" style={{ color: "#007BFF" }}></i>
+                    </div>
 
-    {/* Text */}
-    <div
-      className="fw-bold"
-      style={{
-        color: "#007BFF", // Chữ màu xanh dương nổi bật
-        fontSize: "1.1rem", // Tăng kích cỡ chữ
-      }}
-    >
-      Có thể bạn sẽ thích
-    </div>
-  </div>
-</div>
+                    {/* Text */}
+                    <div
+                        className="fw-bold"
+                        style={{
+                            color: "#007BFF", // Chữ màu xanh dương nổi bật
+                            fontSize: "1.1rem", // Tăng kích cỡ chữ
+                        }}
+                    >
+                        Có thể bạn sẽ thích
+                    </div>
+                </div>
+            </div>
+            <div className="container mt-5 ms-5">
 
+                <div className="row align-items-center">
+                    {bookSales && bookSales.map(book => book?._id && (
+                        <div key={book?._id} className="col-md-4 col-sm-6 col-lg-3">
+                            <BookDetail book={book.bookId} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <div className="d-flex justify-content-center mt-2">
+                <Link to={`/others`}>
+                    <button className="btn  d-flex align-items-center">
+                        <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M6 9l6 6 6-6"></path>
+                        </svg>
+                        <span className="ms-2">Xem thêm</span>
+                    </button>
+                </Link>
+            </div>
             <div class="container-fluid features py-5">
                 <div class="container py-5">
                     <div class="row g-4">
@@ -318,9 +383,10 @@ const Home = () => {
                                     <i class="fas fa-car-side fa-3x text-white"></i>
                                 </div>
                                 <div class="features-content text-center">
-                                    <h5>Miễn phí vận chuyển</h5>
-                                    <p class="mb-0">Miễn phí với đơn trên 300.000đ</p>
+                                    <h5>Vận chuyển khắp mọi miền</h5>
+                                    <p class="mb-0">An toàn và nhanh chóng</p>
                                 </div>
+
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-3">
@@ -362,14 +428,7 @@ const Home = () => {
             <ToastContainer />
 
         </div>
-        // <div classNameNameName="home">
-        //     <div classNameNameName="books">
-        //         {books && books.map(book => (
-        //             <BookDetail key={book._id} book={book} />
-        //         ))}
-        //     </div>
-        //     <BookForm />
-        // </div>
+       
     );
 }
 

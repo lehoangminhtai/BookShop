@@ -58,7 +58,8 @@ const AdBookSale = () => {
         } else if (value === 'available') {
             try {
                 const response = await getBookSales();
-                setBookSales(response.data);
+                console.log(response)
+                setBookSales(response.data.data);
                 setLoading(false);  // Thay đổi trạng thái loading
             } catch (err) {
                 console.error('Error fetching book sales:', err);
@@ -152,19 +153,19 @@ const AdBookSale = () => {
             <tr>
                 <th className="text-start">STT</th>
                 <th className="text-start">Ảnh</th>
-                <th className="text-start">Sách</th>
-                <th className="text-start">Số lượng (Tồn kho)</th>
-                <th className="text-start">Giá (VNĐ)</th>
-                <th className="text-start">Trạng thái</th>
+                <th className="text-center">Sách</th>
+                <th className="text-center">Số lượng (Tồn kho)</th>
+                <th className="text-center">Giá (VNĐ)</th>
+                <th className="text-start text-nowrap">Trạng thái</th>
             </tr>
         </thead>
         <tbody>
             {bookSales.length > 0 ? (
                 bookSales.map((bookSale, index) => (
-                    <tr key={bookSale._id}>
+                    <tr key={bookSale?._id}>
                         <td>{index + 1}</td>
                         <td>
-                            <Link to={bookSale.status !== 'hide' ? `/chi-tiet/${bookSale.bookId._id}` : ''}>
+                            <Link to={bookSale?.status !== 'hide' ? `/chi-tiet/${bookSale.bookId?._id}` : ''}>
                                 <img
                                     src={bookSale.bookId?.images[0] || "https://placehold.co/50x50"}
                                     alt="Product image"
@@ -177,12 +178,12 @@ const AdBookSale = () => {
                             <div className="text-primary">{bookSale.bookId?.title}</div>
                             <div className="text-muted">{bookSale.bookId?.author}</div>
                         </td>
-                        <td>
+                        <td className="text-center">
                             <div className={`${bookSale.quantity === 0 ? 'text-danger' : 'text-primary'}`}>
                                 {bookSale.quantity}
                             </div>
                         </td>
-                        <td>
+                        <td className="text-start text-nowrap">
                             {bookSale?.discount !== 0 ? (
                                 <div className="d-flex align-items-center mb-3">
                                     <span className="fs-5 text-danger fw-bold">
@@ -207,7 +208,7 @@ const AdBookSale = () => {
                                 </div>
                             )}
                         </td>
-                        <td>
+                        <td className="text-center">
                             <div className="form-check form-switch">
                                 <input
                                     className="form-check-input"

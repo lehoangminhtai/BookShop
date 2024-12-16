@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { fetchBook } from '../../services/bookService';
-import { getCart, updateCartItem, removeItemFromCart } from '../../services/cartService';
 import { useStateContext } from '../../context/UserContext'
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+//service
+import { fetchBook } from '../../services/bookService';
+import { getCart, updateCartItem, removeItemFromCart } from '../../services/cartService';
+import { getBookSale } from '../../services/bookSaleService';
 
 const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
@@ -149,9 +152,48 @@ const Cart = () => {
                 item.bookId = productsData[bookId];
             });
         }
+        const insufficientStockItems = [];
+        
+        for (const item of itemsToCheckOut) {
+            const bookId = item.bookId ? item.bookId._id : item.id;
+
+            const response = await getBookSale(bookId)
+           console.log(response.data)
+           const bookSale = response.data
+
+    
+           if (item.quantity > bookSale.quantity) {
+               insufficientStockItems.push({
+                   title: bookSale.bookId.title,
+                   requested: item.quantity,
+                   available: bookSale.quantity,
+               });
+           }
+        }
+
+        if (insufficientStockItems.length > 0) {
+                   
+            insufficientStockItems.map(item=>{
+                toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                        {item.title}: chỉ còn lại {item.available} cuốn
+                    </div>,
+                        {
+                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                            autoClose: 4000, 
+                            hideProgressBar: true, // Ẩn thanh tiến độ
+                            closeButton: false, // Ẩn nút đóng
+                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                            draggable: false, // Tắt kéo di chuyển
+                            rtl: false, // Không hỗ trợ RTL
+                        }
+                    );
+            })
+            
+            return; // Dừng thanh toán nếu có sản phẩm không đủ số lượng
+        }
         localStorage.setItem('itemsPayment', JSON.stringify(itemsToCheckOut));
         localStorage.removeItem('discount');
-        console.log(itemsToCheckOut)
+        
         navigate("/checkout");
     };
     
@@ -249,22 +291,7 @@ const Cart = () => {
                 </div>
 
                 <div className="col-lg-4">
-                    <div className="card mb-4 shadow-lg border-0">
-                        <div className="card-body">
-                            <h5 className="text-primary fw-bold mb-3">Khuyến mãi</h5>
-                            <div className="d-flex justify-content-between mb-2">
-                                <span>Mã giảm 10K - Toàn sàn</span>
-                                <a href="#" >Xem thêm</a>
-                            </div>
-                            <p className="text-muted mb-2" style={{ fontSize: '13px' }}>
-                                Đơn hàng từ 130k - Xem chi tiết để biết thêm về thể lệ chương trình.
-                            </p>
-                            <div className="progress mb-3">
-                                <div className="progress-bar bg-secondary" role="progressbar" style={{ width: '50%' }} aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <button className="btn btn-primary w-100">Mua Thêm</button>
-                        </div>
-                    </div>
+                    
 
                     <div className="card mb-4 shadow-lg border-0">
                         <div className="card-body">
@@ -297,6 +324,7 @@ const Cart = () => {
                     </div>
                 </div>
             </div>
+            <ToastContainer />
         </div>
     );
 };

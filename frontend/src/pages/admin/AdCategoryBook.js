@@ -66,7 +66,7 @@ const AdCategoryBook = () => {
         console.log(category.bookCount)
         setSelectedCategory({
             name: category.nameCategory,
-            permalink: `http://localhost:3000/book-categories/${category.nameCategory.replace(/\s+/g, '-').toLowerCase()}` // tạo permalink từ tên
+            permalink: `http://localhost:3000/book-categories/${category.nameCategory.replace(/\s+/g, '-').toLowerCase()}/${category._id}` // tạo permalink từ tên
         });
       setImages(category?.image)
     };

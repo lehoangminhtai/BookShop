@@ -16,6 +16,8 @@ API.interceptors.request.use((req) => {
 
 export const getBookSales = async () => await API.get('/')
 
+export const getBookSale = async (bookId) => await API.get(`/${bookId}`)
+
 export const getBookSalesNotAvailable = async () => await API.get('/not-available')
 
 export const getBookSalesAdmin = async () => await API.get('/admin')

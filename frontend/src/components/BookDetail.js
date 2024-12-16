@@ -94,14 +94,14 @@ const BookDetail = ({ book }) => {
 
   return (
     <div
-      className="mt-3 card tw-w-60 tw-border tw-border-gray-200 tw-rounded-lg tw-shadow-lg tw-dark:bg-gray-800 tw-dark:border-gray-700 hover:tw-shadow-xl transition-shadow duration-300"
+      className=" book-hover mt-3 card tw-w-60 tw-border tw-border-gray-200 tw-rounded-lg tw-shadow-lg tw-dark:bg-gray-800 tw-dark:border-gray-700 hover:tw-shadow-xl transition-shadow duration-300"
       style={{ width: "240px" }} // Đặt chiều ngang cụ thể cho thẻ
-      onClick={() => handleProductClick(book._id)}
+      onClick={() => handleProductClick(book?._id)}
     >
       {/* Hình ảnh */}
       <div className="d-flex justify-content-center tw-px-2 tw-pt-2">
         <img
-          src={book.images}
+          src={book?.images}
           alt={`Book image`}
           className="card-img-top tw-rounded-t-lg tw-object-cover"
           style={{ height: "190px", width: "140px" }}
@@ -119,7 +119,7 @@ const BookDetail = ({ book }) => {
             textOverflow: "ellipsis",
           }}
         >
-          {book.title}
+          {book?.title}
         </h5>
   
         {/* Tác giả */}
@@ -131,7 +131,7 @@ const BookDetail = ({ book }) => {
             textOverflow: "ellipsis",
           }}
         >
-          <strong>Tác giả:</strong> {book.author}
+          <strong>Tác giả:</strong> {book?.author}
         </p>
   
         {/* Giá bán và nút */}
