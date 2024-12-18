@@ -16,8 +16,9 @@ RUN npm install
 # Copy the main application
 COPY . ./
 
-# Tăng giới hạn bộ nhớ heap khi build
-RUN NODE_OPTIONS="--max-old-space-size=2048" npm run build
+# Build the application
+RUN npm run build
+
 
 
 EXPOSE 3000
