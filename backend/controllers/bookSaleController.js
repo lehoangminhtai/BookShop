@@ -58,27 +58,57 @@ const getBookSales = async (req, res) => {
 };
 
 
+
+
 const getBookSalesNotAvailable = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 8;
+        const skip = (page - 1) * limit;
+
         const bookSales = await BookSale.find({ status: 'hide' })
             .sort({ createdAt: -1 })
-            .populate('bookId', 'title author images'); // Liên kết với thông tin cơ bản của sách
+            .skip(skip)
+            .limit(limit)
+            .populate('bookId', 'title author images');
 
-        res.status(200).json(bookSales);
+        const totalBookSales = await BookSale.countDocuments({ status: 'hide' });
+
+        res.status(200).json({
+            success: true,
+            data: bookSales,
+            currentPage: page,
+            totalPages: Math.ceil(totalBookSales / limit),
+            totalBookSales: totalBookSales, // Thêm totalItems cho đồng nhất
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
 const getBookSalesAdmin = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 8;
+        const skip = (page - 1) * limit;
+
         const bookSales = await BookSale.find({})
             .sort({ createdAt: -1 })
-            .populate('bookId', 'title author images'); // Liên kết với thông tin cơ bản của sách
+            .skip(skip)
+            .limit(limit)
+            .populate('bookId', 'title author images');
 
-        res.status(200).json(bookSales);
+        const totalBookSales = await BookSale.countDocuments({});
+
+        res.status(200).json({
+            success: true,
+            data: bookSales,
+            currentPage: page,
+            totalPages: Math.ceil(totalBookSales / limit),
+            totalBookSales: totalBookSales, // Thêm totalItems cho đồng nhất
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -152,28 +182,48 @@ const updateBookSale = async (req, res) => {
 };
 
 const searchBookSalesByTitle = async (req, res) => {
-    const { title } = req.query; // Nhận tên sách từ query params
     try {
+        const { title } = req.query;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 8;
+        const skip = (page - 1) * limit;
+
         // Tìm các sách có title khớp với từ khóa tìm kiếm
         const books = await Book.find({
-            title: { $regex: title, $options: 'i' } // Tìm kiếm không phân biệt chữ hoa/thường
-        });
+            title: { $regex: title, $options: 'i' }
+        }).select('_id'); // Chỉ lấy _id để tối ưu performance
 
         if (!books.length) {
-            return res.status(200).json({ success: true, bookSales: [] });
+            return res.status(200).json({
+                success: true,
+                data: [],
+                currentPage: page,
+                totalPages: 0,
+                totalBookSales: 0
+            });
         }
 
-        // Lấy danh sách bookId từ kết quả tìm kiếm
         const bookIds = books.map(book => book._id);
 
-        // Tìm các bản ghi BookSale dựa trên danh sách bookId
+        // Tìm các bản ghi BookSale dựa trên danh sách bookId VÀ thực hiện phân trang
         const bookSales = await BookSale.find({ bookId: { $in: bookIds } })
             .sort({ createdAt: -1 })
-            .populate('bookId', 'title author images'); // Đưa thông tin cơ bản của sách vào kết quả
+            .skip(skip)
+            .limit(limit)
+            .populate('bookId', 'title author images');
 
-        res.status(200).json({ success: true, bookSales: bookSales });
+            //Đếm tổng số kết quả tìm thấy
+            const totalBookSales = await BookSale.countDocuments({ bookId: { $in: bookIds } });
+
+        res.status(200).json({
+            success: true,
+            data: bookSales,
+            currentPage: page,
+            totalPages: Math.ceil(totalBookSales / limit),
+            totalBookSales: totalBookSales
+        });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 

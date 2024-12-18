@@ -14,12 +14,47 @@ const AdBookSale = () => {
     const [isEdit, setIsEdit] = useState(false);
     const [isActive, setIsActive] = useState(false)
     const [searchQuery, setSearchQuery] = useState('');
+    const [filterValue, setFilterValue] = useState('all'); // Giá trị lọc
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const [limit, setLimit] = useState(10);
+    const [totalItems, setTotalItems] = useState(0); // Thêm state totalItems
 
-    const fetchBookSales = async () => {
+
+    const fetchBookSales = async (page = 1, limit = 10, filter = 'all', query = '') => {
+       
         try {
-            const response = await getBookSalesAdmin();
-            setBookSales(response.data);
-            setLoading(false);  // Thay đổi trạng thái loading
+            let response;
+            if (filter === 'available') {
+                response = await getBookSales({ page, limit });
+                console.log(response)
+                setBookSales(response.data)
+                setTotalPages(response.totalPages);
+                setTotalItems(response.totalBookSales || 0);
+
+            } else if (filter === 'hide') {
+                response = await getBookSalesNotAvailable({ page, limit });
+                setBookSales(response.data)
+                setTotalPages(response.totalPages);
+                setTotalItems(response.totalBookSales || 0);
+
+            } else if (query) { // Tìm kiếm
+                response = await searchBookSale(query, { page, limit });
+                console.log(response.totalPages)
+                setBookSales(response.data)
+                setTotalPages(response.totalPages);
+                setTotalItems(response.totalBookSales || 0);
+                
+            } else { // Tất cả
+                response = await getBookSalesAdmin({ page, limit });
+                setBookSales(response.data.data)
+                setTotalPages(response.data.totalPages);
+                setTotalItems(response.data.totalBookSales || 0);
+                
+            }
+
+            setCurrentPage(page);
+            setLoading(false);
         } catch (err) {
             console.error('Error fetching book sales:', err);
             setLoading(false);
@@ -27,10 +62,9 @@ const AdBookSale = () => {
     };
 
     useEffect(() => {
+        fetchBookSales(currentPage, limit, filterValue, searchQuery);
+    }, [currentPage, limit, filterValue, searchQuery]);
 
-
-        fetchBookSales();
-    }, []);
 
 
     const handleChangeActive = async (bookSale) => {
@@ -50,48 +84,15 @@ const AdBookSale = () => {
 
     };
 
-    const handleFilterBookSale = async (e) => {
-        const value = e.target.value;  // Đảm bảo lấy đúng giá trị của select
-
-        if (value === 'all') {
-            fetchBookSales();
-        } else if (value === 'available') {
-            try {
-                const response = await getBookSales();
-                console.log(response)
-                setBookSales(response.data.data);
-                setLoading(false);  // Thay đổi trạng thái loading
-            } catch (err) {
-                console.error('Error fetching book sales:', err);
-                setLoading(false);
-            }
-        } else if (value === 'hide') {
-            try {
-                const response = await getBookSalesNotAvailable();
-                setBookSales(response.data);
-                setLoading(false);  // Thay đổi trạng thái loading
-            } catch (err) {
-                console.error('Error fetching book sales:', err);
-                setLoading(false);
-            }
-        }
+    const handleFilterBookSale = (e) => {
+        setFilterValue(e.target.value);
+        setCurrentPage(1); // Reset về trang 1 khi thay đổi bộ lọc
     };
 
     const searchBooks = useCallback(
         debounce(async (query) => {
-            setLoading(true);
-            try {
-                const response = await searchBookSale(query); // Gọi API tìm kiếm
-                console.log(response);
-
-                if (response.success) {
-                    setBookSales(response.bookSales); // Cập nhật kết quả vào state
-                }
-            } catch (error) {
-                console.error('Error fetching books:', error);
-            } finally {
-                setLoading(false);
-            }
+            setSearchQuery(query)
+            setCurrentPage(1);
         }, 500),
         []
     );
@@ -115,6 +116,9 @@ const AdBookSale = () => {
     };
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+    };
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
     };
     return (
         <div className="d-flex">
@@ -145,93 +149,152 @@ const AdBookSale = () => {
 
                 {/* Table */}
                 <div className="table-responsive">
-                {loading ? (
-    <div className="text-center">Đang tải dữ liệu...</div>  // Hiển thị khi đang tải dữ liệu
-) : (
-    <table className="table table-hover">
-        <thead className="table-light">
-            <tr>
-                <th className="text-start">STT</th>
-                <th className="text-start">Ảnh</th>
-                <th className="text-center">Sách</th>
-                <th className="text-center">Số lượng (Tồn kho)</th>
-                <th className="text-center">Giá (VNĐ)</th>
-                <th className="text-start text-nowrap">Trạng thái</th>
-            </tr>
-        </thead>
-        <tbody>
-            {bookSales.length > 0 ? (
-                bookSales.map((bookSale, index) => (
-                    <tr key={bookSale?._id}>
-                        <td>{index + 1}</td>
-                        <td>
-                            <Link to={bookSale?.status !== 'hide' ? `/chi-tiet/${bookSale.bookId?._id}` : ''}>
-                                <img
-                                    src={bookSale.bookId?.images[0] || "https://placehold.co/50x50"}
-                                    alt="Product image"
-                                    className="img-fluid"
-                                    style={{ width: "50px" }}
-                                />
-                            </Link>
-                        </td>
-                        <td onClick={() => handleShowEdit(bookSale)} style={{ cursor: "pointer" }}>
-                            <div className="text-primary">{bookSale.bookId?.title}</div>
-                            <div className="text-muted">{bookSale.bookId?.author}</div>
-                        </td>
-                        <td className="text-center">
-                            <div className={`${bookSale.quantity === 0 ? 'text-danger' : 'text-primary'}`}>
-                                {bookSale.quantity}
-                            </div>
-                        </td>
-                        <td className="text-start text-nowrap">
-                            {bookSale?.discount !== 0 ? (
-                                <div className="d-flex align-items-center mb-3">
-                                    <span className="fs-5 text-danger fw-bold">
-                                        {formatCurrency(bookSale?.price - (bookSale?.price * bookSale?.discount) / 100)}
-                                    </span>
-                                    {bookSale?.price && bookSale?.discount > 0 && (
-                                        <div>
-                                            <span className="ms-2 text-muted text-decoration-line-through">
-                                                {formatCurrency(bookSale?.price)}
-                                            </span>
-                                            <span className="ms-2 bg-danger text-white px-2 rounded">
-                                                {bookSale?.discount} %
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div>
-                                    <span className="fs-5 text-danger fw-bold">
-                                        {formatCurrency(bookSale?.price)}
-                                    </span>
-                                </div>
-                            )}
-                        </td>
-                        <td className="text-center">
-                            <div className="form-check form-switch">
-                                <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    id={`isActive-${bookSale?._id}`}
-                                    checked={bookSale?.status !== 'hide'}
-                                    onChange={() => handleChangeActive(bookSale)}
-                                />
-                            </div>
-                        </td>
-                    </tr>
-                ))
-            ) : (
-                <tr>
-                    <td colSpan="6" className="text-center text-danger">
-                        Không tìm thấy cuốn sách phù hợp
-                    </td>
-                </tr>
-            )}
-        </tbody>
-    </table>
-)}
+                    
+                        <table className="table table-hover">
+                            <thead className="table-light">
+                                <tr>
+                                    <th className="text-start">STT</th>
+                                    <th className="text-start">Ảnh</th>
+                                    <th className="text-center">Sách</th>
+                                    <th className="text-center">Số lượng (Tồn kho)</th>
+                                    <th className="text-center">Giá (VNĐ)</th>
+                                    <th className="text-start text-nowrap">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {bookSales.length > 0 ? (
+                                    bookSales.map((bookSale, index) => (
+                                        <tr key={bookSale?._id}>
+                                            <td>{index + 1}</td>
+                                            <td>
+                                                <Link to={bookSale?.status !== 'hide' ? `/chi-tiet/${bookSale.bookId?._id}` : ''}>
+                                                    <img
+                                                        src={bookSale.bookId?.images[0] || "https://placehold.co/50x50"}
+                                                        alt="Product image"
+                                                        className="img-fluid"
+                                                        style={{ width: "50px" }}
+                                                    />
+                                                </Link>
+                                            </td>
+                                            <td onClick={() => handleShowEdit(bookSale)} style={{ cursor: "pointer" }}>
+                                                <div className="text-primary">{bookSale.bookId?.title}</div>
+                                                <div className="text-muted">{bookSale.bookId?.author}</div>
+                                            </td>
+                                            <td className="text-center">
+                                                <div className={`${bookSale.quantity === 0 ? 'text-danger' : 'text-primary'}`}>
+                                                    {bookSale.quantity}
+                                                </div>
+                                            </td>
+                                            <td className="text-start text-nowrap">
+                                                {bookSale?.discount !== 0 ? (
+                                                    <div className="d-flex align-items-center mb-3">
+                                                        <span className="fs-5 text-danger fw-bold">
+                                                            {formatCurrency(bookSale?.price - (bookSale?.price * bookSale?.discount) / 100)}
+                                                        </span>
+                                                        {bookSale?.price && bookSale?.discount > 0 && (
+                                                            <div>
+                                                                <span className="ms-2 text-muted text-decoration-line-through">
+                                                                    {formatCurrency(bookSale?.price)}
+                                                                </span>
+                                                                <span className="ms-2 bg-danger text-white px-2 rounded">
+                                                                    {bookSale?.discount} %
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <span className="fs-5 text-danger fw-bold">
+                                                            {formatCurrency(bookSale?.price)}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="text-center">
+                                                <div className="form-check form-switch">
+                                                    <input
+                                                        className="form-check-input"
+                                                        type="checkbox"
+                                                        id={`isActive-${bookSale?._id}`}
+                                                        checked={bookSale?.status !== 'hide'}
+                                                        onChange={() => handleChangeActive(bookSale)}
+                                                    />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="6" className="text-center text-danger">
+                                            Không tìm thấy cuốn sách phù hợp
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                
 
+                </div>
+                {/* Pagination */}
+                <div className="d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                        <select
+                            className="form-control d-inline w-auto"
+                            value={limit}
+                            onChange={(e) => {
+                                setLimit(parseInt(e.target.value));
+                                setCurrentPage(1); // Reset về trang 1 khi thay đổi limit
+                            }}
+                        >
+                            
+
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                        </select>
+                        <span className="ml-2">
+                            Hiển thị{' '}
+                            {bookSales.length > 0 ? (currentPage - 1) * limit + 1 : 0} -{' '}
+                            {Math.min(currentPage * limit, totalItems)} trên tổng {totalItems} sách
+                        </span>
+                    </div>
+                    <div className="d-flex justify-content-center align-items-center">
+                        <button
+                            className="btn btn-link text-warning"
+                            onClick={() => setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            <i className="fas fa-chevron-left"></i>
+                        </button>
+
+                        {/* Page numbers - Logic render được đặt trực tiếp ở đây */}
+                        {Array.from({ length: totalPages }, (_, index) => {
+                            const pageNumber = index + 1;
+
+                            if (pageNumber === 1 || pageNumber === totalPages || (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)) {
+                                return (
+                                    <button
+                                        key={pageNumber}
+                                        className={`btn btn-link ${currentPage === pageNumber ? 'btn-danger text-white px-3 py-1 rounded' : 'text-dark'}`}
+                                        onClick={() => setCurrentPage(pageNumber)}
+                                    >
+                                        {pageNumber}
+                                    </button>
+                                );
+                            } else if (pageNumber === 2 && currentPage > 3 || pageNumber === totalPages - 1 && currentPage < totalPages - 2) {
+                                return <span key={pageNumber} className="text-dark">...</span>
+                            }
+                            return null;
+                        })}
+
+                        <button
+                            className="btn btn-link text-warning"
+                            onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                        >
+                            <i className="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             {isEdit && (

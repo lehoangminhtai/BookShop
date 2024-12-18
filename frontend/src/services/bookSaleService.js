@@ -14,30 +14,99 @@ API.interceptors.request.use((req) => {
     return req;
 })
 
-export const getBookSales = async () => await API.get('/')
+export const getBookSales = async (options = {}) => {
+    try {
+        const { page = 1, limit = 8 } = options;
 
+        const response = await API.get('/', {
+            params: {
+                page: page,
+                limit: limit
+            }
+        });
+
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            console.error(`Lỗi khi lấy sách đang bán. Mã trạng thái: ${response.status}`);
+            throw new Error(`Lỗi khi lấy sách đang bán. Mã trạng thái: ${response.status}`);
+        }
+
+    } catch (error) {
+        if (error.response) {
+            return { success: false, message: error.response?.data?.message || 'Lỗi server' };
+        } else if (error.request) {
+            return { success: false, message: 'Không thể kết nối đến server' };
+        } else {
+            return { success: false, message: error.message };
+        }
+    }
+};
 export const getBookSale = async (bookId) => await API.get(`/${bookId}`)
 
-export const getBookSalesNotAvailable = async () => await API.get('/not-available')
+export const getBookSalesNotAvailable = async (options = {}) => {
+    try {
+        const { page = 1, limit = 30 } = options;
 
-export const getBookSalesAdmin = async () => await API.get('/admin')
+        const response = await API.get('/not-available', {
+            params: {
+                page: page,
+                limit: limit
+            }
+        });
+
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            console.error(`Lỗi khi lấy sách không có sẵn. Mã trạng thái: ${response.status}`);
+            throw new Error(`Lỗi khi lấy sách không có sẵn. Mã trạng thái: ${response.status}`);
+        }
+
+    } catch (error) {
+        if (error.response) {
+            return { success: false, message: error.response?.data?.message || 'Lỗi server' };
+        } else if (error.request) {
+            return { success: false, message: 'Không thể kết nối đến server' };
+        } else {
+            return { success: false, message: error.message };
+        }
+    }
+};
+export const getBookSalesAdmin = async ({page, limit}) => {
+    return await API.get(`/admin?page=${page}&limit=${limit}`)
+}
 
 export const getBookSaleByBookId = async (bookId) => API.get(`/${bookId}`)
 
-export const searchBookSale = async (query) => {
+export const searchBookSale = async (query, options = {}) => {
     try {
-        const response = await API.get(`/search`,{
-            params: {title: query}
+        const { page = 1, limit = 30 } = options; // Giá trị mặc định cho page và limit
+        const response = await API.get(`/search`, {
+            params: {
+                title: query,
+                page: page,       // Tham số trang
+                limit: limit      // Tham số giới hạn số lượng kết quả
+            }
         });
-        return response.data;
-    } catch (error) {
 
-        if (error.response) {
-
-            return error.response;
+        // Kiểm tra status code để xử lý lỗi chính xác hơn
+        if (response.status === 200) {
+          return response.data;
         } else {
+          console.error(`Lỗi tìm kiếm với status code ${response.status}`);
+          throw new Error(`Lỗi tìm kiếm. Mã trạng thái: ${response.status}`);
+        }
 
-            return { success: false, message: 'Có lỗi xảy ra khi kết nối tới server.' };
+    } catch (error) {
+        if (error.response) {
+          // Xử lý lỗi từ phía server (ví dụ: 404, 500)
+          return { success: false, message: error.response?.data?.message || 'Lỗi server' };
+        } else if (error.request) {
+          // Xử lý lỗi không nhận được phản hồi từ server (ví dụ: mất kết nối)
+          return { success: false, message: 'Không thể kết nối đến server' };
+        } else {
+            // Lỗi khác (ví dụ: lỗi cấu hình)
+            return { success: false, message: error.message };
         }
     }
 };
