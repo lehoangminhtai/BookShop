@@ -1,0 +1,115 @@
+.navbar {
+  background-color: #EFE9E1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ff9800;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.logo img {
+  width: 130px;
+  height: 130px;
+}
+
+.parent {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 10px;
+  width: 100%;
+  align-items: center;
+}
+
+.div4, .div6, .div9 {
+  text-align: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.3s ease;
+}
+
+.div4:hover, .div6:hover, .div9:hover {
+  background-color: #ff9800;
+  border-radius: 5px;
+}
+
+.div8 img {
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #ff9800;
+  transition: transform 0.3s ease;
+}
+
+.div8 img:hover {
+  transform: scale(1.1);
+}
+
+.div11 {
+  display: flex;
+  align-items: center;
+}
+
+.div11 input {
+  padding: 8px;
+  width: 200px;
+  border: 1px solid #ff9800;
+  border-radius: 5px 0 0 5px;
+  outline: none;
+  font-size: 16px;
+}
+
+.div11 button {
+  padding: 8px 16px;
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.div11 button:hover {
+  background-color: #e68900;
+}
+
+.auth-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.5rem 1.5rem;
+  font-size: 18px;
+  border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.register {
+  background-color: transparent;
+  color: #ff9800;
+  border: 2px solid #ff9800;
+}
+
+.login {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+}
+
+.register:hover {
+  background-color: #ff9800;
+  color: white;
+}
+
+.login:hover {
+  background-color: #e68900;
+}/*# sourceMappingURL=Navbar.css.map */
