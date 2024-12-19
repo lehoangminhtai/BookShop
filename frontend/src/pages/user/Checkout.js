@@ -63,7 +63,7 @@ function Checkout() {
     const [errors, setErrors] = useState({});
 
 
-
+    //icon thanh toan
     const paymentLogos = {
         cash: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731438956/ico_cashondelivery_olyccj.svg',
 
@@ -71,13 +71,21 @@ function Checkout() {
 
         momo: 'https://res.cloudinary.com/dyu419id3/image/upload/v1731439476/momo_icon_ltl6ll.png'
     };
+    //tính ngay dụw kiến giao
+    const today = new Date();
+    const futureDate = new Date(today);
+    futureDate.setDate(today.getDate() + 7);
 
-     useEffect(() => {
+    const options = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
+    const formattedDate = futureDate.toLocaleDateString('vi-VN', options);
+
+
+    useEffect(() => {
         if (!user) {
             navigate('/auth?redirect=/checkout', { replace: true });
         }
     }, [user, navigate]);
-    
+
     const handleInputChange = (e, field) => {
         const value = e.target.value;
         const updatedErrors = { ...errors };
@@ -121,7 +129,7 @@ function Checkout() {
 
     const fetchUserAddresses = async () => {
         const response = await getAddressForUser(user?._id)
-        
+
         if (response.success) {
             setAddresses(response.addresses?.addresses || []); // Safeguard with optional chaining or a fallback
         }
@@ -233,7 +241,7 @@ function Checkout() {
         }
 
     }
-  
+
 
     const handleDeleteAddress = async (addressId) => {
         const addressData = { userId: user?._id, addressId }
@@ -299,7 +307,7 @@ function Checkout() {
         fetchUserAddresses();
     }, []);
 
-   
+
 
     useEffect(() => {
         const defaultAddress = addresses.find((address) => address.isDefault);
@@ -310,7 +318,7 @@ function Checkout() {
             setWard(defaultAddress.ward)
             setDistrict(defaultAddress.district)
             setProvince(defaultAddress.province)
-           
+
         }
     }, [addresses, addressSelected]);
 
@@ -318,7 +326,7 @@ function Checkout() {
     useEffect(() => {
         const itemsPayment = JSON.parse(localStorage.getItem('itemsPayment')) || [];
         setItems(itemsPayment);
-        
+
         const total = itemsPayment.reduce((acc, item) => acc + item.price * item.quantity, 0);
         setTotalPrice(total);
 
@@ -340,7 +348,7 @@ function Checkout() {
     }
 
     //Mở modal edit address
-    const handleShowModalEditAddress = (address, provinces,districts, wards) => {
+    const handleShowModalEditAddress = (address, provinces, districts, wards) => {
 
         setAddress(address)
         setProvinces(provinces)
@@ -443,6 +451,7 @@ function Checkout() {
 
     const closeModalWithDiscount = (selectedDiscount) => {
         setDiscountSelected(selectedDiscount);
+        console.log(discountSelected)
         document.body.classList.remove("no-scroll");
         setShowModal(false);  // Đóng modal
     };
@@ -546,7 +555,7 @@ function Checkout() {
     }
 
     const handleSubmit = async () => {
-        if(!addressSelected){
+        if (!addressSelected) {
             toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
                 Vui lòng chọn địa chỉ nhận hàng hoặc thêm mới
             </div>,
@@ -560,7 +569,7 @@ function Checkout() {
                     rtl: false,
                 }
             );
-            return 
+            return
         }
         const orderData = {
             userId: user?._id,
@@ -575,7 +584,7 @@ function Checkout() {
             totalPrice: totalPrice,
             paymentMethod: selectedPayment
         }
-
+        console.log(orderData)
 
         try {
             // Call the createOrder API to submit the order
@@ -629,7 +638,7 @@ function Checkout() {
 
     //******//
 
-    
+
     // Tính phí vận chuyển
     const getShippingFee = async (provinceId) => {
         try {
@@ -674,14 +683,14 @@ function Checkout() {
                                                     value={address._id}
                                                     checked={addressSelected === address._id || (address.isDefault && addressSelected === null)}  // Chỉ chọn khi đúng
                                                     onChange={(e) => handleInputChange(e, 'addressSelected')}
-                                                    onClick={()=>handleChooseAddress(address)}
+                                                    onClick={() => handleChooseAddress(address)}
                                                 />
                                                 <label className="form-check-label " htmlFor={`address-${address?._id}`}>
                                                     {/* Icon Location */}
 
                                                     <AddressDetail address={address} provinces={provinces} onEdit={handleShowModalEditAddress}
                                                         onDelete={handleDeleteAddress} onChoose={handleChooseAddress}
-                                                         />
+                                                    />
                                                 </label>
                                             </div>
                                         ))}
@@ -716,7 +725,7 @@ function Checkout() {
                                 />
                                 <p className="fw-bold">Giao hàng tiêu chuẩn: {formatCurrency(shippingFee) || '20.000'} </p>
                             </div>
-                            <p className="text-secondary">Dự kiến giao: Thứ Tư - 06/11</p>
+                            <p className="text-secondary">Dự kiến giao: {formattedDate}</p>
                         </div>
                         <div className="bg-white p-4 rounded shadow">
                             <h2 className="fw-bold text-lg mb-4">PHƯƠNG THỨC THANH TOÁN</h2>
@@ -1013,7 +1022,7 @@ function Checkout() {
                 <div className="modal-overlay" style={{ marginTop: '20px', zIndex: "1050" }}>
                     <div className="modal-content">
                         <button className="close-btn" onClick={closeModalEditAddress}>&times;</button>
-                        <EditAddress address={address} onClose = {closeModalAddressEdit} userId={user?._id}/>
+                        <EditAddress address={address} onClose={closeModalAddressEdit} userId={user?._id} />
                     </div>
                 </div>
 

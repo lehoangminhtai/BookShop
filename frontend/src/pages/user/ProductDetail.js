@@ -71,7 +71,10 @@ const ProductDetail = () => {
     };
 
     const decreaseAmount = () => {
-        setAmount((prevAmount) => (prevAmount > 1 ? prevAmount - 1 : 0));
+        if (bookSale.quantity > 0)
+            setAmount((prevAmount) => (prevAmount > 1 ? prevAmount - 1 : 1));
+
+
     };
 
     const fullText = bookDetail.description;
@@ -198,6 +201,23 @@ const ProductDetail = () => {
                 price: priceDiscount
             };
 
+            if (itemData.quantity <= 0) {
+                toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                    Vui lòng
+
+                </div>,
+                    {
+                        position: "top-center",
+                        autoClose: 1500,
+                        hideProgressBar: true,
+                        closeButton: false,
+                        className: "custom-toast",
+                        draggable: false,
+                        rtl: false,
+                    }
+                );
+            }
+
             // Lưu vào localStorage
             localStorage.setItem('itemsPayment', JSON.stringify([itemData])); // Giả sử chỉ có 1 sản phẩm trong lúc này
             localStorage.removeItem('discount');
@@ -291,11 +311,11 @@ const ProductDetail = () => {
                         <div className="d-flex align-items-center mb-2">
                             {(bookSale.quantity >= 10) ? <>
                                 <span className="me-2 text-warning">
-                                        <i className="bi bi-check-circle"></i>
-                                    </span>
-                                    <span className="badge bg-success text-white">
-                                        (SL còn lại: {bookSale.quantity})
-                                    </span>
+                                    <i className="bi bi-check-circle"></i>
+                                </span>
+                                <span className="badge bg-success text-white">
+                                    (SL còn lại: {bookSale.quantity})
+                                </span>
                             </> : (bookSale.quantity > 0 && bookSale.quantity < 10) ? (
                                 <>
                                     <span className="me-2 text-warning">

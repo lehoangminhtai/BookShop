@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { toast, ToastContainer } from "react-toastify";
 import CustomerSidebar from './CustomerSidebar'
 import { useStateContext } from '../../context/UserContext'
 import { useDropzone } from 'react-dropzone'
@@ -62,6 +63,21 @@ const MyAccount = () => {
         try {
             const updatedData = { ...formData, image: images }; // Gộp dữ liệu form và ảnh
             const response = await updateUser(user?._id, updatedData);
+            if(response.data.success){
+                toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                    Đã cập nhật thông tin
+                </div>,
+                    {
+                        position: "top-center",
+                        autoClose: 1500,
+                        hideProgressBar: true,
+                        closeButton: false,
+                        className: "custom-toast",
+                        draggable: false,
+                        rtl: false,
+                    }
+                );
+            }
             console.log(response) // Gửi yêu cầu cập nhật
             setUser(response.data.user);
         } catch (error) {
@@ -156,6 +172,7 @@ const MyAccount = () => {
                     </div>
                 </div>
             </div>
+            <ToastContainer/>
         </div>
     );
 };

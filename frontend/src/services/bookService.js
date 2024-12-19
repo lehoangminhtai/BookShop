@@ -35,6 +35,25 @@ export const fetchBook = async (id) =>{
 
     return json;
 }
+export const searchBook = async (bookData) =>{
+    try {
+        const response = await API.get('/search',
+        {
+            params:{query: bookData.query, page: bookData.page, limit:bookData.limit}
+        }
+        );
+        return response.data;
+    } catch (error) {
+
+        if (error.response) {
+
+            return error.response;
+        } else {
+
+            return { success: false, message: 'Có lỗi xảy ra khi kết nối tới server.' };
+        }
+    }
+}
 
 export const createBook = async (bookData) => {
     try {

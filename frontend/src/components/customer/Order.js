@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import ReviewForm from "./ReviewForm";
 import React, { useState } from "react";
 
@@ -47,6 +48,7 @@ const Order = ({ orders, userId }) => {
     return (
         <div className="container mt-5">
             {orders.map((order) => (
+                <Link to={`/payment/success?orderId=${order._id}`}>
                 <div className="card shadow-sm border-0 mb-4" key={order._id}>
                     <div className="card-body">
                         <h5 className="fw-bold mb-3">
@@ -54,6 +56,7 @@ const Order = ({ orders, userId }) => {
                         </h5>
                         <div>
                             {order.itemsPayment.map((item, index) => (
+                            
                                 <div className="d-flex mb-4" key={index}>
                                     <img
                                         src={item.bookId.images[0]}
@@ -121,7 +124,9 @@ const Order = ({ orders, userId }) => {
                         </div>
                     </div>
                 </div>
-            ))}
+                </Link>
+            ))
+            }
             {selectedOrder && (
                 <div className="modal-overlay" style={{marginTop:"50px"}}>
                     <div className="modal-content">

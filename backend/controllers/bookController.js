@@ -167,11 +167,54 @@ const updateBook = async (req, res) => {
     }
 };
 
+const searchBooks = async (req, res) => {
+    try {
+        const { query, page = 1, limit = 10 } = req.query; // Lấy query từ query parameters
+
+        // Xây dựng điều kiện tìm kiếm
+        const searchCondition = query
+            ? {
+                  $or: [
+                      { title: { $regex: query, $options: 'i' } }, // Tìm kiếm trong title
+                      { author: { $regex: query, $options: 'i' } }, // Tìm kiếm trong author
+                  ],
+              }
+            : {};
+
+        // Phân trang
+        const skip = (page - 1) * limit;
+        const books = await Book.find(searchCondition)
+            .skip(skip)
+            .limit(Number(limit))
+            .sort({ createdAt: -1 }); // Sắp xếp sách mới nhất lên trước
+
+        // Đếm tổng số sách
+        const totalBooks = await Book.countDocuments(searchCondition);
+
+        res.status(200).json({
+            success: true,
+            data: books,
+            pagination: {
+                totalBooks,
+                currentPage: Number(page),
+                totalPages: Math.ceil(totalBooks / limit),
+                pageSize: Number(limit),
+            },
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 
 module.exports = {
    createBook,
     getBook,
     getBooks,
     deleteBook,
-    updateBook    
+    updateBook,
+    searchBooks    
 }
