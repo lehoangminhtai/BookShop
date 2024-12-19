@@ -107,7 +107,12 @@ const Order = ({ orders, userId }) => {
                                         <>
                                             <button
                                                 className="btn btn-danger"
-                                                onClick={() => handleShowModal(order)}
+                                                onClick={(event) => {
+                                                    event.preventDefault();
+                                                    event.stopPropagation();
+                                                    handleShowModal(order)
+                                                  }}
+                                               
                                             >
                                                 Đánh Giá
                                             </button>
