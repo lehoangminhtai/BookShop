@@ -200,7 +200,7 @@ const ProductDetail = () => {
 
             // Lưu vào localStorage
             localStorage.setItem('itemsPayment', JSON.stringify([itemData])); // Giả sử chỉ có 1 sản phẩm trong lúc này
-
+            localStorage.removeItem('discount');
             // Sau khi lưu xong, chuyển hướng đến trang thanh toán
             navigate('/checkout');
         }

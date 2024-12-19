@@ -121,9 +121,9 @@ function Checkout() {
 
     const fetchUserAddresses = async () => {
         const response = await getAddressForUser(user?._id)
-
+        
         if (response.success) {
-            setAddresses(response.addresses.addresses)
+            setAddresses(response.addresses?.addresses || []); // Safeguard with optional chaining or a fallback
         }
     }
 
@@ -358,6 +358,11 @@ function Checkout() {
         setShowModalEditAddress(false)
         document.body.classList.remove("no-scroll");
     }
+    const closeModalAddressEdit = () => {
+        setShowModalEditAddress(false);
+        fetchUserAddresses();
+        document.body.classList.remove("no-scroll");
+    };
     /********/
 
     const handleProvinceChange = async (e) => {
@@ -1008,7 +1013,7 @@ function Checkout() {
                 <div className="modal-overlay" style={{ marginTop: '20px', zIndex: "1050" }}>
                     <div className="modal-content">
                         <button className="close-btn" onClick={closeModalEditAddress}>&times;</button>
-                        <EditAddress address={address} provinces={provinces} districts={districts} wards={wards} userId={user?._id}/>
+                        <EditAddress address={address} onClose = {closeModalAddressEdit} userId={user?._id}/>
                     </div>
                 </div>
 

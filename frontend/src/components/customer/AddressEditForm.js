@@ -3,7 +3,7 @@ import { toast, ToastContainer } from "react-toastify";
 
 import { updateAddressForUser } from "../../services/addressService";
 
-const EditAddress = ({ address, provinces, districts, wards, userId }) => {
+const EditAddress = ({ address,onClose, userId }) => {
     // State lưu trữ các thông tin cần thiết
     const [name, setName] = useState(address.name || "");
     const [phone, setPhone] = useState(address.phone || "");
@@ -11,8 +11,94 @@ const EditAddress = ({ address, provinces, districts, wards, userId }) => {
     const [selectedProvince, setSelectedProvince] = useState(address.idProvince || "");
     const [selectedDistrict, setSelectedDistrict] = useState(address.idDistrict || "");
     const [selectedWard, setSelectedWard] = useState(address.idWard || "");
+    const [ward, setWard] = useState(address.ward)
+    const [district, setDistrict] = useState(address.ward)
+    const [province, setProvince] = useState(address.ward)
     const [isDefault, setIsDefault] = useState(address.isDefault || false);
     const [errors, setErrors] = useState({})
+
+    const [provinces, setProvinces] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [wards, setWards] = useState([]);
+
+    const fetchWards = async (districtId) => {
+        try {
+            const response = await fetch(`https://esgoo.net/api-tinhthanh/3/${districtId}.htm`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.error === 0) {
+                    return data.data;
+                } else {
+                    console.error('Error fetching wards:', data.error);
+                    return [];
+                }
+            } else {
+                console.error('HTTP error:', response.status);
+                return [];
+            }
+        } catch (error) {
+            console.error('Failed to fetch wards:', error);
+            return [];
+        }
+    };
+    const fetchDistricts = async (provinceId) => {
+        try {
+            const response = await fetch(`https://esgoo.net/api-tinhthanh/2/${provinceId}.htm`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.error === 0) {
+                    return data.data;
+                } else {
+                    console.error('Error fetching districts:', data.error);
+                    return [];
+                }
+            } else {
+                console.error('HTTP error:', response.status);
+                return [];
+            }
+        } catch (error) {
+            console.error('Failed to fetch wards:', error);
+            return [];
+        }
+    };
+
+    useEffect(() => {
+        const loadWards = async () => {
+            if (address.idDistrict) {
+                const wardsData = await fetchWards(address.idDistrict);
+                setWards(wardsData);
+            }
+        };
+
+        const loadDistricts = async () => {
+            if (address.idProvince) {
+                const districtData = await fetchDistricts(address.idProvince);
+                setDistricts(districtData);
+            }
+        };
+
+        loadWards();
+        loadDistricts();
+    }, [address.idDistrict, address.idProvince]);
+
+    
+    useEffect(() => {
+        const fetchProvinces = async () => {
+            try {
+                const response = await fetch('https://esgoo.net/api-tinhthanh/1/0.htm');
+                const data = await response.json();
+
+                if (data.error === 0) {
+                    setProvinces(data.data);
+                } else {
+                    console.error('Error fetching provinces:', data.error);
+                }
+            } catch (error) {
+                console.error('Failed to fetch provinces:', error);
+            }
+        };
+        fetchProvinces();
+    }, []);
     // Xử lý thay đổi tên
     const handleInputChange = (e, field) => {
         const value = e.target.value;
@@ -44,6 +130,60 @@ const EditAddress = ({ address, provinces, districts, wards, userId }) => {
             default:
                 break;
         }
+    };
+
+    const handleProvinceChange = async (e) => {
+        const provinceId = e.target.value;
+        setSelectedProvince(provinceId);
+        if (provinceId) {
+            const updatedErrors = { ...errors };
+            delete updatedErrors['province'];
+            setErrors(updatedErrors);
+            try {
+                setDistricts([]);  // Reset districts and wards when province changes
+                setWards([]);
+                setSelectedDistrict(0);
+                setSelectedWard(0);
+            } catch (error) {
+                
+            }
+            // Fetch districts based on selected province
+            fetch(`https://esgoo.net/api-tinhthanh/2/${provinceId}.htm`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error === 0) {
+                        setDistricts(data.data);
+                    }
+                });
+        }
+    };
+
+    const handleDistrictChange = (e) => {
+        const districtId = e.target.value;
+
+        const updatedErrors = { ...errors };
+        delete updatedErrors['district'];
+        setErrors(updatedErrors);
+
+        setSelectedDistrict(districtId);
+        setWards([]);
+        setSelectedWard(0);
+
+        // Fetch wards based on selected district
+        fetch(`https://esgoo.net/api-tinhthanh/3/${districtId}.htm`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error === 0) {
+                    setWards(data.data);
+                }
+            });
+    };
+
+    const handleWardChange = (e) => {
+        setSelectedWard(e.target.value);
+        const updatedErrors = { ...errors };
+        delete updatedErrors['ward'];
+        setErrors(updatedErrors);
     };
 
     // Xử lý cập nhật địa chỉ
@@ -102,16 +242,18 @@ const EditAddress = ({ address, provinces, districts, wards, userId }) => {
                 phone,
                 street,
                 idProvince: Number(selectedProvince),
-                province: provinces.find(p => p.id === selectedProvince)?.full_name,
+                province:province,
+               // province: provinces.find(p => p.id === selectedProvince)?.full_name,
                 idDistrict: Number(selectedDistrict),
-                district: districts.find(d => d.id === selectedDistrict)?.full_name,
+                district,
+                //district: districts.find(d => d.id === selectedDistrict)?.full_name,
                 idWard: Number(selectedWard),
-                ward: wards.find(w => w.id === selectedWard)?.full_name,
+                ward,
+                //ward: wards.find(w => w.id === selectedWard)?.full_name,
                 isDefault,
                 createdAt: new Date(),
                 _id: address._id
             };
-
             const params = {userId: userId, addressId: address._id}
 
             const response = await updateAddressForUser (params, addressData)
@@ -130,6 +272,7 @@ const EditAddress = ({ address, provinces, districts, wards, userId }) => {
                         rtl: false,
                     }
                 );
+                onClose();
             }
             else if (!response.success) {
                 toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
@@ -193,15 +336,15 @@ const EditAddress = ({ address, provinces, districts, wards, userId }) => {
                             <div className="col-sm-6">
                                 <select
                                     className={`form-control ${errors.province ? "is-invalid" : ""} mb-1`}
-                                    onChange={(e) => handleInputChange(e, "province")}
+                                    onChange={handleProvinceChange}
                                     value={selectedProvince}
                                 >
                                     <option value="">Chọn Tỉnh Thành</option>
-                                    {provinces.map((province) => (
+                                     {provinces.map((province) => (
                                         <option key={province.id} value={province.id}>
                                             {province.full_name}
                                         </option>
-                                    ))}
+                                    ))} 
                                 </select>
                                 {errors.province && <div className="invalid-feedback">{errors.province}</div>}
                             </div>
@@ -212,16 +355,16 @@ const EditAddress = ({ address, provinces, districts, wards, userId }) => {
                             <div className="col-sm-6">
                                 <select
                                     className={`form-control ${errors.district ? "is-invalid" : ""} mb-1`}
-                                    onChange={(e) => handleInputChange(e, "district")}
+                                    onChange={handleDistrictChange}
                                     value={selectedDistrict}
                                     disabled={!selectedProvince}
                                 >
-                                    <option value="">Chọn Quận Huyện</option>
+                                     <option value="">Chọn Quận Huyện</option>
                                     {districts.map((district) => (
                                         <option key={district.id} value={district.id}>
                                             {district.full_name}
                                         </option>
-                                    ))}
+                                    ))} 
                                 </select>
                                 {errors.district && <div className="invalid-feedback">{errors.district}</div>}
                             </div>
@@ -232,16 +375,16 @@ const EditAddress = ({ address, provinces, districts, wards, userId }) => {
                             <div className="col-sm-6">
                                 <select
                                     className={`form-control ${errors.ward ? "is-invalid" : ""} mb-1`}
-                                    onChange={(e) => handleInputChange(e, "ward")}
+                                    onChange={handleWardChange}
                                     value={selectedWard}
                                     disabled={!selectedDistrict}
                                 >
-                                    <option value="">Chọn Phường Xã</option>
+                                     <option value="">Chọn Phường Xã</option>
                                     {wards.map((ward) => (
                                         <option key={ward.id} value={ward.id}>
                                             {ward.full_name}
                                         </option>
-                                    ))}
+                                    ))} 
                                 </select>
                                 {errors.ward && <div className="invalid-feedback">{errors.ward}</div>}
                             </div>
@@ -286,7 +429,7 @@ const EditAddress = ({ address, provinces, districts, wards, userId }) => {
                     </div>
                 </div>
             </div>
-            <ToastContainer/>
+            
         </div>
     );
 };
