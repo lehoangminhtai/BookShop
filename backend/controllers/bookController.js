@@ -63,10 +63,33 @@ const createBook = async (req,res, next) =>{
     }
 }
 
-const getBooks = async (req,res) =>{
-    const books = await Book.find({}).sort({createdAt:-1}).populate('categoryId','nameCategory');
-    res.status(200).json(books);
-}
+const getBooks = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1; // Trang hiện tại
+        const limit = parseInt(req.query.limit) || 30; // Số lượng sách mỗi trang
+        const skip = (page - 1) * limit;
+        // Tìm sách và phân trang
+        const books = await Book.find({})
+            .sort({ createdAt: -1 }) // Sắp xếp theo thời gian giảm dần
+            .skip(skip) // Bỏ qua các tài liệu của các trang trước
+            .limit(limit) // Lấy số tài liệu giới hạn mỗi trang
+            .populate('categoryId', 'nameCategory'); // Liên kết với thông tin thể loại
+        // Tính tổng số lượng sách
+        const totalBooks = await Book.countDocuments();
+        const totalPages = Math.max(Math.ceil(totalBooks / limit), 1);
+        // Trả về dữ liệu cùng thông tin phân trang
+        res.status(200).json({
+            success: true,
+            data: books,
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: totalBooks, // Đổi tên thành totalItems
+        });
+        
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách sách', error: error.message });
+    }
+};
 
 const getBook = async (req,res) =>{
     const{id} =req.params;
