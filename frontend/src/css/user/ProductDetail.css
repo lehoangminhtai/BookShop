@@ -1,15 +1,41 @@
 @charset "UTF-8";
-.tick-icon {
-  width: 24px;
-  height: 24px;
-  background-image: url("https://cdn-icons-png.flaticon.com/256/190/190411.png");
-  background-size: cover;
+/* Tùy chỉnh toast giống modal */
+.custom-toast {
+  background-color: #343a40 !important; /* Màu nền giống bg-dark */
+  color: white !important; /* Màu chữ trắng */
+  border-radius: 0.375rem !important; /* Border-radius giống modal */
+  padding: 15px !important; /* Padding giống modal */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px; /* Khoảng cách giữa văn bản và icon */
+  width: 400px; /* Độ rộng tự động vừa với văn bản */
+  /* Đặt max-width để không quá rộng */
+  text-align: center; /* Căn giữa nội dung */
+  word-wrap: break-word; /* Đảm bảo văn bản không bị tràn ra ngoài */
 }
 
-.modal-backdrop {
-  background-color: transparent !important; /* Làm nền lớp phủ trong suốt */
+/* Thêm hiệu ứng di chuyển từ trên xuống */
+.custom-toast-enter {
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 1s ease, opacity 0.5s ease;
 }
 
-body .modal-open {
-  padding-right: 0 !important;
-}/*# sourceMappingURL=ProductDetail.css.map */
+.custom-toast-enter-active {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.custom-toast-exit {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 1s ease, opacity 0.5s ease;
+}
+
+.custom-toast-exit-active {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+/* Tùy chỉnh icon check *//*# sourceMappingURL=ProductDetail.css.map */

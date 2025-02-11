@@ -1,0 +1,20 @@
+@charset "UTF-8";
+.small-card {
+  width: auto;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  display: inline-block;
+  text-align: center;
+}
+
+.small-card .fa-location-dot {
+  color: #007bff;
+  font-size: 24px; /* Kích thước icon */
+}
+
+.small-card h6 {
+  font-size: 14px; /* Kích thước chữ */
+  margin: 0;
+}/*# sourceMappingURL=AdShipping.css.map */

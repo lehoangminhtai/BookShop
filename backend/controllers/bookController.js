@@ -68,7 +68,6 @@ const getBooks = async (req, res) => {
         const page = parseInt(req.query.page) || 1; // Trang hiện tại
         const limit = parseInt(req.query.limit) || 30; // Số lượng sách mỗi trang
         const skip = (page - 1) * limit;
-
         // Tìm sách và phân trang
         const books = await Book.find({})
             .sort({ createdAt: -1 }) // Sắp xếp theo thời gian giảm dần
@@ -93,7 +92,6 @@ const getBooks = async (req, res) => {
         res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách sách', error: error.message });
     }
 };
-
 
 const getBook = async (req,res) =>{
     const{id} =req.params;
@@ -194,11 +192,54 @@ const updateBook = async (req, res) => {
     }
 };
 
+const searchBooks = async (req, res) => {
+    try {
+        const { query, page = 1, limit = 10 } = req.query; // Lấy query từ query parameters
+
+        // Xây dựng điều kiện tìm kiếm
+        const searchCondition = query
+            ? {
+                  $or: [
+                      { title: { $regex: query, $options: 'i' } }, // Tìm kiếm trong title
+                      { author: { $regex: query, $options: 'i' } }, // Tìm kiếm trong author
+                  ],
+              }
+            : {};
+
+        // Phân trang
+        const skip = (page - 1) * limit;
+        const books = await Book.find(searchCondition)
+            .skip(skip)
+            .limit(Number(limit))
+            .sort({ createdAt: -1 }); // Sắp xếp sách mới nhất lên trước
+
+        // Đếm tổng số sách
+        const totalBooks = await Book.countDocuments(searchCondition);
+
+        res.status(200).json({
+            success: true,
+            data: books,
+            pagination: {
+                totalBooks,
+                currentPage: Number(page),
+                totalPages: Math.ceil(totalBooks / limit),
+                pageSize: Number(limit),
+            },
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 
 module.exports = {
    createBook,
     getBook,
     getBooks,
     deleteBook,
-    updateBook    
+    updateBook,
+    searchBooks    
 }

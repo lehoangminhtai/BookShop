@@ -14,17 +14,20 @@ exports.createOrder = async (req, res) => {
         let discountId = null;
 
         if (discountCode) {
+           
             const discountResponse = await discountController.applyDiscount({
                 body: { discountCode, userId, totalPrice }
             });
+           
             if (discountResponse.success) {
                 discountAmount = discountResponse.discountAmount;
-                console.log(discountAmount)
+               
                 discountId = discountResponse.discountCode; 
             }
+           
 
         }
-
+       
         const finalAmount = totalPrice - discountAmount + shippingFee;
 
         const newOrder = new Order({

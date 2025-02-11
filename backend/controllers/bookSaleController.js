@@ -65,7 +65,6 @@ const getBookSalesNotAvailable = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 8;
         const skip = (page - 1) * limit;
-
         const bookSales = await BookSale.find({ status: 'hide' })
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -73,7 +72,6 @@ const getBookSalesNotAvailable = async (req, res) => {
             .populate('bookId', 'title author images');
 
         const totalBookSales = await BookSale.countDocuments({ status: 'hide' });
-
         res.status(200).json({
             success: true,
             data: bookSales,
@@ -91,7 +89,6 @@ const getBookSalesAdmin = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 8;
         const skip = (page - 1) * limit;
-
         const bookSales = await BookSale.find({})
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -187,7 +184,6 @@ const searchBookSalesByTitle = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 8;
         const skip = (page - 1) * limit;
-
         // Tìm các sách có title khớp với từ khóa tìm kiếm
         const books = await Book.find({
             title: { $regex: title, $options: 'i' }

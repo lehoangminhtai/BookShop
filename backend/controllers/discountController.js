@@ -180,12 +180,13 @@ exports.applyDiscount = async (req, res) => {
         }
 
         // Kiểm tra người dùng đã sử dụng mã chưa
-        if (discount.usedBy.some(entry => entry.userId.toString() === userId.toString())) {
+        if (discount.usedBy.some(entry => entry.userId && entry.userId.toString() === userId.toString())) {
             return {
                 success: false,
                 message: 'You have already used this discount code'
             };
         }
+        
 
         // Áp dụng giảm giá
         let discountAmount = 0;

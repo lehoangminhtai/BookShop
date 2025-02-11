@@ -1,19 +1,31 @@
 import React, { useState } from 'react'
+import { toast, ToastContainer } from "react-toastify";
 import CustomerSidebar from './CustomerSidebar'
 import { useStateContext } from '../../context/UserContext'
 import { useDropzone } from 'react-dropzone'
-import { updateUser } from '../../services/accountService' // Import service update user
+import { updateUser, getUser } from '../../services/accountService' // Import service update user
 
 const MyAccount = () => {
     const { user, setUser } = useStateContext(); // Thêm setUser để cập nhật thông tin người dùng
+    const [userSelected, setUserSelected] = useState()
     const [formData, setFormData] = useState({
         fullName: user?.fullName || '',
         email: user?.email || '',
         phone: user?.phone || '',
-        dateOfBirth: user?.dateOfBirth || '',
+        dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.split('T')[0] : ''
     });
     const [images, setImages] = useState(user?.image || null); // Lưu ảnh
     const [errors, setErrors] = useState({}); // Lưu lỗi
+
+    const fetchUser = async () =>{
+        try {
+            const response = await getUser(user?._id);
+            
+            
+        } catch (error) {
+            
+        }
+    }
 
     // Xử lý khi thay đổi dữ liệu trong form
     const handleInputChange = (e) => {
@@ -50,9 +62,24 @@ const MyAccount = () => {
     const handleSave = async () => {
         try {
             const updatedData = { ...formData, image: images }; // Gộp dữ liệu form và ảnh
-            const response = await updateUser(user?._id, updatedData); // Gửi yêu cầu cập nhật
-            alert('Cập nhật thông tin thành công!');
-            setUser(response.data); // Cập nhật thông tin trong context
+            const response = await updateUser(user?._id, updatedData);
+            if(response.data.success){
+                toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                    Đã cập nhật thông tin
+                </div>,
+                    {
+                        position: "top-center",
+                        autoClose: 1500,
+                        hideProgressBar: true,
+                        closeButton: false,
+                        className: "custom-toast",
+                        draggable: false,
+                        rtl: false,
+                    }
+                );
+            }
+            console.log(response) // Gửi yêu cầu cập nhật
+            setUser(response.data.user);
         } catch (error) {
             console.error('Lỗi khi cập nhật thông tin:', error);
             alert('Cập nhật thông tin thất bại. Vui lòng thử lại.');
@@ -122,7 +149,7 @@ const MyAccount = () => {
                                 <div className="col-md-4 text-center mt-4 mt-md-0">
                                     <div className="d-flex flex-column justify-content-center align-items-center">
                                         <img
-                                            src={images || user?.image}
+                                            src={images}
                                             alt="avatar"
                                             className="rounded-circle img-fluid mb-2"
                                             style={{
@@ -145,6 +172,7 @@ const MyAccount = () => {
                     </div>
                 </div>
             </div>
+            <ToastContainer/>
         </div>
     );
 };

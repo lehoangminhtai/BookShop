@@ -3382,7 +3382,7 @@ fieldset:disabled .btn {
 .btn-check:focus+.btn-danger,
 .btn-danger:focus {
     color: #bb2d3b;
-    background-color: #fff;
+    
     border-color: #b02a37;
     box-shadow: 0 0 0 .25rem rgba(225, 83, 97, .5)
 }
@@ -3393,7 +3393,7 @@ fieldset:disabled .btn {
 .btn-danger.active,
 .show>.btn-danger.dropdown-toggle {
     color:  #b02a37;
-    background-color:#fff;
+   
     border-color: #a52834
 }
 

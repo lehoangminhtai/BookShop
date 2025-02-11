@@ -165,7 +165,7 @@ const Home = () => {
                                 <div className="carousel-inner" role="listbox">
                                     <div className="carousel-item active rounded">
                                         <img
-                                            src="https://res.cloudinary.com/dyu419id3/image/upload/v1734361592/panel_nvux1g.jpg"
+                                            src="https://res.cloudinary.com/dyu419id3/image/upload/v1734618483/panel3_vdcll3.jpg"
                                             className="img-fluid w-100 bg-secondary rounded"
                                             alt="First slide"
                                         />

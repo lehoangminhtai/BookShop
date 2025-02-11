@@ -12,12 +12,11 @@ const AdBook = () => {
     const [book, setBook] = useState();
     const [showModal, setShowModal] = useState(false);
     const [showModalEdit, setShowModalEdit] = useState(false);
-    const navigate = useNavigate();
-
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [limit, setLimit] = useState(30);
     const [totalItems, setTotalItems] = useState(0); // Tổng số sách
+
 
     const fetchBooks = async () => {
         try {
@@ -188,7 +187,6 @@ const AdBook = () => {
                                     </button>
                                 );
                             }
-
                             // Hiển thị nút liền kề currentPage
                             if (
                                 pageNumber === currentPage - 1 ||
@@ -205,7 +203,6 @@ const AdBook = () => {
                                     </button>
                                 );
                             }
-
                             // Hiển thị dấu ...
                             if (
                                 (pageNumber < currentPage - 1 && pageNumber === 2) || // ... trước
