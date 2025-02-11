@@ -42,14 +42,12 @@ const AdOrder = () => {
             <div className="container p-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-flex">
-                        <button className="btn btn-secondary me-2">Bulk Actions</button>
-                        <button className="btn btn-secondary">Filters</button>
+                        
                     </div>
                     <input type="text" placeholder="Search..." className="form-control w-25" />
                     <div className="d-flex">
-                        <button className="btn btn-primary ms-2">Export</button>
-                        <button className="btn btn-primary ms-2">Import</button>
-                        <button className="btn btn-primary ms-2">Create</button>
+                        
+                        <button className="btn btn-primary ms-2">Thêm mới</button>
                     </div>
                 </div>
 
