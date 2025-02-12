@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 //service
 import { searchBookSales, getBookSalesByCategory, getBookSales, getTopBooks, getLastBooks} from "../../services/homeService";
 
@@ -8,6 +8,7 @@ import BookDetail from '../../components/BookDetail';
 
 const ShowMoreBook = () => {
     const { type} = useParams();
+    const navigate = useNavigate();
     const [bookSales, setBookSales] = useState([]);
     const [pagination, setPagination] = useState({
         page: 1, // Chuyển thành số nguyên
@@ -88,6 +89,9 @@ const ShowMoreBook = () => {
        }
        else if(type === 'others'){
         fetchBooks();
+       }
+       else {
+        navigate('/not-found')
        }
     }, [pagination.page]); 
 

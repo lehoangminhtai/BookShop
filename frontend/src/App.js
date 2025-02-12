@@ -32,6 +32,8 @@ import AdShipping from './pages/admin/AdShipping';
 import AdUser from './pages/admin/AdUser';
 import AdLog from './pages/admin/AdLog';
 
+// Exchange
+import HomeExchange from './pages/exchange/HomeExchange';
 import AdminRoute from './components/ProtectedRoute';
 
 import AddBookExchange from './pages/exchange/AddBookExchange'
@@ -76,20 +78,20 @@ function AppContent() {
           <Route path="/book-categories/:nameCategory/:categoryId" element={<CategoryListBook />} />
           <Route path="/:type" element={<ShowMoreBook />} />
 
+          {/* exchange book */}
+          <Route path='/exchange' element={<HomeExchange />} />
 
           <Route path="/not-found" element={<Page404 />} />
           <Route path="*" element={<Page404 />} />
 
-          <Route path="/exchange" element={<AddBookExchange />} />
-        
           {/* admin */}
           {AdminRoutes.map(({ path, element }) => (
-      <Route
-        key={path}
-        path={path}
-        element={<AdminRoute>{element}</AdminRoute>}
-      />
-    ))}
+            <Route
+              key={path}
+              path={path}
+              element={<AdminRoute>{element}</AdminRoute>}
+            />
+          ))}
         </Routes>
       </div>
       {location.pathname !== '/checkout' && !isAdminRoute && <Footer />} {/* Chỉ hiển thị Footer khi không phải là trang /checkout */}
