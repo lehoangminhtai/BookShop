@@ -34,6 +34,8 @@ import AdLog from './pages/admin/AdLog';
 
 // Exchange
 import HomeExchange from './pages/exchange/HomeExchange';
+import PostExchangeDetail from './pages/exchange/PostExchangeDetail';
+
 import AdminRoute from './components/ProtectedRoute';
 
 const AdminRoutes = [
@@ -78,6 +80,7 @@ function AppContent() {
 
           {/* exchange book */}
           <Route path='/exchange' element={<HomeExchange />} />
+          <Route path='/exchange-post-detail' element={<PostExchangeDetail />} />
 
           <Route path="/not-found" element={<Page404 />} />
           <Route path="*" element={<Page404 />} />
