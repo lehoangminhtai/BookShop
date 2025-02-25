@@ -13,31 +13,31 @@ import Slider from "react-slick";
 
 //Component
 import BookDetail from '../../components/BookDetail';
+import PostForm from "../../components/customer/BookExchange/PostForm";
 
 
 
 const HomeExchange = () => {
 
-    const [bookSales, setBookSales] = useState([])
-    const [topBookSales, setTopBookSales] = useState([])
-    const [newBookSales, setNewBookSales] = useState([])
-    const [categoryBooks, setCategoryBooks] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [animate, setAnimate] = useState(false);
+
+
 
     const navigate = useNavigate();
     const searchButtonRef = useRef(null);
 
+    useEffect(() => {
+        setAnimate(true);
+    }, []);
+
     const handleClickPost = () => {
         navigate(`/exchange-post-detail`)
     }
-    
+
     const handleShowModal = () => setShowModal(true);
     const handleCloseModal = () => setShowModal(false);
-
-    useEffect(() => {
-       handleShowModal();
-    }, [])
 
     const handleChangeInput = (e) => {
         setSearchQuery(e.target.value)
@@ -47,7 +47,7 @@ const HomeExchange = () => {
         navigate(`/search/${searchQuery.replace(/\s+/g, '-').toLowerCase()}`)
     }
 
-   
+
 
     const handleKeyDownClick = (event, nextButtonRef) => {
         if (event.key === "Enter" && nextButtonRef?.current) {
@@ -56,7 +56,7 @@ const HomeExchange = () => {
         }
     };
 
-  
+
 
     const [viewMode, setViewMode] = useState("grid"); // 'grid' hoặc 'list'
 
@@ -97,6 +97,7 @@ const HomeExchange = () => {
             <div className="container-fluid py-5 mb-5 hero-header">
 
                 <div className="container">
+
                     <div className="row justify-content-center">
                         {/* Ô tìm kiếm sách */}
                         <div className="col-12 col-md-6 my-2">
@@ -126,6 +127,12 @@ const HomeExchange = () => {
 
                         <div className="d-flex justify-content-between">
                             <div class="d-flex justify-content-end mb-3 me-2">
+                                <button className={`btn btn-secondary me-2 bg-transparent`}>
+                                    <i className="bi bi-arrow-clockwise"></i>
+                                </button>
+
+                            </div>
+                            <div class="d-flex justify-content-end mb-3 me-2">
                                 <select class="form-select w-auto">
                                     <option>Tất cả</option>
                                     <option>7 ngày qua</option>
@@ -150,7 +157,7 @@ const HomeExchange = () => {
                         </div>
 
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-lg-3 mb-4 ">
                             <div class="card p-3 shadow-lg">
@@ -236,7 +243,7 @@ const HomeExchange = () => {
                                                 </div>
 
                                                 <div className="flex-grow-1">
-                                                    <h3 className="h6 text-truncate" style={{ maxWidth: "200px" }}>{book.title}</h3>
+                                                    <h3 className={`h6 text-truncate `} style={{ maxWidth: viewMode === "grid" ? "200px" : "" }}>{book.title}</h3>
                                                     <p className="text-muted mb-1">Ngày đăng: {book.date}</p>
                                                     <p className="text-muted"><i className="fa fa-map-marker-alt"></i> {book.location}</p>
                                                 </div>
@@ -252,99 +259,22 @@ const HomeExchange = () => {
 
                     </div>
                 </div>
+                <div className={`chat-box  shadow rounded ${animate ? 'slide-in-right' : ''}`} style={{ transition: 'transform 0.2s', cursor: 'pointer' }}
+                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                    <div className="chat-content d-flex align-items-center justify-content-between"
+                    >
+                        <span className="fs-6">Bài đăng của tôi</span>
+                        <i className="bi bi-arrow-right text-dark fs-4"></i>
+
+                    </div>
+                </div>
             </div>
+
             <ToastContainer />
 
             {showModal && (
-                <div className="modal show fade" tabIndex="-1" style={{ display: 'block' }}>
-                    <div className="modal-dialog modal-lg">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Đăng sách</h5>
-                                <button type="button" className="btn-close" onClick={handleCloseModal}></button>
-                            </div>
-                            <div className="modal-body">
-                                <form>
-                                    <div className="mb-3">
-                                        <label htmlFor="title" className="form-label">Tiêu đề sách</label>
-                                        <input type="text" className="form-control" id="title" required />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="author" className="form-label">Tác giả sách</label>
-                                        <input type="text" className="form-control" id="author" required />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="description" className="form-label">Mô tả ngắn</label>
-                                        <textarea className="form-control" id="description"></textarea>
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="images" className="form-label">Danh sách ảnh</label>
-                                        <input type="file" className="form-control" id="images" multiple />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="publisher" className="form-label">Nhà xuất bản</label>
-                                        <input type="text" className="form-control" id="publisher" />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="publicationYear" className="form-label">Năm xuất bản</label>
-                                        <input type="number" className="form-control" id="publicationYear" />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="categoryId" className="form-label">ID thể loại sách</label>
-                                        <input type="text" className="form-control" id="categoryId" />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="condition" className="form-label">Tình trạng sách</label>
-                                        <select className="form-select" id="condition">
-                                            <option value="new">Mới</option>
-                                            <option value="like-new">Cũ - như mới</option>
-                                            <option value="used">Cũ - có dấu hiệu sử dụng</option>
-                                        </select>
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="exchangeType" className="form-label">Loại hình trao đổi</label>
-                                        <select className="form-select" id="exchangeType">
-                                            <option value="points">Dùng điểm</option>
-                                            <option value="direct">Trao đổi trực tiếp</option>
-                                        </select>
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="creditPoints" className="form-label">Số điểm tín dụng</label>
-                                        <input type="number" className="form-control" id="creditPoints" />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="ownerId" className="form-label">ID người sở hữu sách</label>
-                                        <input type="text" className="form-control" id="ownerId" />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="receiverId" className="form-label">ID người nhận sách</label>
-                                        <input type="text" className="form-control" id="receiverId" />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="status" className="form-label">Trạng thái sách</label>
-                                        <select className="form-select" id="status">
-                                            <option value="available">Có sẵn</option>
-                                            <option value="exchanging">Đang trao đổi</option>
-                                            <option value="exchanged">Đã trao đổi</option>
-                                        </select>
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="location" className="form-label">Địa điểm trao đổi</label>
-                                        <input type="text" className="form-control" id="location" />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="pageCount" className="form-label">Số trang của sách</label>
-                                        <input type="number" className="form-control" id="pageCount" />
-                                    </div>
-                                </form>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Đóng</button>
-                                <button type="submit" className="btn btn-primary">Lưu</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <PostForm handleCloseModal={handleCloseModal} />
             )}
         </div>
     );

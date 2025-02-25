@@ -208,56 +208,21 @@ const PostExchangeDetail = () => {
 
 
 
-    const handleCheckout = (product) => {
-        if (bookSale.quantity > 0) {
-            const productsData = {};
-            productsData[product._id] = bookDetail;
-            const itemData = {
-                bookId: productsData[product._id],
-                title: product.title,
-                quantity: amount,
-                price: priceDiscount
-            };
+    const handleSendRequest = () => {
+        toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+            Đã gửi đề nghị trao đổi
 
-            if (itemData.quantity <= 0) {
-                toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
-                    Vui lòng
-
-                </div>,
-                    {
-                        position: "top-center",
-                        autoClose: 1500,
-                        hideProgressBar: true,
-                        closeButton: false,
-                        className: "custom-toast",
-                        draggable: false,
-                        rtl: false,
-                    }
-                );
+        </div>,
+            {
+                position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                autoClose: 1500, // Đóng sau 3 giây
+                hideProgressBar: true, // Ẩn thanh tiến độ
+                closeButton: false, // Ẩn nút đóng
+                className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                draggable: false, // Tắt kéo di chuyển
+                rtl: false, // Không hỗ trợ RTL
             }
-
-            // Lưu vào localStorage
-            localStorage.setItem('itemsPayment', JSON.stringify([itemData])); // Giả sử chỉ có 1 sản phẩm trong lúc này
-            localStorage.removeItem('discount');
-            // Sau khi lưu xong, chuyển hướng đến trang thanh toán
-            navigate('/checkout');
-        }
-        else {
-            toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
-                Sản phẩm đã hết hàng vui lòng quay lại sau
-
-            </div>,
-                {
-                    position: "top-center",
-                    autoClose: 1500,
-                    hideProgressBar: true,
-                    closeButton: false,
-                    className: "custom-toast",
-                    draggable: false,
-                    rtl: false,
-                }
-            );
-        }
+        );
     }
 
     return (
@@ -280,7 +245,7 @@ const PostExchangeDetail = () => {
                     <button
 
                         className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                        onClick={() => handleCheckout(bookDetail)}
+                        onClick={() => handleSendRequest()}
 
                     >
                         Đề nghị trao đổi
