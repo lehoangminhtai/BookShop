@@ -344,19 +344,7 @@ const PostExchangeDetail = () => {
                     <ReviewUser bookId={productId} />
                 </div>
             </div>
-            <div className={`chat-box p-3 shadow rounded ${animate ? 'slide-in-right' : ''}`} style={{ transition: 'transform 0.2s', cursor: 'pointer' }}
-                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                <div className="chat-content d-flex align-items-center justify-content-between"
-                    onClick={handleScrollToExchangeButton} >
-                    <span className="fs-3 text-danger fw-bold">100 điểm</span>
-                    <button className="border-0 bg-transparent p-2 rounded-circle d-flex align-items-center justify-content-center"
-
-                    >
-                        <i className="bi bi-check-circle text-success fs-4"></i>
-                    </button>
-                </div>
-            </div>
+            
 
             <ToastContainer />
         </div>

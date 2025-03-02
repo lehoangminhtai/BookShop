@@ -8652,17 +8652,57 @@ body.no-scroll {
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); /* Bóng cho khung */
-    padding: 15px;
     z-index: 1000; /* Đảm bảo thẻ chat luôn hiển thị trên cùng */
-    font-size: 14px;
-    color: #333;
+    font-size: 11px;
+    
+    padding: 10px;
+}
+ .collapsed{
+    width: 60px;
+}
+.chat-content {
+    font-weight: 600;
+   color: #000;
+}
+.option-exchange:hover{
+    transition: all 0.3s;
+    scale: 1.1;
+    color: var(--bs-primary)
+}
+.icon-hidden {
+    visibility: hidden;
 }
 
-.chat-content {
-    text-align: center;
-    font-weight: 600;
-    color: #007bff; /* Màu sắc cho text */
+.option-exchange:hover .icon-hidden {
+    transition: all 0.3s;
+    visibility: visible;
 }
+
+.card-custom {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .card-custom:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-img-custom {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  
+  .text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
 
 @keyframes slideInFromRight {
     0% {

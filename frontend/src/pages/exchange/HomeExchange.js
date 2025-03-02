@@ -22,8 +22,7 @@ const HomeExchange = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [animate, setAnimate] = useState(false);
-
-
+    const [isChatBoxExpanded, setIsChatBoxExpanded] = useState(true);
 
     const navigate = useNavigate();
     const searchButtonRef = useRef(null);
@@ -31,6 +30,10 @@ const HomeExchange = () => {
     useEffect(() => {
         setAnimate(true);
     }, []);
+
+    const toggleChatBox = () => {
+        setIsChatBoxExpanded(!isChatBoxExpanded);
+    };
 
     const handleClickPost = () => {
         navigate(`/exchange-post-detail`)
@@ -259,14 +262,42 @@ const HomeExchange = () => {
 
                     </div>
                 </div>
-                <div className={`chat-box  shadow rounded ${animate ? 'slide-in-right' : ''}`} style={{ transition: 'transform 0.2s', cursor: 'pointer' }}
+                <div className={`chat-box  shadow rounded ${animate ? 'slide-in-right' : ''} ${isChatBoxExpanded ? '' : 'collapsed'}`} style={{ transition: "transform 0.3s ease, width 0.5s ease", cursor: 'pointer' }}
                     onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                    <div className="chat-content d-flex align-items-center justify-content-between"
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                     >
-                        <span className="fs-6">Bài đăng của tôi</span>
-                        <i className="bi bi-arrow-right text-dark fs-4"></i>
-
+                    <div className="chat-content"
+                    >
+                        <div className="text-center" onClick={toggleChatBox}>
+                            <button className="btn" onClick={toggleChatBox}>
+                                {isChatBoxExpanded ? <i class="fa-solid fa-x text-danger"></i> : <i class="fa-solid fa-list text-primary"></i>}
+                            </button>
+                        </div>
+                        {isChatBoxExpanded && (
+                            <>
+                            <Link to='/my-post-exchange'>
+                                <div className="option-exchange mb-2">
+                                    <i className="fa fa-book me-2"></i>
+                                    <span className="fs-6">Bài đăng của tôi</span>
+                                </div>
+                                </Link>
+                                <hr />
+                                <div className="option-exchange mb-2">
+                                    <i className="fa fa-paper-plane me-2"></i>
+                                    <span className="fs-6">Bài đăng đã gửi</span>
+                                </div>
+                                <hr />
+                                <div className="option-exchange mb-2">
+                                    <i className="fa fa-history me-2"></i>
+                                    <span className="fs-6">Lịch sử giao dịch</span>
+                                </div>
+                                <hr />
+                                <div className="option-exchange mb-2">
+                                    <i className="fa fa-star me-2"></i>
+                                    <span className="fs-6">Tổng điểm</span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
