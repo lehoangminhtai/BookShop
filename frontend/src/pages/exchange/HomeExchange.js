@@ -9,7 +9,8 @@ import '../../css/bootstrap.min.css'
 import '../../css/style.css'
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Slider from "react-slick";
+import '../../css/user/HomeExchange.scss'
+
 
 //Component
 import BookDetail from '../../components/BookDetail';
@@ -123,6 +124,10 @@ const HomeExchange = () => {
                                 <i className="fa fa-upload"></i> Đăng sách
                             </button>
                         </div>
+                    </div>
+
+                    <div className="hero-section">
+
                     </div>
 
                     <h2 class="h2 mt-5 text-center">Chia sẻ tri thức</h2>
@@ -265,7 +270,7 @@ const HomeExchange = () => {
                 <div className={`chat-box  shadow rounded ${animate ? 'slide-in-right' : ''} ${isChatBoxExpanded ? '' : 'collapsed'}`} style={{ transition: "transform 0.3s ease, width 0.5s ease", cursor: 'pointer' }}
                     onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                     onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                    >
+                >
                     <div className="chat-content"
                     >
                         <div className="text-center" onClick={toggleChatBox}>
@@ -275,17 +280,19 @@ const HomeExchange = () => {
                         </div>
                         {isChatBoxExpanded && (
                             <>
-                            <Link to='/my-post-exchange'>
-                                <div className="option-exchange mb-2">
-                                    <i className="fa fa-book me-2"></i>
-                                    <span className="fs-6">Bài đăng của tôi</span>
-                                </div>
+                                <Link to='/my-post-exchange'>
+                                    <div className="option-exchange mb-2">
+                                        <i className="fa fa-book me-2"></i>
+                                        <span className="fs-6">Bài đăng của tôi</span>
+                                    </div>
                                 </Link>
                                 <hr />
-                                <div className="option-exchange mb-2">
-                                    <i className="fa fa-paper-plane me-2"></i>
-                                    <span className="fs-6">Bài đăng đã gửi</span>
-                                </div>
+                                <Link to='/post-request'>
+                                    <div className="option-exchange mb-2">
+                                        <i className="fa fa-paper-plane me-2"></i>
+                                        <span className="fs-6">Bài đăng đã gửi</span>
+                                    </div>
+                                </Link>
                                 <hr />
                                 <div className="option-exchange mb-2">
                                     <i className="fa fa-history me-2"></i>

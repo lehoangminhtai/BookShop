@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+//scss
+import '../../css/user/MyPost.scss'
+
 const MyPosts = () => {
     const [posts, setPosts] = useState([
         {
             id: 1,
             title: "Sách lập trình JavaScript",
-            image: "https://source.unsplash.com/200x200/?book,code",
+            image: "https://m.media-amazon.com/images/I/71787OImkEL.jpg",
             date: "2024-02-10",
             location: "Hồ Chí Minh",
             status: "pending"
@@ -14,7 +17,7 @@ const MyPosts = () => {
         {
             id: 2,
             title: "Bộ truyện Harry Potter",
-            image: "https://source.unsplash.com/200x200/?book,magic",
+            image: "https://img.posterstore.com/zoom/wb0001-8harrypotter-sorcerersstone50x70.jpg",
             date: "2024-02-08",
             location: "Hà Nội",
             status: "processing"
@@ -22,7 +25,7 @@ const MyPosts = () => {
         {
             id: 3,
             title: "Sách kinh tế học vĩ mô",
-            image: "https://source.unsplash.com/200x200/?book,economics",
+            image: "https://hvpnvn.edu.vn/wp-content/uploads/sites/63/2024/02/26102016120000-0001.jpg",
             date: "2024-02-06",
             location: "Đà Nẵng",
             status: "completed"
@@ -50,7 +53,15 @@ const MyPosts = () => {
 
     return (
         <div className="container py-5">
-            <h2 className="text-center mb-4 text-primary">📚 Bài đăng của tôi</h2>
+            <div class="container-fluid page-header py-5 bg-primary">
+                <h1 class="text-center text-white display-6">Trao đổi <span>Sách 📚</span></h1>
+                <ol class="breadcrumb justify-content-center mb-0">
+                    <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a href="#">Trao đổi sách</a></li>
+                    <li class="breadcrumb-item active text-white">Bài đăng</li>
+                </ol>
+            </div>
+            <h2 className="h2 text-center mt-5 mb-5 text-primary">-- <span className=""> Bài đăng của tôi </span> --</h2>
             <div className="row">
                 {posts.map((post) => (
                     <div key={post.id} className="col-md-6 col-lg-4 mb-4">

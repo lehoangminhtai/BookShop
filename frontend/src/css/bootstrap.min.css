@@ -8484,7 +8484,7 @@ body.no-scroll {
 }
 
 .bg-primary {
-    background-color: rgba(29, 78, 216) !important
+    background-color: var(--bs-primary) !important
 }
 
 .bg-secondary {
@@ -8644,39 +8644,6 @@ body.no-scroll {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   }
 
-  .chat-box {
-    position: fixed;
-    top: 50%;
-    right: 20px;  /* Khoảng cách từ phải */
-    width: 200px; /* Độ rộng của khung chat */
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); /* Bóng cho khung */
-    z-index: 1000; /* Đảm bảo thẻ chat luôn hiển thị trên cùng */
-    font-size: 11px;
-    
-    padding: 10px;
-}
- .collapsed{
-    width: 60px;
-}
-.chat-content {
-    font-weight: 600;
-   color: #000;
-}
-.option-exchange:hover{
-    transition: all 0.3s;
-    scale: 1.1;
-    color: var(--bs-primary)
-}
-.icon-hidden {
-    visibility: hidden;
-}
-
-.option-exchange:hover .icon-hidden {
-    transition: all 0.3s;
-    visibility: visible;
-}
 
 .card-custom {
     transition: transform 0.3s ease, box-shadow 0.3s ease;

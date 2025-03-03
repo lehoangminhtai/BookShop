@@ -61,7 +61,7 @@ const PostExchangeDetail = () => {
         const getBookDetail = async () => {
             try {
                 const book = {
-                    title: "hii",
+                    title: "Từ vựng Ielts",
                     images: "https://res.cloudinary.com/dyu419id3/image/upload/v1734341567/uploads/cl3qool78uh38wytk29h.webp"
                     , description: "Sách bị hỏng 1 vài phần",
                     publisher: "Sách bị hư bìa",
@@ -297,7 +297,7 @@ const PostExchangeDetail = () => {
                                     { label: "Mã hàng", value: `${bookDetail._id}` },
                                     { label: "Tác giả", value: `${bookDetail.author}` },
 
-                                    { label: "NXB", value: `${bookDetail.publisher}` },
+                                    { label: "Mô tả", value: `${bookDetail.publisher}` },
 
                                     { label: "Thể loại", value: `${bookDetail.categoryId?.nameCategory}` },
 
