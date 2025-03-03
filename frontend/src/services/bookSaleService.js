@@ -42,7 +42,7 @@ export const getBookSales = async (options = {}) => {
         }
     }
 };
-export const getBookSale = async (bookId) => await API.get(`/${bookId}`)
+export const getBookSale = async (bookId) => await axios.create({ baseURL: 'http://localhost:4000/api/bookSales' }).get(`/${bookId}`)
 
 export const getBookSalesNotAvailable = async (options = {}) => {
     try {
