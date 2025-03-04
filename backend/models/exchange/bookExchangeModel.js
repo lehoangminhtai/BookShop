@@ -1,34 +1,35 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const Schema = mongoose.Schema;
+const bookExchangeSchema = new mongoose.Schema({
 
-const bookSchema = new Schema({
-    title:{
+    title: { type: String, required: true },
+    author: { type: String, required: true },
+    description: { type: String },
+    images: [{ type: String }],
+    publisher: { type: String },
+    publicationYear: { type: Number },
+    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+    condition: {
         type: String,
-        required: true
+        required: true,
     },
-    author:{
-        type:String,
-        required: true
-    },
-    description: {
+    exchangeType: {
         type: String,
-        required: true
     },
-    images:{
-        type: [String],
-        required:false
-    },
-    publisher:{
+    creditPoints: { type: Number, default: 0 }, // Chỉ áp dụng khi exchangeType là "Dùng điểm"
+    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    receiverId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    status: {
         type: String,
-        required: true
+        default: "available",
     },
-    categoryId:{
-        type: Schema.Types.ObjectId,
-        ref: 'CategoryBook',
-        required: true
-    }
-}, {timestamps: true})
+    location: {
+        type: String,
+        required: true,
+    },
+    pageCount: { type: Number, required: true },
+}, { timestamps: true }
+);
 
-module.exports = mongoose.model('Book', bookSchema);
-
+const BookExchange = mongoose.model("BookExchange", bookExchangeSchema);
+module.exports = BookExchange;

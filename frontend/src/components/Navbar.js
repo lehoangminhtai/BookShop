@@ -40,7 +40,7 @@ const Navbar = () => {
                                     <div className="navbar-nav mx-auto">
                                         <Link to="/" className="nav-item nav-link active fw-bold fs-5">Trang chủ</Link>
                                         <Link to="/" className="nav-item nav-link fw-bold fs-5">Mượn Sách</Link>
-                                        <Link to="/" className="nav-item nav-link fw-bold fs-5">Trao Đổi Sách</Link>
+                                        <Link to="/exchange" className="nav-item nav-link fw-bold fs-5">Trao Đổi Sách</Link>
                                         <Link to="/contact" className="nav-item nav-link fw-bold fs-5">Liên Lạc</Link>
                                     </div>
                                     <div className="d-flex m-3 me-0">
@@ -86,7 +86,7 @@ const Navbar = () => {
                                     <div className="navbar-nav mx-auto">
                                         <Link to="/" className="nav-item nav-link active fw-bold fs-5">Trang chủ</Link>
                                         <Link to="/" className="nav-item nav-link fw-bold fs-5">Mượn Sách</Link>
-                                        <Link to="/" className="nav-item nav-link fw-bold fs-5">Trao Đổi Sách</Link>
+                                        <Link to="/exchange" className="nav-item nav-link fw-bold fs-5">Trao Đổi Sách</Link>
                                         <Link to="/contact" className="nav-item nav-link fw-bold fs-5">Liên Lạc</Link>
                                     </div>
                                     <div className="d-flex m-3 me-0">

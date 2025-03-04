@@ -34,6 +34,8 @@ import AdLog from './pages/admin/AdLog';
 
 import AdminRoute from './components/ProtectedRoute';
 
+import AddBookExchange from './pages/exchange/AddBookExchange'
+
 const AdminRoutes = [
   { path: "/admin", element: <Dashboard /> },
   { path: "/admin/category-book", element: <AdCategoryBook /> },
@@ -77,6 +79,8 @@ function AppContent() {
 
           <Route path="/not-found" element={<Page404 />} />
           <Route path="*" element={<Page404 />} />
+
+          <Route path="/exchange" element={<AddBookExchange />} />
         
           {/* admin */}
           {AdminRoutes.map(({ path, element }) => (
