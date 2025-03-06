@@ -1,5 +1,5 @@
 const express = require("express");
-const { createBookExchange, getBooksExchange, updateBookExchange } = require("../../controllers/exchange/bookExchangeController");
+const { createBookExchange, getBooksExchange, updateBookExchange, deleteBookExchange } = require("../../controllers/exchange/bookExchangeController");
 
 const router = express.Router();
 
@@ -7,5 +7,7 @@ const router = express.Router();
 router.post("/", createBookExchange);
 router.get("/", getBooksExchange);
 router.put("/:bookId", updateBookExchange);
-
+router.delete("/:bookId", deleteBookExchange);
 module.exports = router;
+
+

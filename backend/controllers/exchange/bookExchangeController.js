@@ -63,9 +63,9 @@ const getBooksExchange = async (req, res) => {
 
 const updateBookExchange = async (req, res) => {
     const { bookId } = req.params; // Lấy ID sách trao đổi cần cập nhật
-    const { 
-        title, author, description, images, publisher, categoryId, 
-        condition, exchangeType, location, pageCount, publicationYear 
+    const {
+        title, author, description, images, publisher, categoryId,
+        condition, exchangeType, location, pageCount, publicationYear
     } = req.body;
 
     const userId = req.userId;
@@ -137,9 +137,61 @@ const updateBookExchange = async (req, res) => {
         });
     }
 };
+const deleteBookExchange = async (req, res) => {
+    const { bookId } = req.params; // Lấy ID sách cần xóa
+    const userId = req.userId; // Lấy ID người thực hiện xóa
+
+    try {
+        // Tìm sách trao đổi theo ID
+        const bookExchange = await BookExchange.findById(bookId);
+
+        if (!bookExchange) {
+            return res.status(404).json({
+                success: false,
+                message: 'Sách trao đổi không tồn tại',
+            });
+        }
+
+        // Xóa tất cả ảnh trên Cloudinary trước khi xóa sách
+        if (bookExchange.images && bookExchange.images.length > 0) {
+            const deleteImagePromises = bookExchange.images.map((imageUrl) => {
+                // Lấy public_id từ URL của Cloudinary
+                const publicId = imageUrl.split('/').pop().split('.')[0];
+                return cloudinary.uploader.destroy(`uploads/${publicId}`);
+            });
+
+            await Promise.all(deleteImagePromises);
+        }
+
+        // Xóa sách trao đổi khỏi database
+        await BookExchange.findByIdAndDelete(bookId);
+
+        // Ghi log hành động xóa sách
+        await logAction(
+            'Xóa sách trao đổi',
+            userId,
+            `Người dùng ${userId} đã xóa sách trao đổi: ${bookExchange.title}`,
+            bookExchange
+        );
+
+        // Trả về phản hồi thành công
+        res.status(200).json({
+            success: true,
+            message: 'Xóa sách trao đổi thành công',
+        });
+
+    } catch (error) {
+        // Xử lý lỗi
+        return res.status(400).json({
+            success: false,
+            message: 'Xóa sách trao đổi thất bại: ' + error.message,
+        });
+    }
+};
 
 module.exports = {
     createBookExchange,
     getBooksExchange,
-    updateBookExchange
+    updateBookExchange,
+    deleteBookExchange
 };
