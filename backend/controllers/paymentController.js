@@ -89,20 +89,37 @@ exports.updatePaymentStatus = async (req, res) => {
 
 exports.getAllPayments = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là 1
+        const limit = parseInt(req.query.limit) || 10; // Số lượng mục trên mỗi trang, mặc định là 10
+        const skip = (page - 1) * limit;
+
+        // Lấy danh sách thanh toán có phân trang
         const payments = await Payment.find({})
             .sort({ paymentDate: -1 })
+            .skip(skip)
+            .limit(limit)
             .populate({
-                path:'orderId',
-                select:'address orderStatus finalAmount'
-            }
-            )
+                path: 'orderId',
+                select: 'address orderStatus finalAmount'
+            })
             .populate({
-                path: 'userId', 
+                path: 'userId',
                 select: 'fullName email phone'
             });
 
-        res.status(200).json(payments);
+        // Tính tổng số đơn hàng
+        const totalPayments = await Payment.countDocuments();
+        const totalPages = Math.max(Math.ceil(totalPayments / limit), 1);
+
+        res.status(200).json({
+            success: true,
+            data: payments,
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: totalPayments
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+

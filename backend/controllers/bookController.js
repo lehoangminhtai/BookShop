@@ -66,7 +66,7 @@ const createBook = async (req,res, next) =>{
 const getBooks = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1; // Trang hiện tại
-        const limit = parseInt(req.query.limit) || 30; // Số lượng sách mỗi trang
+        const limit = parseInt(req.query.limit) || 10; // Số lượng sách mỗi trang
         const skip = (page - 1) * limit;
         // Tìm sách và phân trang
         const books = await Book.find({})

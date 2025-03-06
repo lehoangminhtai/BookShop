@@ -2,32 +2,35 @@ import React, { useState, useEffect } from "react";
 import AdSidebar from "../../components/admin/AdSidebar";
 import { getAllPayments } from "../../services/paymentService";
 import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 
 const AdOrder = () => {
     const [payments, setPayments] = useState([]);
-    const [loading, setLoading] = useState(true); 
+    const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const [limit, setLimit] = useState(10);
     const navigate = useNavigate();
-   
-    const fetchPayment = async () => {
+
+    const fetchPayments = async (page = 1, limit = 10) => {
         try {
-            const response = await getAllPayments(); 
-            const paymentData = response.data;
-            setPayments(paymentData); 
-            console.log(payments);
+            const response = await getAllPayments(page, limit);
+            setPayments(response.data.data);
+            setCurrentPage(response.data.currentPage);
+            setTotalPages(response.data.totalPages);
+            setTotalItems(response.data.totalItems);
+            setLoading(false);
         } catch (error) {
-            console.log(error);
-            toast.error("Có lỗi xảy ra khi lấy dữ liệu thanh toán!");
-        } finally {
-            setLoading(false); 
+            console.error("Lỗi khi lấy danh sách thanh toán:", error);
         }
     };
 
-    
+
     useEffect(() => {
-        fetchPayment();
-    }, []);
+        fetchPayments(currentPage, limit);
+    }, [currentPage, limit]);
 
     const handleViewDetails = (orderId) => {
         navigate(`/admin/order/edit/${orderId}`);  // Chuyển hướng đến trang chỉnh sửa đơn hàng
@@ -42,11 +45,11 @@ const AdOrder = () => {
             <div className="container p-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-flex">
-                        
+
                     </div>
                     <input type="text" placeholder="Search..." className="form-control w-25" />
                     <div className="d-flex">
-                        
+
                         <button className="btn btn-primary ms-2">Thêm mới</button>
                     </div>
                 </div>
@@ -72,7 +75,7 @@ const AdOrder = () => {
                             {payments.map((payment, index) => (
                                 <tr key={payment._id}>
                                     <td className="text-center">
-                                       
+
                                         <span>{index + 1}</span>
                                     </td>
                                     <td >
@@ -120,6 +123,98 @@ const AdOrder = () => {
                         </tbody>
                     </table>
                 )}
+                {/* Pagination */}
+                <div className="d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                        <select
+                            className="form-control d-inline w-auto"
+                            value={limit}
+                            onChange={(e) => setLimit(parseInt(e.target.value))}
+                        >
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                        </select>
+                        <span className="ml-2">
+                            Hiển thị {payments.length > 0 ? (currentPage - 1) * limit + 1 : 0} -{' '}
+                            {Math.min(currentPage * limit, totalItems)} trong tổng {totalItems} thanh toán
+                        </span>
+                    </div>
+                    <div className="d-flex justify-content-center align-items-center">
+                        {/* Nút Previous */}
+                        <button
+                            className="btn btn-link text-warning"
+                            onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            <i className="fas fa-chevron-left"></i>
+                        </button>
+
+                        {/* Nút phân trang */}
+                        {Array.from({ length: totalPages }, (_, index) => {
+                            const pageNumber = index + 1;
+
+                            // Hiển thị nút đầu tiên
+                            if (pageNumber === 1) {
+                                return (
+                                    <button
+                                        key={pageNumber}
+                                        className={`btn btn-link ${currentPage === pageNumber ? 'btn-danger text-white px-3 py-1 rounded' : 'text-dark'}`}
+                                        onClick={() => setCurrentPage(pageNumber)}
+                                    >
+                                        {pageNumber}
+                                    </button>
+                                );
+                            }
+
+                            // Hiển thị nút cuối cùng
+                            if (pageNumber === totalPages) {
+                                return (
+                                    <button
+                                        key={pageNumber}
+                                        className={`btn btn-link ${currentPage === pageNumber ? 'btn-danger text-white px-3 py-1 rounded' : 'text-dark'}`}
+                                        onClick={() => setCurrentPage(pageNumber)}
+                                    >
+                                        {pageNumber}
+                                    </button>
+                                );
+                            }
+
+                            // Hiển thị nút liền kề currentPage
+                            if (pageNumber === currentPage - 1 || pageNumber === currentPage || pageNumber === currentPage + 1) {
+                                return (
+                                    <button
+                                        key={pageNumber}
+                                        className={`btn btn-link ${currentPage === pageNumber ? 'btn-danger text-white px-3 py-1 rounded' : 'text-dark'}`}
+                                        onClick={() => setCurrentPage(pageNumber)}
+                                    >
+                                        {pageNumber}
+                                    </button>
+                                );
+                            }
+
+                            // Hiển thị dấu ...
+                            if (
+                                (pageNumber < currentPage - 1 && pageNumber === 2) || // ... trước
+                                (pageNumber > currentPage + 1 && pageNumber === totalPages - 1) // ... sau
+                            ) {
+                                return <span key={pageNumber} className="text-dark">...</span>;
+                            }
+
+                            return null; // Không hiển thị các trang còn lại
+                        })}
+
+                        {/* Nút Next */}
+                        <button
+                            className="btn btn-link text-warning"
+                            onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            <i className="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
             </div>
             <ToastContainer />
         </div>
