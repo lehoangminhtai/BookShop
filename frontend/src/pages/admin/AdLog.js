@@ -6,16 +6,26 @@ import { getLogs } from "../../services/logService";
 
 const AdLog = () => {
     const [logs, setLogs] = useState([])
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [totalItems, setTotalItems] = useState(0);
 
-    const fetchLog = async () => {
-        const response = await getLogs();
-        if(response.success)
-            setLogs(response.logs)
-    }
+
+    const fetchLog = async (page, limit) => {
+        const response = await getLogs(page, limit);
+        if (response.success) {
+            setLogs(response.logs);
+            setTotalPages(response.totalPages);
+            setCurrentPage(response.currentPage);
+            setTotalItems(response.totalLogs);
+        }
+    };
 
     useEffect(() => {
-        fetchLog();
-    })
+        fetchLog(currentPage, limit);
+    }, [currentPage, limit]);
+
 
     return (
         <div className="d-flex">
@@ -46,7 +56,7 @@ const AdLog = () => {
                                 <tr key={log._id}>
                                     <td>{new Date(log.createdAt).toLocaleString()}</td>
                                     <td className="fw-bold">{log.action}</td>
-                                    <td className={`${log.user.role === 1 && 'text-danger'}`}>{log.user.role === 0 ?'Người dùng ' : 'Quản trị: '}{log.user.fullName}
+                                    <td className={`${log.user.role === 1 && 'text-danger'}`}>{log.user.role === 0 ? 'Người dùng ' : 'Quản trị: '}{log.user.fullName}
                                         <p className="small text-dark"><i>{log.user.email}</i></p>
                                     </td>
                                     <td>{log.description}</td>
@@ -60,6 +70,64 @@ const AdLog = () => {
 
                     </tbody>
                 </table>
+                {/* Pagination */}
+                <div className="d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                        <select
+                            className="form-control d-inline w-auto"
+                            value={limit}
+                            onChange={(e) => setLimit(parseInt(e.target.value))}
+                        >
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                        </select>
+                        <span className="ml-2">
+                            Hiển thị {logs.length > 0 ? (currentPage - 1) * limit + 1 : 0} -
+                            {Math.min(currentPage * limit, totalItems)} trong tổng {totalItems} log
+                        </span>
+                    </div>
+                    <div className="d-flex justify-content-center align-items-center">
+                        {/* Nút Previous */}
+                        <button
+                            className="btn btn-link text-warning"
+                            onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            <i className="fas fa-chevron-left"></i>
+                        </button>
+
+                        {/* Nút phân trang */}
+                        {Array.from({ length: totalPages }, (_, index) => {
+                            const pageNumber = index + 1;
+                            if (pageNumber === 1 || pageNumber === totalPages ||
+                                pageNumber === currentPage - 1 || pageNumber === currentPage || pageNumber === currentPage + 1) {
+                                return (
+                                    <button
+                                        key={pageNumber}
+                                        className={`btn btn-link ${currentPage === pageNumber ? 'btn-danger text-white px-3 py-1 rounded' : 'text-dark'}`}
+                                        onClick={() => setCurrentPage(pageNumber)}
+                                    >
+                                        {pageNumber}
+                                    </button>
+                                );
+                            }
+                            if (pageNumber === 2 || pageNumber === totalPages - 1) {
+                                return <span key={pageNumber} className="text-dark">...</span>;
+                            }
+                            return null;
+                        })}
+
+                        {/* Nút Next */}
+                        <button
+                            className="btn btn-link text-warning"
+                            onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            <i className="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
