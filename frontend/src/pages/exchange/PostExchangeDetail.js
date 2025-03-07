@@ -1,13 +1,12 @@
 import { useParams } from 'react-router-dom';
 import { toast, ToastContainer } from "react-toastify";
 import { useEffect, useState, useRef } from 'react';
-import { fetchBook } from '../../services/bookService';
-import { addItemToCart } from '../../services/cartService';
 import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
 import '../../css/user/ProductDetail.scss'
 
 import ReviewUser from '../../components/customer/BookExchange/ReviewUser';
+import ListUserRequest from '../../components/customer/BookExchange/ListUserRequest';
 
 
 const PostExchangeDetail = () => {
@@ -15,47 +14,10 @@ const PostExchangeDetail = () => {
     const [bookDetail, setBookDetail] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [amount, setAmount] = useState(0);
     const [expanded, setExpanded] = useState(false);
     const { user } = useStateContext();
     const navigate = useNavigate();
     const exchangeButtonRef = useRef(null);
-    const [animate, setAnimate] = useState(false);
-
-    useEffect(() => {
-        setAnimate(true);
-    }, []);
-
-    const handleScrollToExchangeButton = () => {
-        if (exchangeButtonRef.current) {
-            exchangeButtonRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
-
-    const [bookSale, setBookSale] = useState({ price: 0, discount: 0 });
-    const priceDiscount = bookSale.price - (bookSale.price * (bookSale.discount / 100));
-
-    useEffect(() => {
-        const fetchBookSaleDetails = async () => {
-            const response = await fetch(`http://localhost:4000/api/bookSales/${productId}`);
-            const data = await response.json();
-
-            if (response.ok) {
-                setBookSale(data);
-                if (data.quantity > 0) {
-                    setAmount(1);
-                }
-            }
-        };
-
-        fetchBookSaleDetails();
-    }, [productId]);
-
-
-    const formatCurrency = (value) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-    };
-
 
     useEffect(() => {
         const getBookDetail = async () => {
@@ -82,19 +44,6 @@ const PostExchangeDetail = () => {
     if (error) return <p>{error}</p>;
     if (!bookDetail) return <p>Không tìm thấy sách</p>;
 
-    const increaseAmount = () => {
-        setAmount((prevAmount) => {
-            return prevAmount < bookSale.quantity ? prevAmount + 1 : prevAmount;
-        });
-    };
-
-    const decreaseAmount = () => {
-        if (bookSale.quantity > 0)
-            setAmount((prevAmount) => (prevAmount > 1 ? prevAmount - 1 : 1));
-
-
-    };
-
     const fullText = bookDetail.description;
 
     const toggleExpanded = () => {
@@ -115,98 +64,6 @@ const PostExchangeDetail = () => {
     };
 
     const showMoreButton = isTextLong();
-
-    const handleAddItemToCart = async (itemData) => {
-        try {
-            await addItemToCart(itemData);
-        }
-        catch (error) {
-            console.log("lỗi, không thể thêm giỏ hàng", error)
-        }
-    }
-
-    const addToCart = (product) => {
-        if (user) {
-            const itemData = { userId: user._id, bookId: product._id, quantity: amount, price: priceDiscount }
-            handleAddItemToCart(itemData);
-        }
-        else {
-
-
-            let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-            // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-            const existingProduct = cart.find(item => item.id === product._id);
-            if (existingProduct) {
-                // Nếu có, cập nhật số lượng sản phẩm trong giỏ hàng
-                existingProduct.quantity += amount;
-            } else {
-                // Nếu không, thêm sản phẩm mới vào giỏ hàng
-                cart.push({ id: product._id, quantity: amount, price: priceDiscount });
-            }
-
-            // Lưu giỏ hàng vào Local Storage
-            localStorage.setItem('cart', JSON.stringify(cart));
-        }
-
-
-        if (amount > 0) {
-
-
-            toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
-                Sản phẩm đã được thêm vào giỏ hàng
-
-            </div>,
-                {
-                    position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
-                    autoClose: 1500, // Đóng sau 3 giây
-                    hideProgressBar: true, // Ẩn thanh tiến độ
-                    closeButton: false, // Ẩn nút đóng
-                    className: "custom-toast", // Thêm class để tùy chỉnh CSS
-                    draggable: false, // Tắt kéo di chuyển
-                    rtl: false, // Không hỗ trợ RTL
-                }
-            );
-        }
-        else if (amount === 0 && bookSale.quantity <= 0) {
-            toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
-                Sản phẩm đã hết hàng vui lòng quay lại sau
-
-            </div>,
-                {
-                    position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
-                    autoClose: 1500, // Đóng sau 3 giây
-                    hideProgressBar: true, // Ẩn thanh tiến độ
-                    closeButton: false, // Ẩn nút đóng
-                    className: "custom-toast", // Thêm class để tùy chỉnh CSS
-                    draggable: false, // Tắt kéo di chuyển
-                    rtl: false, // Không hỗ trợ RTL
-                }
-            );
-        }
-        else if (amount === 0 && bookSale.quantity > 0) {
-            toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
-                Vui lòng chọn số lượng
-
-            </div>,
-                {
-                    position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
-                    autoClose: 1500, // Đóng sau 3 giây
-                    hideProgressBar: true, // Ẩn thanh tiến độ
-                    closeButton: false, // Ẩn nút đóng
-                    className: "custom-toast", // Thêm class để tùy chỉnh CSS
-                    draggable: false, // Tắt kéo di chuyển
-                    rtl: false, // Không hỗ trợ RTL
-                }
-            );
-        }
-        setAmount(0);
-
-    };
-
-
-
-
 
     const handleSendRequest = () => {
         toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
@@ -240,16 +97,18 @@ const PostExchangeDetail = () => {
                     />
                 </div>
 
-                <div className="d-flex justify-content-between mt-3">
+                <div className="d-flex justify-content-between mt-3 mb-3">
+                    {user ?
+                        (<ListUserRequest />) :
+                        (<button
 
-                    <button
+                            className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                            onClick={() => handleSendRequest()}
 
-                        className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                        onClick={() => handleSendRequest()}
+                        >
+                            Đề nghị trao đổi
+                        </button>)}
 
-                    >
-                        Đề nghị trao đổi
-                    </button>
                 </div>
 
 
@@ -312,7 +171,6 @@ const PostExchangeDetail = () => {
                         </div>
                     </div>
 
-
                     <div className="card p-4 shadow-lg">
                         <h1 className="card-title fs-3 fw-bold mb-3 text-center">Mô tả sản phẩm</h1>
 
@@ -333,19 +191,24 @@ const PostExchangeDetail = () => {
                             </div>
                         )}
                     </div>
-
                 </div>
-
-
-
+                <div className="user-section d-flex justify-content-between align-items-center mt-5">
+                    <div className="user-profile d-flex justify-content-center text-center align-items-center">
+                        <img alt='user-image' className='rounded-circle me-2' style={{ width: '50px', height: '50px' }}
+                            src='https://api-private.atlassian.com/users/6b5c1609134a5887d7f3ab1b73557664/avatar'
+                        />
+                        <span className='text-dark fw-bold'> Lê Hoàng Minh Tài</span>
+                    </div>
+                    <button className='btn btn-primary'><span className='me-2'>Trao đổi</span>
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
             <div className="container-fluid d-flex justify-content-center align-items-center mt-5">
                 <div className="bg-white p-5 rounded shadow w-100" >
                     <ReviewUser bookId={productId} />
                 </div>
             </div>
-            
-
             <ToastContainer />
         </div>
     );

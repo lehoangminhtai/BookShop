@@ -3104,7 +3104,7 @@ textarea.form-control.is-invalid {
     display: inline-block;
     font-weight: 400;
     line-height: 1.5;
-    color: #747d88;
+    color: black;
     text-align: center;
     vertical-align: middle;
     cursor: pointer;
@@ -8611,6 +8611,10 @@ body.no-scroll {
 
 .invisible {
     visibility: hidden !important
+}
+
+.cursor-pointer {
+    cursor: pointer !important
 }
 
 .slick-prev, .slick-next {
