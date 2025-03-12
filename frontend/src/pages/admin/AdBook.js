@@ -15,7 +15,7 @@ const AdBook = () => {
     const [showModalEdit, setShowModalEdit] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    const [limit, setLimit] = useState(30);
+    const [limit, setLimit] = useState(10);
     const [totalItems, setTotalItems] = useState(0); // Tổng số sách
 
 
