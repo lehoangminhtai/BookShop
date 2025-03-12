@@ -24,6 +24,9 @@ const addressRoutes = require('./routes/addressRoute');
 const reportRoutes = require('./routes/reportRoute');
 const logRoutes = require('./routes/logRoute');
 
+//exchange
+const bookExchangeRoutes = require('./routes/exchange/bookExchangeRoute');
+
 //connect database
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
@@ -59,6 +62,9 @@ app.use('/api/account', accountRoute);
 app.use('/api/user/addresses', addressRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/logs', logRoutes);
+
+//exchange
+app.use('/api/book-exchange', bookExchangeRoutes);
 
 
 app.use((req, res, next) => {

@@ -1,6 +1,21 @@
 import React, { useState } from "react";
+import { useDropzone } from 'react-dropzone';
 
 const PostForm = ({ handleCloseModal }) => {
+    const [formData, setFormData] = useState({
+        title: "",
+        author: "",
+        description: "",
+        publisher: "",
+        publicationYear: "",
+        categoryId: "",
+        condition: "",
+        exchangeType: "",
+        ownerId: "",
+        location: "",
+        pageCount: "",
+        images: [],
+    });
     const [selectedFiles, setSelectedFiles] = useState([]);
 
     const handleFileChange = (e) => {
@@ -9,11 +24,67 @@ const PostForm = ({ handleCloseModal }) => {
     };
 
     const handleRemoveFile = (index) => {
-        setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+        setFormData((prevData)=>({
+            ...prevData,
+            images: prevData.images.filter((_, i ) => i !== index)
+        }))
+        
     };
 
     const handleClose = () => {
         handleCloseModal();
+    };
+
+    const setFileToBase = (file) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => {
+            setFormData((prevData) => ({
+                ...prevData,
+                images: [...prevData.images, reader.result],
+            }));
+        };
+    };
+
+    const onDrop = (acceptedFiles) => {
+        acceptedFiles.forEach((file) => setFileToBase(file));
+    };
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: 'image/*',
+        multiple: true,
+    });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        console.log('Dữ liệu gửi lên:', formData);
+
+        try {
+            const response = await fetch('http://localhost:4000/api/book-exchange', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Lỗi từ server:', errorData);
+                throw new Error('Có lỗi khi gửi dữ liệu!');
+            }
+
+
+            const result = await response.json();
+            console.log('Phản hồi từ server:', result);
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     return (
@@ -25,113 +96,64 @@ const PostForm = ({ handleCloseModal }) => {
                         <button type="button" className="btn-close" onClick={handleClose}></button>
                     </div>
                     <div className="modal-body">
-                        <form>
+                        <form onSubmit={handleSubmit}>
+                            {Object.keys(formData).map((key) => (
+                                key !== 'images' && (
+                                    <div className="mb-3" key={key}>
+                                        <label className="form-label">{key}:</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            name={key}
+                                            value={formData[key]}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </div>
+                                )
+                            ))}
+
                             <div className="mb-3">
-                                <label htmlFor="title" className="form-label">Tiêu đề sách</label>
-                                <input type="text" className="form-control" id="title" required />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="author" className="form-label">Tác giả sách</label>
-                                <input type="text" className="form-control" id="author" required />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="description" className="form-label">Mô tả ngắn</label>
-                                <textarea className="form-control" id="description"></textarea>
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="files" className="form-label">Danh sách ảnh hoặc video</label>
-                                <input
-                                    type="file"
-                                    className="form-control"
-                                    id="files"
-                                    accept="image/*,video/*"
-                                    multiple
-                                    onChange={handleFileChange}
-                                />
-                                <div className="mt-3">
-                                    {selectedFiles.map((file, index) => (
-                                        <div key={index} className="position-relative d-inline-block me-2 mb-2">
-                                            {file.type.startsWith('image') ? (
-                                                <img
-                                                    src={URL.createObjectURL(file)}
+                                <label className="form-label">Hình ảnh:</label>
+                                <div
+                                    {...getRootProps()}
+                                    className={`dropzone ${isDragActive ? 'active-dropzone' : ''}`}
+                                    style={{
+                                        border: '2px dashed #007bff',
+                                        padding: '20px',
+                                        textAlign: 'center',
+                                        cursor: 'pointer',
+                                        borderRadius: '5px',
+                                    }}
+                                >
+                                    <input {...getInputProps()} />
+                                    {isDragActive ? <p>Thả file vào đây...</p> : <p>Kéo & thả ảnh hoặc nhấn để chọn</p>}
+                                </div>
+                                {formData.images.length > 0 && (
+                                    <div className="mt-2 d-flex flex-wrap">
+                                        {formData.images.map((img, index) => (
+                                            <div key={index} className="position-relative d-inline-block me-2 mb-2">
+                                              <img
+                                                    src={img}
                                                     alt="preview"
                                                     className="img-thumbnail"
                                                     style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                                                 />
-                                            ) : (
-                                                <video
-                                                    src={URL.createObjectURL(file)}
-                                                    className="img-thumbnail"
-                                                    style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                                                    controls
-                                                />
-                                            )}
-                                            <button
-                                                type="button"
-                                                className="btn btn-danger btn-sm position-absolute top-0 end-0"
-                                                onClick={() => handleRemoveFile(index)}
-                                            >
-                                                &times;
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-danger btn-sm position-absolute top-0 end-0"
+                                                    onClick={() => handleRemoveFile(index)}
+                                                >
+                                                    &times;
+                                                </button>
+                                            </div>
+
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                            <div className="mb-3">
-                                <label htmlFor="publisher" className="form-label">Nhà xuất bản</label>
-                                <input type="text" className="form-control" id="publisher" />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="publicationYear" className="form-label">Năm xuất bản</label>
-                                <input type="number" className="form-control" id="publicationYear" />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="categoryId" className="form-label">ID thể loại sách</label>
-                                <input type="text" className="form-control" id="categoryId" />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="condition" className="form-label">Tình trạng sách</label>
-                                <select className="form-select" id="condition">
-                                    <option value="new">Mới</option>
-                                    <option value="like-new">Cũ - như mới</option>
-                                    <option value="used">Cũ - có dấu hiệu sử dụng</option>
-                                </select>
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="exchangeType" className="form-label">Loại hình trao đổi</label>
-                                <select className="form-select" id="exchangeType">
-                                    <option value="points">Dùng điểm</option>
-                                    <option value="direct">Trao đổi trực tiếp</option>
-                                </select>
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="creditPoints" className="form-label">Số điểm tín dụng</label>
-                                <input type="number" className="form-control" id="creditPoints" />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="ownerId" className="form-label">ID người sở hữu sách</label>
-                                <input type="text" className="form-control" id="ownerId" />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="receiverId" className="form-label">ID người nhận sách</label>
-                                <input type="text" className="form-control" id="receiverId" />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="status" className="form-label">Trạng thái sách</label>
-                                <select className="form-select" id="status">
-                                    <option value="available">Có sẵn</option>
-                                    <option value="exchanging">Đang trao đổi</option>
-                                    <option value="exchanged">Đã trao đổi</option>
-                                </select>
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="location" className="form-label">Địa điểm trao đổi</label>
-                                <input type="text" className="form-control" id="location" />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="pageCount" className="form-label">Số trang của sách</label>
-                                <input type="number" className="form-control" id="pageCount" />
-                            </div>
+
+                            <button type="submit" className="btn btn-primary">Đăng sách</button>
                         </form>
                     </div>
                     <div className="modal-footer">
