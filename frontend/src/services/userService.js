@@ -14,7 +14,8 @@ API.interceptors.request.use((req) => {
     return req;
 })
 
-export const getAllUsers = async () => await API.get('/get-all-users')
+export const getAllUsers = async (page = 1, limit = 10) => 
+    await API.get(`/get-all-users?page=${page}&limit=${limit}`);
 
 export const searchUser = async (query) =>
     {

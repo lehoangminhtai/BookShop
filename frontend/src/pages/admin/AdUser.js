@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback  } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import debounce from 'lodash.debounce';
 import { ToastContainer } from "react-toastify";
 //component
@@ -6,7 +6,7 @@ import AdSidebar from '../../components/admin/AdSidebar';
 import AdUserForm from '../../components/admin/AdUserForm';
 
 //service
-import { getAllUsers, filterUser, searchUser} from '../../services/userService';
+import { getAllUsers, filterUser, searchUser } from '../../services/userService';
 
 import { useStateContext } from '../../context/UserContext';
 
@@ -19,16 +19,34 @@ const AdUser = () => {
     const userId = user._id
     const [searchQuery, setSearchQuery] = useState('');
 
-    const fetchUsers = async () => {
-        const response = await getAllUsers();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [totalItems, setTotalItems] = useState(0);
+    const fetchUsers = async (page = 1, limit = 10) => {
+        const response = await getAllUsers(page, limit);
         if (response.data.success) {
             setUsers(response.data.users);
+            setTotalPages(response.data.totalPages);
+            setCurrentPage(response.data.currentPage);
+            setTotalItems(response.data.totalUsers);
         }
     };
 
     useEffect(() => {
-        fetchUsers();
-    }, []);
+        fetchUsers(currentPage, limit);
+    }, [currentPage, limit]);
+
+    const handlePageChange = (newPage) => {
+        if (newPage > 0 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
+
+    const handleLimitChange = (e) => {
+        setLimit(parseInt(e.target.value));
+        setCurrentPage(1); // Reset về trang 1 khi đổi số lượng
+    };
 
     useEffect(() => {
         if (showModal) {
@@ -65,20 +83,20 @@ const AdUser = () => {
 
 
     const handleFilterUser = async (e) => {
-        const value = e.target.value;  
+        const value = e.target.value;
         if (value === 'all') {
             fetchUsers();
-        } else  {
+        } else {
             try {
-                const userData = {status : value }
+                const userData = { status: value }
                 const response = await filterUser(userData);
                 setUsers(response.users);
-    
+
             } catch (err) {
                 console.error('Error fetching book sales:', err);
-                
+
             }
-        } 
+        }
     };
 
     const searchUsers = useCallback(
@@ -92,7 +110,7 @@ const AdUser = () => {
                 }
             } catch (error) {
                 console.error('Error fetching books:', error);
-            } 
+            }
         }, 500),
         []
     );
@@ -111,9 +129,9 @@ const AdUser = () => {
                 {/* Header actions */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
 
-                    <input type="text" placeholder="Tìm kiếm..." className="form-control w-25" 
-                    value={searchQuery}
-                     onChange={(e) => handleSearchChange(e)}
+                    <input type="text" placeholder="Tìm kiếm..." className="form-control w-25"
+                        value={searchQuery}
+                        onChange={(e) => handleSearchChange(e)}
                     />
                     <div className="d-flex">
                         <button className="btn btn-primary me-2" onClick={handleCreateUser}>Tạo mới</button>
@@ -140,7 +158,7 @@ const AdUser = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.length >0 ? (
+                        {users.length > 0 ? (
                             users.map((user, index) => (
                                 <tr key={user._id} className={user._id === userId ? 'bg-info' : ''}>
                                     <td>{index + 1}</td>
@@ -156,40 +174,80 @@ const AdUser = () => {
                                         <button className="btn btn-link text-primary" onClick={() => handleUpdateUser(user)}>
                                             <i className="fas fa-edit"></i>
                                         </button>
-    
+
                                     </td>
-    
+
                                 </tr>
-    
+
                             ))
-                        ) :(
+                        ) : (
                             <tr>
-                            <td colSpan="6" className="text-center text-danger">
-                                Không tìm thấy người dùng phù hợp
-                            </td>
-                        </tr>
+                                <td colSpan="6" className="text-center text-danger">
+                                    Không tìm thấy người dùng phù hợp
+                                </td>
+                            </tr>
                         )
                         }
-                        
+
                     </tbody>
                 </table>
 
                 {/* Pagination */}
                 <div className="d-flex justify-content-between align-items-center mt-4">
                     <div>
-                        <select className="form-control d-inline w-auto">
-                            <option>10</option>
-                            <option>20</option>
-                            <option>30</option>
+                        <select
+                            className="form-control d-inline w-auto"
+                            onChange={(e) => setLimit(parseInt(e.target.value))}
+                            value={limit}>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
                         </select>
-                        <span className="ml-2">Show from 1 to 10 in 24 records</span>
+                        <span className="ml-2">
+                            Hiển thị {users.length > 0 ? (currentPage - 1) * limit + 1 : 0} -
+                            {Math.min(currentPage * limit, totalItems)} trong tổng {totalItems} người dùng
+                        </span>
+
                     </div>
-                    <div className="btn-group" role="group">
-                        <button className="btn btn-secondary">Previous</button>
-                        <button className="btn btn-primary">1</button>
-                        <button className="btn btn-secondary">2</button>
-                        <button className="btn btn-secondary">3</button>
-                        <button className="btn btn-secondary">Next</button>
+                    <div className="d-flex justify-content-center align-items-center">
+                        {/* Nút Previous */}
+                        <button
+                            className="btn btn-link text-warning"
+                            onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            <i className="fas fa-chevron-left"></i>
+                        </button>
+
+                        {/* Nút phân trang */}
+                        {Array.from({ length: totalPages }, (_, index) => {
+                            const pageNumber = index + 1;
+                            if (pageNumber === 1 || pageNumber === totalPages ||
+                                pageNumber === currentPage - 1 || pageNumber === currentPage || pageNumber === currentPage + 1) {
+                                return (
+                                    <button
+                                        key={pageNumber}
+                                        className={`btn btn-link ${currentPage === pageNumber ? 'btn-danger text-white px-3 py-1 rounded' : 'text-dark'}`}
+                                        onClick={() => setCurrentPage(pageNumber)}
+                                    >
+                                        {pageNumber}
+                                    </button>
+                                );
+                            }
+                            if (pageNumber === 2 || pageNumber === totalPages - 1) {
+                                return <span key={pageNumber} className="text-dark">...</span>;
+                            }
+                            return null;
+                        })}
+
+                        {/* Nút Next */}
+                        <button
+                            className="btn btn-link text-warning"
+                            onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            <i className="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -203,7 +261,7 @@ const AdUser = () => {
                         </div>
                     </div>
                 )}
-               
+
 
             </div>
             <ToastContainer />

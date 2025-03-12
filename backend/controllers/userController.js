@@ -6,10 +6,22 @@ const { logAction } = require('../middleware/logMiddleware.js');
 
 exports.getAllUser = async (req, res) => {
     try {
-        const users = await User.find().sort({ createdAt: -1 })
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const totalUsers = await User.countDocuments();
+        const users = await User.find()
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
         res.status(200).json({
             success: true,
-            users
+            users,
+            totalPages: Math.ceil(totalUsers / limit),
+            currentPage: page,
+            totalUsers
         });
     } catch (error) {
         res.status(500).json({
@@ -17,7 +29,8 @@ exports.getAllUser = async (req, res) => {
             message: error.message
         });
     }
-}
+};
+
 
 exports.getFilterUser = async (req, res) => {
     try {
