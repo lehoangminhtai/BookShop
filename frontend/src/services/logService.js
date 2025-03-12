@@ -2,9 +2,9 @@ import axios from "axios";
 
 const API = axios.create({ baseURL: 'http://localhost:4000/api/logs' });
 
-export const getLogs = async () => {
+export const getLogs = async (page = 1, limit = 10) => {
     try {
-        const response = await API.get('/');
+        const response = await API.get(`/?page=${page}&limit=${limit}`);
         return response.data;
     } catch (error) {
 
