@@ -1,0 +1,14 @@
+@keyframes floatUpDown {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  .animate {
+    display: inline-block;
+    animation: floatUpDown 2s ease-in-out infinite;
+  }
+  

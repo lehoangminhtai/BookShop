@@ -34,6 +34,10 @@ import AdLog from './pages/admin/AdLog';
 
 // Exchange
 import HomeExchange from './pages/exchange/HomeExchange';
+import PostExchangeDetail from './pages/exchange/PostExchangeDetail';
+import MyPosts from './pages/exchange/MyPost';
+import PostSentRequest from './pages/exchange/PostSentRequest';
+
 import AdminRoute from './components/ProtectedRoute';
 
 import AddBookExchange from './pages/exchange/AddBookExchange'
@@ -80,6 +84,9 @@ function AppContent() {
 
           {/* exchange book */}
           <Route path='/exchange' element={<HomeExchange />} />
+          <Route path='/exchange-post-detail' element={<PostExchangeDetail />} />
+          <Route path='/my-post-exchange' element={<MyPosts />} />
+          <Route path='/post-request' element={<PostSentRequest />} />
 
           <Route path="/not-found" element={<Page404 />} />
           <Route path="*" element={<Page404 />} />
