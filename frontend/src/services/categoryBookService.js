@@ -80,4 +80,6 @@ export const deleteCategoryBook = async (categoryId) =>{
             return { success: false, message: 'Có lỗi xảy ra khi kết nối tới server.' };
         }
     }
-} 
+}
+
+export const getListCategoryBooks = async () => await API.get('/')
