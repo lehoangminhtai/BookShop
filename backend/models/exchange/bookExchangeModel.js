@@ -13,9 +13,6 @@ const bookExchangeSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    exchangeType: {
-        type: String,
-    },
     creditPoints: { type: Number, default: 0 }, // Chỉ áp dụng khi exchangeType là "Dùng điểm"
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     receiverId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },

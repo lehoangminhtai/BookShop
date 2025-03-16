@@ -6,8 +6,7 @@ const { logAction } = require("../../middleware/logMiddleware.js");
 const createBookExchange = async (req, res) => {
     const {
         title, author, description, images, publisher,
-        publicationYear, categoryId, condition,
-        exchangeType, ownerId, location, pageCount
+        publicationYear, categoryId, condition, ownerId, location, pageCount
     } = req.body;
 
     try {
@@ -31,7 +30,7 @@ const createBookExchange = async (req, res) => {
         // Tạo sách trao đổi mới
         const newBookExchange = await BookExchange.create({
             title, author, description, images: imageUrls, publisher,
-            publicationYear, categoryId, condition, exchangeType, creditPoints,
+            publicationYear, categoryId, condition, creditPoints,
             ownerId, location, pageCount, status: "available",
         });
 
@@ -51,21 +50,50 @@ const createBookExchange = async (req, res) => {
         });
     }
 };
-
-const getBooksExchange = async (req, res) => {
+const getBooksExchanges = async (req, res) => {
     try {
-        const books = await BookExchange.find();
-        res.status(200).json({ success: true, data: books });
+        const page = parseInt(req.query.page) || 1; // Trang hiện tại (mặc định là 1)
+        const limit = parseInt(req.query.limit) || 8; // Số sách mỗi trang (mặc định là 8)
+        const skip = (page - 1) * limit; // Tính số lượng sách cần bỏ qua
+
+        const totalBooks = await BookExchange.countDocuments(); // Tổng số sách
+        const books = await BookExchange.find().skip(skip).limit(limit).sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            data: books,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalBooks / limit),
+                totalBooks,
+                hasNextPage: page * limit < totalBooks,
+                hasPrevPage: page > 1
+            }
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách sách trao đổi' });
     }
 };
 
+
+const getBooksExchange = async (req, res) => {
+    const { bookExchangeId } = req.params;
+    try {
+        const bookExchange = await BookExchange.findById(bookExchangeId);
+        if (!bookExchange) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy sách trao đổi' });
+        }
+        res.status(200).json({ success: true, bookExchange });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Lỗi khi lấy sách trao đổi' });
+    }
+}
+
 const updateBookExchange = async (req, res) => {
     const { bookId } = req.params; // Lấy ID sách trao đổi cần cập nhật
     const {
         title, author, description, images, publisher, categoryId,
-        condition, exchangeType, location, pageCount, publicationYear
+        condition, location, pageCount, publicationYear
     } = req.body;
 
     const userId = req.userId;
@@ -107,7 +135,6 @@ const updateBookExchange = async (req, res) => {
         bookExchange.publisher = publisher || bookExchange.publisher;
         bookExchange.categoryId = categoryId || bookExchange.categoryId;
         bookExchange.condition = condition || bookExchange.condition;
-        bookExchange.exchangeType = exchangeType || bookExchange.exchangeType;
         bookExchange.location = location || bookExchange.location;
         bookExchange.pageCount = pageCount || bookExchange.pageCount;
         bookExchange.publicationYear = publicationYear || bookExchange.publicationYear;
@@ -189,9 +216,22 @@ const deleteBookExchange = async (req, res) => {
     }
 };
 
+const getExchangeBookByUser = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const bookExchanges = await BookExchange.find({ ownerId: userId });
+        res.status(200).json({ success: true, bookExchanges });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách sách trao đổi của người dùng' });
+    }
+};
+
 module.exports = {
     createBookExchange,
+    getBooksExchanges,
     getBooksExchange,
     updateBookExchange,
-    deleteBookExchange
+    deleteBookExchange,
+    getExchangeBookByUser
 };
