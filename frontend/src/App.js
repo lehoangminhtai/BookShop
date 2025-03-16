@@ -82,7 +82,7 @@ function AppContent() {
 
           {/* exchange book */}
           <Route path='/exchange' element={<HomeExchange />} />
-          <Route path='/exchange-post-detail' element={<PostExchangeDetail />} />
+          <Route path='/exchange-post-detail/:bookExchangeId' element={<PostExchangeDetail />} />
           <Route path='/my-post-exchange' element={<MyPosts />} />
           <Route path='/post-request' element={<PostSentRequest />} />
 
