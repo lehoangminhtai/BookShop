@@ -4,21 +4,33 @@ import { useEffect, useState, useRef } from 'react';
 import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
 import '../../css/user/ProductDetail.scss'
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import ReviewUser from '../../components/customer/BookExchange/ReviewUser';
 import ListUserRequest from '../../components/customer/BookExchange/ListUserRequest';
-//service
-import { getBookExchangeSer } from '../../services/exchange/bookExchangeService';
+import RequestForm from '../../components/customer/BookExchange/RequestForm';
 import EditPostForm from '../../components/customer/BookExchange/EditPostForm';
+//service
+import { getBookExchangeSer, deleteBookExchange } from '../../services/exchange/bookExchangeService';
+
 
 const PostExchangeDetail = () => {
     const { bookExchangeId } = useParams();
     const [bookExchangeDetail, setBookExchangeDetail] = useState(null);
     const [showModal, setShowModal] = useState(false);
-   
+    const [showRequestForm, setShowRequestForm] = useState(false);
     const { user } = useStateContext();
     const navigate = useNavigate();
     const exchangeButtonRef = useRef(null);
+
+    const [openProgress, setOpenProgress] = useState(false);
+    const handleCloseProgress = () => {
+        setOpenProgress(false);
+    };
+    const handleOpenProgress = () => {
+        setOpenProgress(true);
+    };
 
     const getBookExchange = async () => {
         try {
@@ -41,24 +53,20 @@ const PostExchangeDetail = () => {
 
 
 
-  
+
 
 
     const handleSendRequest = () => {
-        toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
-            Đã gửi đề nghị trao đổi
+        if (!user) {
+            navigate(`/auth?redirect=/exchange-post-detail/${bookExchangeId}`, { replace: true });
 
-        </div>,
-            {
-                position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
-                autoClose: 1500, // Đóng sau 3 giây
-                hideProgressBar: true, // Ẩn thanh tiến độ
-                closeButton: false, // Ẩn nút đóng
-                className: "custom-toast", // Thêm class để tùy chỉnh CSS
-                draggable: false, // Tắt kéo di chuyển
-                rtl: false, // Không hỗ trợ RTL
-            }
-        );
+        } else {
+            setShowRequestForm(true);
+        }
+    }
+
+    const handleCloseRequestForm = () => {
+        setShowRequestForm(false);
     }
 
     const getConditionBadge = (condition) => {
@@ -99,6 +107,34 @@ const PostExchangeDetail = () => {
     }
     const handleCloseModal = () => setShowModal(false);
 
+    const handleDeletePost = async () => {
+        handleOpenProgress();
+        try {
+            const response = await deleteBookExchange(bookExchangeId);
+
+            if (response.data.success) {
+                handleCloseProgress();
+                toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                    Xóa bài đăng thành công
+                </div>,
+                    {
+                        position: "top-center",
+                        autoClose: 1500,
+                        hideProgressBar: true,
+                        closeButton: false,
+                        className: "custom-toast",
+                        draggable: false,
+                        rtl: false,
+                    }
+                );
+                navigate('/my-post-exchange')
+            }
+
+        } catch (error) {
+
+        }
+    }
+
     return (
         <div className="container mt-4">
 
@@ -129,7 +165,7 @@ const PostExchangeDetail = () => {
                         <button
 
                             className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                            onClick={() => handleSendRequest()}
+                            onClick={() => handleDeletePost()}
 
                         >
                             Xóa bài đăng
@@ -157,7 +193,7 @@ const PostExchangeDetail = () => {
                 <div className="bg-white p-3 rounded shadow-sm" >
                     <div className="mb-4">
                         <h1 className="fs-4 fw-bold text-primary mb-3">{bookExchangeDetail?.title} (<span className="fs-3 text-danger fw-bold">
-                            35đ
+                            {bookExchangeDetail?.creditPoints} đ
                         </span>)</h1>
 
                         <p className="mb-2">
@@ -217,8 +253,18 @@ const PostExchangeDetail = () => {
                 </div>
             </div>
             {showModal && (
-                <EditPostForm handleCloseModal={handleCloseModal} exchangeBook={bookExchangeDetail}/>
+                <EditPostForm handleCloseModal={handleCloseModal} exchangeBook={bookExchangeDetail} />
             )}
+            {showRequestForm && (
+                <RequestForm handleCloseModal={handleCloseRequestForm} />
+            )}
+            {openProgress && <Backdrop
+                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={openProgress}
+
+            >
+                <CircularProgress color="inherit" />
+            </Backdrop>}
             <ToastContainer />
         </div>
     );
