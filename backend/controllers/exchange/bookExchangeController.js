@@ -6,7 +6,7 @@ const { logAction } = require("../../middleware/logMiddleware.js");
 const createBookExchange = async (req, res) => {
     const {
         title, author, description, images, publisher,
-        publicationYear, categoryId, condition, ownerId, location, pageCount
+        publicationYear, categoryId, condition, ownerId, location, pageCount,  creditPoints
     } = req.body;
 
     try {
@@ -26,13 +26,14 @@ const createBookExchange = async (req, res) => {
             }
         }
 
-        const creditPoints = 0;
+       
         // Tạo sách trao đổi mới
         const newBookExchange = await BookExchange.create({
             title, author, description, images: imageUrls, publisher,
             publicationYear, categoryId, condition, creditPoints,
             ownerId, location, pageCount, status: "available",
         });
+        console.log(newBookExchange)
 
         // Ghi log
         await logAction("Thêm sách trao đổi", ownerId, `Người dùng ${ownerId} đã thêm sách trao đổi: ${title}`);
@@ -166,7 +167,6 @@ const updateBookExchange = async (req, res) => {
 };
 const deleteBookExchange = async (req, res) => {
     const { bookId } = req.params; // Lấy ID sách cần xóa
-    const userId = req.userId; // Lấy ID người thực hiện xóa
 
     try {
         // Tìm sách trao đổi theo ID
@@ -193,15 +193,6 @@ const deleteBookExchange = async (req, res) => {
         // Xóa sách trao đổi khỏi database
         await BookExchange.findByIdAndDelete(bookId);
 
-        // Ghi log hành động xóa sách
-        await logAction(
-            'Xóa sách trao đổi',
-            userId,
-            `Người dùng ${userId} đã xóa sách trao đổi: ${bookExchange.title}`,
-            bookExchange
-        );
-
-        // Trả về phản hồi thành công
         res.status(200).json({
             success: true,
             message: 'Xóa sách trao đổi thành công',

@@ -23,4 +23,6 @@ export const deleteBookExchange = async (id) => await API.delete(`/${id}`);
 
 export const getBookExchangesByUser = async (userId) => await API.get(`/user/${userId}`);
 
+export const getBookExchangesAvailableByUser = async (userId) => await API.get(`/user/${userId}`);
+
 export const getBookExchangesByCategory = async (category) => await API.get(`/category/${category}`);

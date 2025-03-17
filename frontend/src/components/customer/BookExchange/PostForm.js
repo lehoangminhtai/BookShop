@@ -24,13 +24,14 @@ const PostForm = ({ handleCloseModal }) => {
         location: "",
         pageCount: "",
         images: [],
+        creditPoints: 0
     });
 
     const [errors, setErrors] = useState({})
     const [categories, setCategories] = useState([]);
     const [provinces, setProvinces] = useState([]);
 
-    const [openProgress, setOpenProgress] = React.useState(false);
+    const [openProgress, setOpenProgress] = useState(false);
     const handleCloseProgress = () => {
         setOpenProgress(false);
     };
@@ -123,10 +124,61 @@ const PostForm = ({ handleCloseModal }) => {
         images: "Hình ảnh",
     };
 
+    const calculatePoints = () => {
+        let points = 0;
+      
+        // 1. Tính điểm theo tình trạng sách
+        switch (formData.condition) {
+          case "new-unused":
+            points += 7;
+            break;
+          case "new-used":
+            points += 5;
+            break;
+          case "old-intact":
+            points += 3;
+            break;
+          case "old-damaged":
+            points += 2;
+            break;
+          default:
+            break;
+        }
+      
+        // 2. Tính điểm theo năm xuất bản
+        const currentYear = new Date().getFullYear();
+        const pubYear = parseInt(formData.publicationYear, 10);
+        const yearDiff = currentYear - pubYear;
+        
+        if (yearDiff <= 1) points += 5;
+        else if (yearDiff <= 5) points += 3;
+        else if (yearDiff <= 10) points += 2;
+        else points += 3;
+      
+        // 3. Tính điểm theo số trang
+        const pageCount = parseInt(formData.pageCount, 10);
+        if (pageCount >= 300) points += 7;
+        else if (pageCount >= 200) points += 5;
+        else if (pageCount >= 100) points += 3;
+        else if (pageCount >= 5) points += 1; // Chỉ tính nếu số trang đủ hợp lệ
+      
+        // 4. Tính điểm theo mô tả sách (nếu mô tả dài hơn 100 ký tự)
+        if (formData.description && formData.description.length >= 100) {
+          points += 2;
+        }
+      
+        // 5. Tính điểm nếu có hình ảnh
+        if (formData.images && formData.images.length > 0) {
+          points += 1;
+        }
+        console.log(points)
+        setFormData({ ...formData, creditPoints: points});
+        console.log(formData.creditPoints)
+      };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Dữ liệu gửi lên:', formData);
-
+    
         const newErrors = {};
         Object.keys(formData).forEach((key) => {
             if (!formData[key].toString().trim()) {
@@ -138,32 +190,38 @@ const PostForm = ({ handleCloseModal }) => {
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) return;
-        try {
-            handleOpenProgress();
-            const response = await createBookExchange(formData);
-            const result = response.data;
-            if (result.success) {
-                handleCloseProgress();
-                toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
-                    Đăng sách thành công
-                </div>,
-                    {
-                        position: "top-center",
-                        autoClose: 1500,
-                        hideProgressBar: true,
-                        closeButton: false,
-                        className: "custom-toast",
-                        draggable: false,
-                        rtl: false,
-                    }
-                );
 
-            }
-            handleClose();
+         calculatePoints();
+      
+        console.log(formData)
+      
+        // try {
+        //     handleOpenProgress();
+        //     const response = await createBookExchange(formData);
+        //     const result = response.data;
 
-        } catch (error) {
-            console.error(error);
-        }
+        //     if (result.success) {
+        //         handleCloseProgress();
+        //         toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+        //             Đăng sách thành công
+        //         </div>,
+        //             {
+        //                 position: "top-center",
+        //                 autoClose: 1500,
+        //                 hideProgressBar: true,
+        //                 closeButton: false,
+        //                 className: "custom-toast",
+        //                 draggable: false,
+        //                 rtl: false,
+        //             }
+        //         );
+
+        //     }
+        //     handleClose();
+
+        // } catch (error) {
+        //     console.error(error);
+        // }
     };
 
 
