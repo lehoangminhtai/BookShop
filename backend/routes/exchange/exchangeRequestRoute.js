@@ -1,9 +1,11 @@
 const express = require('express');
-const { createExchangeRequest } = require('../../controllers/exchange/exchangeRequestController');
+const { createExchangeRequest, acceptExchangeRequest } = require('../../controllers/exchange/exchangeRequestController');
 
 const router = express.Router();
 
 
 router.post('/', createExchangeRequest);
+
+router.post('/accept', acceptExchangeRequest);
 
 module.exports = router;
