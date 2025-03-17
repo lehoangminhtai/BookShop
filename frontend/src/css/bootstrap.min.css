@@ -4390,7 +4390,8 @@ fieldset:disabled .btn {
 .nav-link {
     display: block;
     padding: 1rem 1rem;
-    color: #81c408;
+    
+    color: #495057;
     transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out
 }
 
@@ -4437,9 +4438,11 @@ fieldset:disabled .btn {
 
 .nav-tabs .nav-link.active,
 .nav-tabs .nav-item.show .nav-link {
-    color: #495057;
+   
+    color: var(--bs-danger);
     background-color: #fff;
-    border-color: #dee2e6 #dee2e6 #fff
+    border-color: #dee2e6 #dee2e6 #fff;
+    font-weight: bold;
 }
 
 .nav-tabs .dropdown-menu {
