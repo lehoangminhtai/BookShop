@@ -249,14 +249,14 @@ const PostExchangeDetail = () => {
             </div>
             <div className="container-fluid d-flex justify-content-center align-items-center mt-5">
                 <div className="bg-white p-5 rounded shadow w-100" >
-                    <ReviewUser />
+                    {/* <ReviewUser /> */}
                 </div>
             </div>
             {showModal && (
                 <EditPostForm handleCloseModal={handleCloseModal} exchangeBook={bookExchangeDetail} />
             )}
             {showRequestForm && (
-                <RequestForm handleCloseModal={handleCloseRequestForm} />
+                <RequestForm handleCloseModal={handleCloseRequestForm} bookExchangeId={bookExchangeId}/>
             )}
             {openProgress && <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}

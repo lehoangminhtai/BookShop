@@ -250,6 +250,27 @@ const getExchangeBookByUser = async (req, res) => {
         res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách sách trao đổi của người dùng' });
     }
 };
+const getExchangeBookAvailableByUser = async (req, res) => {
+    const { userId } = req.params;
+    const { categoryId } = req.query; // Lấy categoryId từ query params (nếu có)
+    try {
+        const filter = { ownerId: userId, status: "available" };
+        if (categoryId) {
+            filter.categoryId = categoryId; // Thêm điều kiện lọc nếu có categoryId
+        }
+
+        const bookExchanges = await BookExchange.find(filter);
+
+        if (bookExchanges.length === 0) {
+            return res.status(200).json({ success: false, message: "Không tìm thấy sách trao đổi nào" });
+        }
+
+        res.status(200).json({ success: true, bookExchanges });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Lỗi khi lấy danh sách sách trao đổi của người dùng: " + error.message });
+    }
+};
+
 
 module.exports = {
     createBookExchange,
@@ -257,5 +278,6 @@ module.exports = {
     getBooksExchange,
     updateBookExchange,
     deleteBookExchange,
-    getExchangeBookByUser
+    getExchangeBookByUser,
+    getExchangeBookAvailableByUser
 };
