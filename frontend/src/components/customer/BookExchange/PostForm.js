@@ -23,8 +23,7 @@ const PostForm = ({ handleCloseModal }) => {
         ownerId: user?._id,
         location: "",
         pageCount: "",
-        images: [],
-        creditPoints: 0
+        images: []
     });
 
     const [errors, setErrors] = useState({})
@@ -171,9 +170,8 @@ const PostForm = ({ handleCloseModal }) => {
         if (formData.images && formData.images.length > 0) {
           points += 1;
         }
-        console.log(points)
-        setFormData({ ...formData, creditPoints: points});
-        console.log(formData.creditPoints)
+        return points;
+       
       };
 
     const handleSubmit = async (e) => {
@@ -191,37 +189,33 @@ const PostForm = ({ handleCloseModal }) => {
 
         if (Object.keys(newErrors).length > 0) return;
 
-         calculatePoints();
-      
-        console.log(formData)
-      
-        // try {
-        //     handleOpenProgress();
-        //     const response = await createBookExchange(formData);
-        //     const result = response.data;
+        try {
+            handleOpenProgress();
+            const response = await createBookExchange(formData);
+            const result = response.data;
 
-        //     if (result.success) {
-        //         handleCloseProgress();
-        //         toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
-        //             Đăng sách thành công
-        //         </div>,
-        //             {
-        //                 position: "top-center",
-        //                 autoClose: 1500,
-        //                 hideProgressBar: true,
-        //                 closeButton: false,
-        //                 className: "custom-toast",
-        //                 draggable: false,
-        //                 rtl: false,
-        //             }
-        //         );
+            if (result.success) {
+                handleCloseProgress();
+                toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                    Đăng sách thành công
+                </div>,
+                    {
+                        position: "top-center",
+                        autoClose: 1500,
+                        hideProgressBar: true,
+                        closeButton: false,
+                        className: "custom-toast",
+                        draggable: false,
+                        rtl: false,
+                    }
+                );
 
-        //     }
-        //     handleClose();
+            }
+            handleClose();
 
-        // } catch (error) {
-        //     console.error(error);
-        // }
+        } catch (error) {
+            console.error(error);
+        }
     };
 
 

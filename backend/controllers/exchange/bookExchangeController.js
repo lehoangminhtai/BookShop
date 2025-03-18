@@ -3,16 +3,46 @@ const cloudinary = require("../../utils/cloudinary");
 const BookExchange = require("../../models/exchange/bookExchangeModel");
 const { logAction } = require("../../middleware/logMiddleware.js");
 
-const createBookExchange = async (req, res) => {
-    const {
-        title, author, description, images, publisher,
-        publicationYear, categoryId, condition, ownerId, location, pageCount,  creditPoints
-    } = req.body;
+const calculatePoints = ({ condition, publicationYear, pageCount, description, images }) => {
+    let points = 0;
+    const currentYear = new Date().getFullYear();
+    const yearDiff = currentYear - parseInt(publicationYear, 10);
 
+    // 1. Điểm theo tình trạng sách
+    const conditionPoints = {
+        "new-unused": 7,
+        "new-used": 5,
+        "old-intact": 3,
+        "old-damaged": 2
+    };
+    points += conditionPoints[condition] || 0;
+
+    // 2. Điểm theo năm xuất bản
+    if (yearDiff <= 1) points += 5;
+    else if (yearDiff <= 5) points += 3;
+    else if (yearDiff <= 10) points += 2;
+    else points += 1;
+
+    // 3. Điểm theo số trang
+    if (pageCount >= 300) points += 7;
+    else if (pageCount >= 200) points += 5;
+    else if (pageCount >= 100) points += 3;
+    else if (pageCount >= 5) points += 1;
+
+    // 4. Điểm theo mô tả sách (nếu > 100 ký tự)
+    if (description && description.length >= 100) points += 2;
+
+    // 5. Điểm nếu có ảnh
+    if (images && images.length > 0) points += 1;
+
+    return points;
+};
+
+const createBookExchange = async (req, res) => {
     try {
+        const { title, author, description, images, publisher, publicationYear, categoryId, condition, ownerId, location, pageCount } = req.body;
         let imageUrls = [];
 
-        // Xử lý tải ảnh lên Cloudinary nếu có ảnh
         if (images) {
             if (Array.isArray(images)) {
                 const uploadPromises = images.map(image =>
@@ -26,16 +56,18 @@ const createBookExchange = async (req, res) => {
             }
         }
 
-       
+
+        // Tính điểm dựa trên dữ liệu gửi lên
+        const creditPoints = calculatePoints({ condition, publicationYear, pageCount, description, images });
+
         // Tạo sách trao đổi mới
         const newBookExchange = await BookExchange.create({
             title, author, description, images: imageUrls, publisher,
             publicationYear, categoryId, condition, creditPoints,
             ownerId, location, pageCount, status: "available",
         });
-        console.log(newBookExchange)
 
-        // Ghi log
+        // Ghi log hành động
         await logAction("Thêm sách trao đổi", ownerId, `Người dùng ${ownerId} đã thêm sách trao đổi: ${title}`);
 
         res.status(201).json({
@@ -51,6 +83,7 @@ const createBookExchange = async (req, res) => {
         });
     }
 };
+
 const getBooksExchanges = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1; // Trang hiện tại (mặc định là 1)
