@@ -23,19 +23,22 @@ const createExchangeRequest = async (req, res) => {
 
         if (exchangeMethod === 'book') {
             if (!exchangeBookId) {
-                return res.status(400).json({ message: 'Cần cung cấp exchangeBookId khi phương thức trao đổi là sách' });
+                return res.status(200).json({success:false, message: 'Vui lòng chọn sách để trao đổi' });
             }
 
             exchangeBook = await BookExchange.findById(exchangeBookId);
 
             if (!exchangeBook) {
-                return res.status(404).json({ message: 'Sách trao đổi không tồn tại' });
+                return res.status(200).json({success:false, message: 'Sách trao đổi không tồn tại' });
+            }
+            if (exchangeBook.status !=="available") {
+                return res.status(200).json({success:false, message: 'Trạng thái sách trao đổi không hợp lệ' });
             }
 
             const totalPoints = exchangeBook.creditPoints + user.grade;
 
             if (exchangeBook.creditPoints < bookRequested.creditPoints && totalPoints < bookRequested.creditPoints) {
-                return res.status(400).json({ message: 'Tổng điểm của sách trao đổi và điểm của người dùng không đủ để thực hiện trao đổi' });
+                return res.status(200).json({success:false, message: 'Tổng điểm của sách trao đổi và điểm của người dùng không đủ để thực hiện trao đổi' });
             }
         }
         const newRequest = new ExchangeRequest({

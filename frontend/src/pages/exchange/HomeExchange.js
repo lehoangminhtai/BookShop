@@ -1,16 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 import { ToastContainer } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
+import Pagination from "@mui/material/Pagination";
 //service
-
-import { getBookSales, getTopCategoryBooks, getTopBooks, getLastBooks } from "../../services/homeService";
-
-import '../../css/bootstrap.min.css'
-import '../../css/style.css'
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import '../../css/user/HomeExchange.scss'
+import { getBookExchanges } from "../../services/exchange/bookExchangeService";
 
+//userContext
+import { useStateContext } from "../../context/UserContext";
 
 //Component
 import BookDetail from '../../components/BookDetail';
@@ -20,6 +17,10 @@ import PostForm from "../../components/customer/BookExchange/PostForm";
 
 const HomeExchange = () => {
 
+    const [exchangeBooks, setExchangeBooks] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [animate, setAnimate] = useState(false);
@@ -28,19 +29,42 @@ const HomeExchange = () => {
     const navigate = useNavigate();
     const searchButtonRef = useRef(null);
 
+    const { user } = useStateContext();
+
+    const fetchExchangeBooks = async (page = 1) => {
+        try {
+            const response = await getBookExchanges(page, 8);
+            if (response.success) {
+                setExchangeBooks(response.data);
+                setTotalPages(response.pagination.totalPages);
+                setCurrentPage(page);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     useEffect(() => {
-        setAnimate(true);
+        if (user) setAnimate(true);
+        fetchExchangeBooks(1);
     }, []);
 
     const toggleChatBox = () => {
         setIsChatBoxExpanded(!isChatBoxExpanded);
     };
 
-    const handleClickPost = () => {
-        navigate(`/exchange-post-detail`)
+    const handleClickPost = (exchangeId) => {
+        navigate(`/exchange-post-detail/${exchangeId}`)
     }
 
-    const handleShowModal = () => setShowModal(true);
+    const handleShowModal = () => {
+        if (user) {
+            setShowModal(true);
+        }
+        else {
+            navigate('/auth');
+        }
+    }
     const handleCloseModal = () => setShowModal(false);
 
     const handleChangeInput = (e) => {
@@ -93,6 +117,10 @@ const HomeExchange = () => {
             image: "https://res.cloudinary.com/dyu419id3/image/upload/v1734341362/uploads/zlqtsy3zkdhvcf2qicrg.webp"
         }
     ];
+    const handlePageChange = (event, value) => {
+        fetchExchangeBooks(value);
+    };
+    
 
     return (
         <div >
@@ -215,10 +243,10 @@ const HomeExchange = () => {
                         <div className="col-lg-9 mt-3">
                             <div className="row g-3">
                                 <div className={`row ${viewMode === "grid" ? "g-3" : ""}`}>
-                                    {books.map((book) => (
-                                        <div key={book.id}
+                                    {exchangeBooks.map((book) => (
+                                        <div key={book?._id}
                                             className={`mt-2 ${viewMode === "grid" ? "col-md-6" : "col-12"}`}
-                                            onClick={handleClickPost}
+                                            onClick={() => handleClickPost(book?._id)}
                                             style={{
                                                 transition: 'transform 0.2s ease-in-out',
                                                 cursor: 'pointer',
@@ -236,11 +264,11 @@ const HomeExchange = () => {
 
                                                 <div className="position-relative me-3">
                                                     <img
-                                                        src={book.image}
+                                                        src={book?.images[0]}
                                                         className="img-fluid rounded"
                                                         width="100"
                                                         height="100"
-                                                        alt={book.title}
+                                                        alt={book?.title}
                                                         style={{
                                                             objectFit: "cover",
                                                             borderRadius: "8px"
@@ -249,9 +277,9 @@ const HomeExchange = () => {
                                                 </div>
 
                                                 <div className="flex-grow-1">
-                                                    <h3 className={`h6 text-truncate `} style={{ maxWidth: viewMode === "grid" ? "200px" : "" }}>{book.title}</h3>
-                                                    <p className="text-muted mb-1">Ngày đăng: {book.date}</p>
-                                                    <p className="text-muted"><i className="fa fa-map-marker-alt"></i> {book.location}</p>
+                                                    <h3 className={`h6 text-truncate text-danger`} style={{ maxWidth: viewMode === "grid" ? "200px" : "" }}>{book.title}</h3>
+                                                    <p className="text-muted mb-1">Ngày đăng: {new Date(book?.createdAt).toLocaleDateString('vi-VN')}</p>
+                                                    <p className="text-muted"><i className="fa fa-map-marker-alt text-primary"></i> {book?.location}</p>
                                                 </div>
 
                                                 <i className="far fa-heart ms-auto text-secondary"></i>
@@ -260,51 +288,62 @@ const HomeExchange = () => {
                                     ))}
 
                                 </div>
+                                <div className="d-flex justify-content-center mt-4">
+                                    <Pagination
+                                        count={totalPages}
+                                        page={currentPage}
+                                       onChange={handlePageChange}
+                                        size="large"
+                                       
+                                    />
+                                </div>
                             </div>
                         </div>
 
                     </div>
                 </div>
-                <div className={`chat-box  shadow rounded ${animate ? 'slide-in-right' : ''} ${isChatBoxExpanded ? '' : 'collapsed'}`} style={{ transition: "transform 0.3s ease, width 0.5s ease", cursor: 'pointer' }}
-                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                    <div className="chat-content"
+                {user && (
+                    <div className={`chat-box  shadow rounded ${animate ? 'slide-in-right' : ''} ${isChatBoxExpanded ? '' : 'collapsed'}`} style={{ transition: "transform 0.3s ease, width 0.5s ease", cursor: 'pointer' }}
+                        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                     >
-                        <div className="text-center" onClick={toggleChatBox}>
-                            <button className="btn" onClick={toggleChatBox}>
-                                {isChatBoxExpanded ? <i class="fa-solid fa-x text-danger"></i> : <i class="fa-solid fa-list text-primary"></i>}
-                            </button>
+                        <div className="chat-content"
+                        >
+                            <div className="text-center" onClick={toggleChatBox}>
+                                <button className="btn" onClick={toggleChatBox}>
+                                    {isChatBoxExpanded ? <i class="fa-solid fa-x text-danger"></i> : <i class="fa-solid fa-list text-primary"></i>}
+                                </button>
+                            </div>
+                            {isChatBoxExpanded && (
+                                <>
+                                    <Link to='/my-post-exchange'>
+                                        <div className="option-exchange mb-2">
+                                            <i className="fa fa-book me-2"></i>
+                                            <span className="fs-6">Bài đăng của tôi</span>
+                                        </div>
+                                    </Link>
+                                    <hr />
+                                    <Link to='/post-request'>
+                                        <div className="option-exchange mb-2">
+                                            <i className="fa fa-paper-plane me-2"></i>
+                                            <span className="fs-6">Bài đăng đã gửi</span>
+                                        </div>
+                                    </Link>
+                                    <hr />
+                                    <div className="option-exchange mb-2">
+                                        <i className="fa fa-history me-2"></i>
+                                        <span className="fs-6">Lịch sử giao dịch</span>
+                                    </div>
+                                    <hr />
+                                    <div className="option-exchange mb-2">
+                                        <i className="fa fa-star me-2"></i>
+                                        <span className="fs-6">Tổng điểm</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
-                        {isChatBoxExpanded && (
-                            <>
-                                <Link to='/my-post-exchange'>
-                                    <div className="option-exchange mb-2">
-                                        <i className="fa fa-book me-2"></i>
-                                        <span className="fs-6">Bài đăng của tôi</span>
-                                    </div>
-                                </Link>
-                                <hr />
-                                <Link to='/post-request'>
-                                    <div className="option-exchange mb-2">
-                                        <i className="fa fa-paper-plane me-2"></i>
-                                        <span className="fs-6">Bài đăng đã gửi</span>
-                                    </div>
-                                </Link>
-                                <hr />
-                                <div className="option-exchange mb-2">
-                                    <i className="fa fa-history me-2"></i>
-                                    <span className="fs-6">Lịch sử giao dịch</span>
-                                </div>
-                                <hr />
-                                <div className="option-exchange mb-2">
-                                    <i className="fa fa-star me-2"></i>
-                                    <span className="fs-6">Tổng điểm</span>
-                                </div>
-                            </>
-                        )}
                     </div>
-                </div>
+                )}
             </div>
 
             <ToastContainer />

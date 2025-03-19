@@ -7,11 +7,11 @@ const ListUserRequest = ({ props }) => {
 
     const userRequests = [{
         fullName: 'Nguyễn Văn A',
-        image: user.image
+        image: user?.image
     },
     {
         fullName: 'Nguyễn Văn B',
-        image: user.image
+        image: user?.image
     }
     ]
 

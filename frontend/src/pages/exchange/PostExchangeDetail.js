@@ -4,82 +4,135 @@ import { useEffect, useState, useRef } from 'react';
 import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
 import '../../css/user/ProductDetail.scss'
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import ReviewUser from '../../components/customer/BookExchange/ReviewUser';
 import ListUserRequest from '../../components/customer/BookExchange/ListUserRequest';
+import RequestForm from '../../components/customer/BookExchange/RequestForm';
+import EditPostForm from '../../components/customer/BookExchange/EditPostForm';
+//service
+import { getBookExchangeSer, deleteBookExchange } from '../../services/exchange/bookExchangeService';
 
 
 const PostExchangeDetail = () => {
-    const { productId } = useParams();
-    const [bookDetail, setBookDetail] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [expanded, setExpanded] = useState(false);
+    const { bookExchangeId } = useParams();
+    const [bookExchangeDetail, setBookExchangeDetail] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [showRequestForm, setShowRequestForm] = useState(false);
     const { user } = useStateContext();
     const navigate = useNavigate();
     const exchangeButtonRef = useRef(null);
 
-    useEffect(() => {
-        const getBookDetail = async () => {
-            try {
-                const book = {
-                    title: "Từ vựng Ielts",
-                    images: "https://res.cloudinary.com/dyu419id3/image/upload/v1734341567/uploads/cl3qool78uh38wytk29h.webp"
-                    , description: "Sách bị hỏng 1 vài phần",
-                    publisher: "Sách bị hư bìa",
-                    quantity: 10
-                }
-                setBookDetail(book);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching book:', error);
-                setError('Không thể tải dữ liệu sách');
-                setLoading(false);
+    const [openProgress, setOpenProgress] = useState(false);
+    const handleCloseProgress = () => {
+        setOpenProgress(false);
+    };
+    const handleOpenProgress = () => {
+        setOpenProgress(true);
+    };
+
+    const getBookExchange = async () => {
+        try {
+            const response = await getBookExchangeSer(bookExchangeId);
+            console.log(response);
+            if (response.data.success) {
+                setBookExchangeDetail(response.data.bookExchange);
+
             }
-        };
-        getBookDetail();
-    }, [productId]);
 
-    if (loading) return <p>Đang tải dữ liệu...</p>;
-    if (error) return <p>{error}</p>;
-    if (!bookDetail) return <p>Không tìm thấy sách</p>;
+        } catch (error) {
 
-    const fullText = bookDetail.description;
+        }
+    }
 
-    const toggleExpanded = () => {
-        setExpanded(!expanded);
-    };
+    useEffect(() => {
+        getBookExchange();
+        console.log(bookExchangeDetail);
+    }, []);
 
-    const isTextLong = () => {
-        const tempElement = document.createElement("div");
-        tempElement.style.visibility = "hidden";
-        tempElement.style.position = "absolute";
-        tempElement.style.maxWidth = "600px"; // Width of the card
-        tempElement.style.fontSize = "1rem"; // Match the font size
-        tempElement.innerText = fullText;
-        document.body.appendChild(tempElement);
-        const isLong = tempElement.scrollHeight > 100; // Compare to max height
-        document.body.removeChild(tempElement);
-        return isLong;
-    };
 
-    const showMoreButton = isTextLong();
+
+
+
 
     const handleSendRequest = () => {
-        toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
-            Đã gửi đề nghị trao đổi
+        if (!user) {
+            navigate(`/auth?redirect=/exchange-post-detail/${bookExchangeId}`, { replace: true });
 
-        </div>,
-            {
-                position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
-                autoClose: 1500, // Đóng sau 3 giây
-                hideProgressBar: true, // Ẩn thanh tiến độ
-                closeButton: false, // Ẩn nút đóng
-                className: "custom-toast", // Thêm class để tùy chỉnh CSS
-                draggable: false, // Tắt kéo di chuyển
-                rtl: false, // Không hỗ trợ RTL
+        } else {
+            setShowRequestForm(true);
+        }
+    }
+
+    const handleCloseRequestForm = () => {
+        setShowRequestForm(false);
+    }
+
+    const getConditionBadge = (condition) => {
+        switch (condition) {
+            case "new-unused":
+                return <span className="badge bg-success text-white">Mới (Chưa sử dụng)</span>;
+            case "new-used":
+                return <span className="badge bg-primary text-white">Như mới (Đã sử dụng ít)</span>;
+            case "old-intact":
+                return <span className="badge bg-info text-white">Cũ (Còn nguyên vẹn)</span>;
+            case "old-damaged":
+                return <span className="badge bg-warning text-dark">Cũ (Không còn nguyên)</span>;
+            default:
+                return null;
+        }
+    };
+
+    const getStatusBadge = (status) => {
+        switch (status) {
+            case "available":
+                return <span className="status-badge status-pending">⏳ Đang đợi trao đổi</span>;
+            case "processing":
+                return <span className="status-badge status-processing">🔄 Đang xử lý</span>;
+            case "completed":
+                return <span className="status-badge status-completed">✅ Đã đổi</span>;
+            default:
+                return null;
+        }
+    };
+
+    const handleShowModal = () => {
+        if (user) {
+            setShowModal(true);
+        }
+        else {
+            navigate('/auth');
+        }
+    }
+    const handleCloseModal = () => setShowModal(false);
+
+    const handleDeletePost = async () => {
+        handleOpenProgress();
+        try {
+            const response = await deleteBookExchange(bookExchangeId);
+
+            if (response.data.success) {
+                handleCloseProgress();
+                toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                    Xóa bài đăng thành công
+                </div>,
+                    {
+                        position: "top-center",
+                        autoClose: 1500,
+                        hideProgressBar: true,
+                        closeButton: false,
+                        className: "custom-toast",
+                        draggable: false,
+                        rtl: false,
+                    }
+                );
+                navigate('/my-post-exchange')
             }
-        );
+
+        } catch (error) {
+
+        }
     }
 
     return (
@@ -89,16 +142,40 @@ const PostExchangeDetail = () => {
 
                 <div className="bg-white p-3 rounded shadow-sm d-flex justify-content-center align-items-center">
                     <img
-                        alt={`${bookDetail.title}`}
+                        alt={`${bookExchangeDetail?.title}`}
                         className="img-fluid w-90 d-block rounded"
-                        src={bookDetail.images}
+                        src={bookExchangeDetail?.images[0]}
                         style={{ height: "300px", objectFit: "cover" }}
                         ref={exchangeButtonRef}
                     />
                 </div>
 
+
+                {(user?._id === bookExchangeDetail?.ownerId) &&
+
+                    (<div className="d-flex justify-content-between mt-3 mb-3">
+                        <button
+
+                            className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap me-2"
+                            onClick={() => handleShowModal()}
+
+                        >
+                            Chỉnh sửa thông tin
+                        </button>
+                        <button
+
+                            className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                            onClick={() => handleDeletePost()}
+
+                        >
+                            Xóa bài đăng
+                        </button>
+                    </div>)}
+
+
+
                 <div className="d-flex justify-content-between mt-3 mb-3">
-                    {user ?
+                    {(user?._id === bookExchangeDetail?.ownerId) ?
                         (<ListUserRequest />) :
                         (<button
 
@@ -111,23 +188,22 @@ const PostExchangeDetail = () => {
 
                 </div>
 
-
-
-
                 {/* Phần chi tiết sản phẩm với cuộn riêng */}
 
                 <div className="bg-white p-3 rounded shadow-sm" >
                     <div className="mb-4">
-                        <h1 className="fs-4 fw-bold text-primary mb-3">{bookDetail.title}</h1>
+                        <h1 className="fs-4 fw-bold text-primary mb-3">{bookExchangeDetail?.title} (<span className="fs-3 text-danger fw-bold">
+                            {bookExchangeDetail?.creditPoints} đ
+                        </span>)</h1>
 
                         <p className="mb-2">
                             <i className="bi bi-book-half me-2"></i>
-                            Tình trạng sách: <strong>{bookDetail.publisher}</strong>
+                            Tình trạng sách: <strong>{getConditionBadge(bookExchangeDetail?.condition)}</strong>
                         </p>
 
                         <p className="mb-2">
                             <i className="bi bi-person-fill me-2"></i>
-                            Tác giả: <strong>{bookDetail.author}</strong>
+                            Tác giả: <strong>{bookExchangeDetail?.author}</strong>
                         </p>
                     </div>
 
@@ -136,7 +212,7 @@ const PostExchangeDetail = () => {
                             <i className="bi bi-check-circle"></i>
                         </span>
                         <span className="badge bg-success text-white">
-                            Sẵn sàng trao đổi
+                            {getStatusBadge(bookExchangeDetail?.status)}
                         </span>
 
                     </div>
@@ -144,52 +220,19 @@ const PostExchangeDetail = () => {
                     <div className="d-flex align-items-center mb-3">
 
                         <span className="fs-3 text-danger fw-bold">
-                            100 điểm
+                            {bookExchangeDetail?.point}
                         </span>
                     </div>
 
-                    <div className="container my-5">
-                        <div className="card shadow-sm p-4">
-                            <h1 className="card-title fs-4 fw-bold text-dark mb-4">Thông tin chi tiết</h1>
-                            <div className="card-body">
-                                {[
-                                    { label: "Mã hàng", value: `${bookDetail._id}` },
-                                    { label: "Tác giả", value: `${bookDetail.author}` },
 
-                                    { label: "Mô tả", value: `${bookDetail.publisher}` },
-
-                                    { label: "Thể loại", value: `${bookDetail.categoryId?.nameCategory}` },
-
-                                ].map((item, index) => (
-                                    <div key={index} className="row border-bottom py-2">
-                                        <div className="col-4 fw-semibold ">{item.label}</div>
-                                        <div className="col-8 text-dark">{item.value}</div>
-                                    </div>
-                                ))}
-
-                            </div>
-                        </div>
-                    </div>
 
                     <div className="card p-4 shadow-lg">
-                        <h1 className="card-title fs-3 fw-bold mb-3 text-center">Mô tả sản phẩm</h1>
+                        <h1 className="card-title fs-3 fw-bold mb-3 text-center">Ghi chú</h1>
+                        <p className="card-text fs-5 fw-bold text-primary bg-light p-2 rounded">
+                            {bookExchangeDetail?.description}
+                        </p>
 
-                        <div
-                            style={{
-                                maxHeight: expanded ? 'none' : '100px', // Điều chỉnh chiều cao tối đa
-                                overflow: 'hidden',
-                                transition: 'max-height 0.3s ease',
-                            }}
-                            dangerouslySetInnerHTML={{ __html: fullText }}  // Set HTML content here
-                        />
 
-                        {showMoreButton && (
-                            <div className="text-center mt-3">
-                                <button className="btn-link" onClick={toggleExpanded}>
-                                    {expanded ? "Rút gọn" : "Xem thêm"}
-                                </button>
-                            </div>
-                        )}
                     </div>
                 </div>
                 <div className="user-section d-flex justify-content-between align-items-center mt-5">
@@ -206,9 +249,22 @@ const PostExchangeDetail = () => {
             </div>
             <div className="container-fluid d-flex justify-content-center align-items-center mt-5">
                 <div className="bg-white p-5 rounded shadow w-100" >
-                    <ReviewUser bookId={productId} />
+                    {/* <ReviewUser /> */}
                 </div>
             </div>
+            {showModal && (
+                <EditPostForm handleCloseModal={handleCloseModal} exchangeBook={bookExchangeDetail} />
+            )}
+            {showRequestForm && (
+                <RequestForm handleCloseModal={handleCloseRequestForm} bookExchangeId={bookExchangeId}/>
+            )}
+            {openProgress && <Backdrop
+                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={openProgress}
+
+            >
+                <CircularProgress color="inherit" />
+            </Backdrop>}
             <ToastContainer />
         </div>
     );

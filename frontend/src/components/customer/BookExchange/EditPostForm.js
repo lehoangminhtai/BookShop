@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDropzone } from 'react-dropzone';
 import { toast } from "react-toastify";
-import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 
 //context
 import { useStateContext } from "../../../context/UserContext";
@@ -10,33 +8,24 @@ import { useStateContext } from "../../../context/UserContext";
 import { createBookExchange } from "../../../services/exchange/bookExchangeService";
 import { getListCategoryBooks } from "../../../services/categoryBookService";
 
-const PostForm = ({ handleCloseModal }) => {
+const EditPostForm = ({ handleCloseModal, exchangeBook }) => {
     const { user } = useStateContext();
     const [formData, setFormData] = useState({
-        title: "",
-        author: "",
-        description: "",
-        publisher: "",
-        publicationYear: "2025",
-        categoryId: "",
-        condition: "",
+        title: exchangeBook?.title || "",
+        author: exchangeBook?.author || "",
+        description: exchangeBook?.description || "",
+        publisher: exchangeBook?.publisher || "",
+        publicationYear: exchangeBook?.publicationYear || new Date().getFullYear(),
+        categoryId: exchangeBook?.categoryId || "",
+        condition: exchangeBook?.condition || "", 
         ownerId: user?._id,
-        location: "",
-        pageCount: "",
-        images: []
+        location: exchangeBook?.location || "",
+        pageCount: exchangeBook?.pageCount || "",
+        images: exchangeBook?.images || [],
     });
-
     const [errors, setErrors] = useState({})
     const [categories, setCategories] = useState([]);
     const [provinces, setProvinces] = useState([]);
-
-    const [openProgress, setOpenProgress] = useState(false);
-    const handleCloseProgress = () => {
-        setOpenProgress(false);
-    };
-    const handleOpenProgress = () => {
-        setOpenProgress(true);
-    };
 
 
 
@@ -123,11 +112,10 @@ const PostForm = ({ handleCloseModal }) => {
         images: "Hình ảnh",
     };
 
-
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+        console.log('Dữ liệu gửi lên:', formData);
+
         const newErrors = {};
         Object.keys(formData).forEach((key) => {
             if (!formData[key].toString().trim()) {
@@ -139,14 +127,10 @@ const PostForm = ({ handleCloseModal }) => {
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) return;
-
         try {
-            handleOpenProgress();
             const response = await createBookExchange(formData);
             const result = response.data;
-
             if (result.success) {
-                handleCloseProgress();
                 toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
                     Đăng sách thành công
                 </div>,
@@ -378,15 +362,8 @@ const PostForm = ({ handleCloseModal }) => {
                     </div>
                 </div>
             </div>
-            { openProgress && <Backdrop
-                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={openProgress}
-              
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>}
         </div>
     );
 };
 
-export default PostForm;
+export default EditPostForm;
