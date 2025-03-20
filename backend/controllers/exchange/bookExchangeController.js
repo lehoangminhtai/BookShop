@@ -1,6 +1,7 @@
 const { default: mongoose } = require('mongoose');
 const cloudinary = require("../../utils/cloudinary");
 const BookExchange = require("../../models/exchange/bookExchangeModel");
+const ExchangeRequest = require('../../models/exchange/exchangeRequestModel');
 const { logAction } = require("../../middleware/logMiddleware.js");
 
 const calculatePoints = ({ condition, publicationYear, pageCount, description, images }) => {
@@ -198,6 +199,22 @@ const updateBookExchange = async (req, res) => {
         });
     }
 };
+
+const deleteAssociatedExchangeRequests = async (bookExchangeId) => {
+    try {
+      await ExchangeRequest.deleteMany({
+        $or: [
+          { bookRequestedId: bookExchangeId },
+          { exchangeBookId: bookExchangeId }
+        ]
+      });
+      console.log("Đã xóa các yêu cầu trao đổi liên quan.");
+    } catch (error) {
+      console.error("Lỗi khi xóa yêu cầu trao đổi liên quan:", error);
+    }
+  };
+  
+
 const deleteBookExchange = async (req, res) => {
     const { bookId } = req.params; // Lấy ID sách cần xóa
 
@@ -224,7 +241,10 @@ const deleteBookExchange = async (req, res) => {
         }
 
         // Xóa sách trao đổi khỏi database
-        await BookExchange.findByIdAndDelete(bookId);
+        const exchangeBook = await BookExchange.findByIdAndDelete(bookId);
+        if(exchangeBook){
+            await deleteAssociatedExchangeRequests(bookId);
+        }
 
         res.status(200).json({
             success: true,
