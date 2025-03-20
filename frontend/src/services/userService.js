@@ -83,3 +83,5 @@ export const updateUser = async (userId,userData) =>
             }
         }
     };
+
+export const getUserInfo = async (userId) => await API.get(`/get-user/${userId}`)

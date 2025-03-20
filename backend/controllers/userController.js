@@ -202,3 +202,20 @@ exports.updateUser = async (req, res) => {
         res.status(500).json({ success: false, message: 'Đã xảy ra lỗi trong quá trình cập nhật người dùng' });
     }
 };
+
+exports.getUser = async (req, res) =>{
+    try {
+        const {userId} = req.params;
+
+        const existingUser = await User.findById(userId);
+
+        if(!existingUser){
+            return res.status(200).json({success: false, message: "Không tìm thấy người dùng"})
+        }
+
+        return res.status(200).json({success: true, user: existingUser})
+        
+    } catch (error) {
+        return res.status(400).json({success: false, message: "Lỗi hệ thống"})
+    }
+}

@@ -13,6 +13,9 @@ const UserController = require('../controllers/userController')
 const router = express.Router();
 
 router.get('/get-all-users', UserController.getAllUser)
+
+router.get('/get-user/:userId',UserController.getUser)
+
 router.get('/search-user', UserController.searchUsers)
 
 router.post('/filter-users', UserController.getFilterUser)
