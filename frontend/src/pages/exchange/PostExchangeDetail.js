@@ -176,11 +176,29 @@ const PostExchangeDetail = () => {
                 console.log(response)
                 if(response.data.success){
                     setRequestForm(initialRequestForm);
+                    toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                        Đã hủy yêu cầu
+                    </div>,
+                        {
+                            position: "top-center",
+                            autoClose: 1500,
+                            hideProgressBar: true,
+                            closeButton: false,
+                            className: "custom-toast",
+                            draggable: false,
+                            rtl: false,
+                        }
+                    );
                 }
             }
         } catch (error) {
             
         }
+    }
+
+    const handleClickDetailExchangeBook = (id) =>{
+        navigate(`/exchange-post-detail/${id}`);
+        window.location.reload(true)
     }
 
     return (
@@ -216,6 +234,7 @@ const PostExchangeDetail = () => {
                                     alt={exchangeBook?.title}
                                     className="img-thumbnail me-3"
                                     style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                                    onClick={() => handleClickDetailExchangeBook(exchangeBook._id)}
                                 />
                                 <div>
                                     <h5 className="card-title mb-1">{exchangeBook?.title}</h5>
