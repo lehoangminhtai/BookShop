@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const ReviewUser = ({ bookId }) => {
+const ReviewUser = ({ userId }) => {
   const [reviewsData, setReviewsData] = useState({
     averageRating: 0,
     ratingCounts: [0, 0, 0, 0, 0],
     reviews: []
   });
 
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const { data } = await axios.get(`/api/reviews/${bookId}`);
-        setReviewsData(data);
-      } catch (error) {
-        console.error('Lỗi khi tải đánh giá:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchReviews = async () => {
+  //     try {
+  //       const { data } = await axios.get(`/api/reviews/${bookId}`);
+  //       setReviewsData(data);
+  //     } catch (error) {
+  //       console.error('Lỗi khi tải đánh giá:', error);
+  //     }
+  //   };
 
-    fetchReviews();
-  }, [bookId]);
+  //   fetchReviews();
+  // }, [bookId]);
 
   const { averageRating, ratingCounts, reviews } = reviewsData;
 

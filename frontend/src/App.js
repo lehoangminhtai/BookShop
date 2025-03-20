@@ -37,10 +37,11 @@ import HomeExchange from './pages/exchange/HomeExchange';
 import PostExchangeDetail from './pages/exchange/PostExchangeDetail';
 import MyPosts from './pages/exchange/MyPost';
 import PostSentRequest from './pages/exchange/PostSentRequest';
-
+import UserProfile from './pages/exchange/UserProfile';
 import AdminRoute from './components/ProtectedRoute';
 
 import AddBookExchange from './pages/exchange/AddBookExchange'
+
 
 const AdminRoutes = [
   { path: "/admin", element: <Dashboard /> },
@@ -90,6 +91,7 @@ function AppContent() {
 
           <Route path="/not-found" element={<Page404 />} />
           <Route path="*" element={<Page404 />} />
+          <Route path="/user-profile/:userId" element={<UserProfile />} />
 
           {/* admin */}
           {AdminRoutes.map(({ path, element }) => (

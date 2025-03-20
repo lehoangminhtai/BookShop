@@ -25,6 +25,9 @@ const PostExchangeDetail = () => {
     const exchangeButtonRef = useRef(null);
 
     const [openProgress, setOpenProgress] = useState(false);
+
+    const [ownerBook, setOwnerBook] = useState(null);
+
     const handleCloseProgress = () => {
         setOpenProgress(false);
     };
@@ -38,13 +41,14 @@ const PostExchangeDetail = () => {
             console.log(response);
             if (response.data.success) {
                 setBookExchangeDetail(response.data.bookExchange);
-
+                setOwnerBook(response.data.owner);
             }
 
         } catch (error) {
 
         }
     }
+
 
     useEffect(() => {
         getBookExchange();
@@ -236,12 +240,17 @@ const PostExchangeDetail = () => {
                     </div>
                 </div>
                 <div className="user-section d-flex justify-content-between align-items-center mt-5">
-                    <div className="user-profile d-flex justify-content-center text-center align-items-center">
-                        <img alt='user-image' className='rounded-circle me-2' style={{ width: '50px', height: '50px' }}
-                            src='https://api-private.atlassian.com/users/6b5c1609134a5887d7f3ab1b73557664/avatar'
+                    <Link to={user?._id === bookExchangeDetail?.ownerId ? '/my-post-exchange' : `/user-profile/${ownerBook?._id}`} className="user-profile d-flex justify-content-center text-center align-items-center text-decoration-none">
+                        <img
+                            alt='user-image'
+                            className='rounded-circle me-2'
+                            style={{ width: '50px', height: '50px', cursor: 'pointer' }}
+                            src={ownerBook?.image}
                         />
-                        <span className='text-dark fw-bold'> Lê Hoàng Minh Tài</span>
-                    </div>
+                        <span className='text-dark fw-bold' style={{ cursor: 'pointer' }}>
+                            {ownerBook?.fullName}
+                        </span>
+                    </Link>
                     <button className='btn btn-primary'><span className='me-2'>Trao đổi</span>
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
@@ -256,7 +265,7 @@ const PostExchangeDetail = () => {
                 <EditPostForm handleCloseModal={handleCloseModal} exchangeBook={bookExchangeDetail} />
             )}
             {showRequestForm && (
-                <RequestForm handleCloseModal={handleCloseRequestForm} bookExchangeId={bookExchangeId}/>
+                <RequestForm handleCloseModal={handleCloseRequestForm} bookExchangeId={bookExchangeId} />
             )}
             {openProgress && <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}

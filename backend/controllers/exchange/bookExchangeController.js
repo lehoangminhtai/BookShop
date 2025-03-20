@@ -2,6 +2,7 @@ const { default: mongoose } = require('mongoose');
 const cloudinary = require("../../utils/cloudinary");
 const BookExchange = require("../../models/exchange/bookExchangeModel");
 const { logAction } = require("../../middleware/logMiddleware.js");
+const User = require("../../models/userModel");
 
 const calculatePoints = ({ condition, publicationYear, pageCount, description, images }) => {
     let points = 0;
@@ -114,10 +115,11 @@ const getBooksExchange = async (req, res) => {
     const { bookExchangeId } = req.params;
     try {
         const bookExchange = await BookExchange.findById(bookExchangeId);
+        const owner = await User.findById(bookExchange.ownerId);
         if (!bookExchange) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy sách trao đổi' });
         }
-        res.status(200).json({ success: true, bookExchange });
+        res.status(200).json({ success: true, bookExchange, owner: owner });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi khi lấy sách trao đổi' });
     }
@@ -270,7 +272,31 @@ const getExchangeBookAvailableByUser = async (req, res) => {
         res.status(500).json({ success: false, message: "Lỗi khi lấy danh sách sách trao đổi của người dùng: " + error.message });
     }
 };
+const countUserExchanges  = async (req, res) => {
+    // Đếm số lần trao đổi thành công của user và số bài đăng của useruser
+    try {
+        const { userId } = req.params;
+        // Đếm số lượng giao dịch mà user là chủ sách và đã hoàn thành
+        const ownerExchangesCount = await BookExchange.countDocuments({
+            ownerId: userId,
+            status: "completed",
+        });
+        // Đếm số lượng sách mà user là người nhận
+        const receiverExchangesCount = await BookExchange.countDocuments({
+            receiverId: userId,
+            status: "completed",
+        });
+        // Tổng số lần trao đổi thành công
+        const totalExchanges = ownerExchangesCount + receiverExchangesCount;
 
+        // Đếm số bài đăng của user
+        const totalPosts = await BookExchange.countDocuments({ ownerId: userId });
+
+        res.status(200).json({success: true, totalExchanges, totalPosts });
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi khi đếm số lần trao đổi", error });
+    }
+};
 
 module.exports = {
     createBookExchange,
@@ -279,5 +305,6 @@ module.exports = {
     updateBookExchange,
     deleteBookExchange,
     getExchangeBookByUser,
-    getExchangeBookAvailableByUser
+    getExchangeBookAvailableByUser,
+    countUserExchanges 
 };
