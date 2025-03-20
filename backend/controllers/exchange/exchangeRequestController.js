@@ -15,7 +15,7 @@ const createExchangeRequest = async (req, res) => {
 
         if (exchangeMethod === 'points') {
             if (user.grade < bookRequested.creditPoints) {
-                return res.status(200).json({success:false, message: 'Điểm của người dùng không đủ để thực hiện trao đổi' });
+                return res.status(200).json({success:false, message: 'Điểm của bạn không đủ để thực hiện trao đổi' });
             }
         }
 
@@ -38,7 +38,7 @@ const createExchangeRequest = async (req, res) => {
             const totalPoints = exchangeBook.creditPoints + user.grade;
 
             if (exchangeBook.creditPoints < bookRequested.creditPoints && totalPoints < bookRequested.creditPoints) {
-                return res.status(200).json({success:false, message: 'Tổng điểm của sách trao đổi và điểm của người dùng không đủ để thực hiện trao đổi' });
+                return res.status(200).json({success:false, message: 'Tổng điểm của sách trao đổi và điểm của bạn không đủ để thực hiện trao đổi' });
             }
         }
         const newRequest = new ExchangeRequest({
@@ -56,5 +56,53 @@ const createExchangeRequest = async (req, res) => {
         res.status(500).json({success:false, message: 'Lỗi khi tạo yêu cầu trao đổi' });
     }
 };
+const checkExchangeRequest = async (req, res) => {
+    try {
+        const { bookRequestedId, requesterId } = req.body; 
 
-module.exports = { createExchangeRequest };
+        // Kiểm tra xem đã có yêu cầu trao đổi chưa
+        const existingRequest = await ExchangeRequest.findOne({ 
+            bookRequestedId, 
+            requesterId 
+        });
+
+        if (existingRequest) {
+            if(existingRequest.exchangeMethod === 'book' && existingRequest.exchangeBookId){
+                const bookRequested = await BookExchange.findById(existingRequest.exchangeBookId)
+                return res.status(200).json({ 
+                    success: true, 
+                    request: existingRequest,
+                    book: bookRequested 
+                });
+            }
+            return res.status(200).json({ 
+                success: true, 
+                request: existingRequest 
+            });
+        }
+
+        return res.status(200).json({ success: false, message: "Chưa có yêu cầu nào được gửi" });
+
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Lỗi kiểm tra yêu cầu trao đổi" });
+    }
+};
+
+const deleteRequest = async (req, res) =>{
+    const {bookRequestedId} = req.params
+
+    try {
+        const request = await ExchangeRequest.findByIdAndDelete(bookRequestedId);
+
+        if(!request){
+            return res.status(200).json({success: false, message: "Yêu cầu không tồn tại"})
+        }
+
+        return res.status(200).json({success: true, message: "Đã xóa yêu cầu"})
+    } catch (error) {
+        
+    }
+}
+
+
+module.exports = { createExchangeRequest, checkExchangeRequest, deleteRequest};

@@ -13,14 +13,29 @@ import RequestForm from '../../components/customer/BookExchange/RequestForm';
 import EditPostForm from '../../components/customer/BookExchange/EditPostForm';
 //service
 import { getBookExchangeSer, deleteBookExchange } from '../../services/exchange/bookExchangeService';
+import { checkRequestSer, deleteRequestSer } from '../../services/exchange/exchangeRequestService';
 
 
 const PostExchangeDetail = () => {
     const { bookExchangeId } = useParams();
+    const { user } = useStateContext();
     const [bookExchangeDetail, setBookExchangeDetail] = useState(null);
+    const initialRequestForm = {
+        requestId: null,
+        bookRequestedId: bookExchangeId,
+        bookExchangeMethod: "",
+        exchangeBookId: null,
+        requesterId: user ? user._id : null
+    };
+    
+    const [requestForm, setRequestForm] = useState(initialRequestForm);
+    
+
+    const [exchangeBook, setExchangeBook] = useState(null)
+
     const [showModal, setShowModal] = useState(false);
     const [showRequestForm, setShowRequestForm] = useState(false);
-    const { user } = useStateContext();
+
     const navigate = useNavigate();
     const exchangeButtonRef = useRef(null);
 
@@ -46,15 +61,33 @@ const PostExchangeDetail = () => {
         }
     }
 
+    const checkRequest = async () => {
+        if (user) {
+            const response = await checkRequestSer(requestForm);
+            const result = response.data
+
+            if (result.success) {
+
+                setRequestForm({ ...requestForm, requestId: result.request._id, bookExchangeMethod: result.request.exchangeMethod,
+                     exchangeBookId: result.request.exchangeBookId })
+                if (result.request.exchangeMethod === 'book') {
+                    setExchangeBook(result.book);
+                    console.log(requestForm)
+                }
+            }
+
+        }
+        else return;
+    }
+
     useEffect(() => {
         getBookExchange();
         console.log(bookExchangeDetail);
     }, []);
 
-
-
-
-
+    useEffect(() => {
+        checkRequest();
+    }, [user?._id])
 
     const handleSendRequest = () => {
         if (!user) {
@@ -135,6 +168,21 @@ const PostExchangeDetail = () => {
         }
     }
 
+    const handleDeleteRequest = async () =>{
+        try {
+            if(requestForm.requestId){
+                console.log(requestForm.requestId)
+                const response = await deleteRequestSer(requestForm.requestId);
+                console.log(response)
+                if(response.data.success){
+                    setRequestForm(initialRequestForm);
+                }
+            }
+        } catch (error) {
+            
+        }
+    }
+
     return (
         <div className="container mt-4">
 
@@ -149,7 +197,35 @@ const PostExchangeDetail = () => {
                         ref={exchangeButtonRef}
                     />
                 </div>
-
+                {requestForm.bookExchangeMethod !=='' && (
+                <div className="card my-3 shadow">
+                    <div className="card-header text-dark fw-bold">
+                        Thông tin yêu cầu trao đổi
+                    </div>
+                    <div className="card-body">
+                        {requestForm.bookExchangeMethod === "points" ? (
+                            <div>
+                                <p className="mb-0">
+                                    Bạn đã yêu cầu trao đổi bằng <strong className='text-danger'>{bookExchangeDetail?.creditPoints} điểm</strong> để trao đổi sách.
+                                </p>
+                            </div>
+                        ) : requestForm.bookExchangeMethod === "book" && exchangeBook && (
+                            <div className="d-flex align-items-center">
+                                <img
+                                    src={exchangeBook?.images[0]}
+                                    alt={exchangeBook?.title}
+                                    className="img-thumbnail me-3"
+                                    style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                                />
+                                <div>
+                                    <h5 className="card-title mb-1">{exchangeBook?.title}</h5>
+                                    <p className="card-text mb-0">Tác giả: {exchangeBook?.author}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                )}
 
                 {(user?._id === bookExchangeDetail?.ownerId) &&
 
@@ -177,14 +253,28 @@ const PostExchangeDetail = () => {
                 <div className="d-flex justify-content-between mt-3 mb-3">
                     {(user?._id === bookExchangeDetail?.ownerId) ?
                         (<ListUserRequest />) :
-                        (<button
+                        (
+                            requestForm.bookExchangeMethod === "" ?
+                                <button
 
-                            className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                            onClick={() => handleSendRequest()}
+                                    className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                    onClick={() => handleSendRequest()}
 
-                        >
-                            Đề nghị trao đổi
-                        </button>)}
+                                >
+                                    Đề nghị trao đổi
+                                </button>
+                                :
+                                <button
+
+                                    className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                    onClick={() => handleDeleteRequest()}
+
+                                >
+                                    <i class="fa-solid fa-x me-2"></i>
+                                    Hủy yêu cầu
+                                </button>
+
+                        )}
 
                 </div>
 
@@ -256,7 +346,7 @@ const PostExchangeDetail = () => {
                 <EditPostForm handleCloseModal={handleCloseModal} exchangeBook={bookExchangeDetail} />
             )}
             {showRequestForm && (
-                <RequestForm handleCloseModal={handleCloseRequestForm} bookExchangeId={bookExchangeId}/>
+                <RequestForm handleCloseModal={handleCloseRequestForm} checkRequest = {checkRequest}  bookExchangeId={bookExchangeId} />
             )}
             {openProgress && <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
