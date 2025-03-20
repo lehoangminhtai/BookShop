@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { toast,ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from '@mui/icons-material/Send';
@@ -13,13 +13,15 @@ import { useStateContext } from "../../../context/UserContext";
 import { getBookExchangesAvailableByUser } from "../../../services/exchange/bookExchangeService";
 import { getListCategoryBooks } from "../../../services/categoryBookService";
 import { createRequestSer } from "../../../services/exchange/exchangeRequestService";
+import { getUserInfo } from "../../../services/userService";
 
-const RequestForm = ({ handleCloseModal, bookExchangeId }) => {
+const RequestForm = ({ handleCloseModal,checkRequest, bookExchangeId }) => {
     const [openProgress, setOpenProgress] = useState(false);
     const [posts, setPosts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [usePoints, setUsePoints] = useState(false)
+    const [userPoints, setUserPoints] = useState('')
     const { user } = useStateContext();
     const userId = user?._id;
 
@@ -55,9 +57,25 @@ const RequestForm = ({ handleCloseModal, bookExchangeId }) => {
         }
     };
 
+    const getUserPoint = async () =>{
+        try {
+            if(user){
+                const response = await getUserInfo(userId);
+                console.log(response)
+                if(response.data.success){
+                    const user = response.data.user
+                    setUserPoints(user?.grade);
+                }
+            }
+        } catch (error) {
+            
+        }
+    }
+
     useEffect(() => {
         fetchPosts();
-        fetchCategories()
+        fetchCategories();
+        getUserPoint();
     }, []);
 
     useEffect(() => {
@@ -146,6 +164,7 @@ const RequestForm = ({ handleCloseModal, bookExchangeId }) => {
 
                     }
                 }
+                checkRequest();
                 handleClose();
         
 
@@ -197,7 +216,10 @@ const RequestForm = ({ handleCloseModal, bookExchangeId }) => {
                             {formData.exchangeMethod === "points" && (
                                 <div className="tab-pane fade show active">
                                     <div className="p-3 bg-light rounded shadow-sm">
-
+                                        <div className="d-flex align-items-center">
+                                            <p className="text-dark me-2">Tổng điểm hiện tại của bạn:</p>
+                                            <h2 className="h2 text-danger fw-bold">{userPoints} đ</h2>
+                                        </div>
                                        
                                         <div className="form-check">
                                             <input
