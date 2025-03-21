@@ -88,6 +88,34 @@ const checkExchangeRequest = async (req, res) => {
     }
 };
 
+const getExchangeRequestByBookRequested = async (req, res) => {
+    try {
+        const { bookRequestedId } = req.params;
+        const listRequest = await ExchangeRequest.find({ bookRequestedId })
+            .populate({
+                path: 'exchangeBookId',
+                match: { status: 'available' }
+            })
+            .populate('requesterId');
+
+        // Lọc các yêu cầu mà exchangeBookId không null
+        const filteredRequests = listRequest.filter(request => request.exchangeBookId);
+
+        if (filteredRequests.length === 0) {
+            return res.status(200).json({ success: false, message: "Chưa có yêu cầu nào gửi" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: filteredRequests
+        });
+
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Lỗi hệ thống" });
+    }
+};
+
+
 const deleteRequest = async (req, res) =>{
     const {bookRequestedId} = req.params
 
@@ -104,5 +132,74 @@ const deleteRequest = async (req, res) =>{
     }
 }
 
+const acceptExchangeRequest = async (req, res) => {
+    try {
+        const { requestId, userId } = req.body;
 
-module.exports = { createExchangeRequest, checkExchangeRequest, deleteRequest};
+        const exchangeRequest = await ExchangeRequest.findById(requestId);
+        const bookRequested = await BookExchange.findById(exchangeRequest.bookRequestedId);
+        const user = await User.findById(userId);
+        const requester = await User.findById(exchangeRequest.requesterId);
+
+
+        if (!exchangeRequest || !bookRequested || !user || !requester) {
+            return res.status(404).json({ message: 'Dữ liệu không tồn tại' });
+        }
+
+        if (bookRequested.status !== 'available') {
+            return res.status(400).json({ message: 'Sách yêu cầu không khả dụng' });
+          }
+
+        if (exchangeRequest.exchangeMethod === 'point') {
+            if (requester.grade < bookRequested.creditPoints) {
+                return res.status(400).json({ message: 'Điểm của người trao đổi không đủđủ' });
+              }
+            requester.grade -= bookRequested.creditPoints;
+            await requester.save();
+        }
+
+        if (exchangeRequest.exchangeMethod === 'book') {
+            const exchangeBook = await BookExchange.findById(exchangeRequest.exchangeBookId);
+            if (!exchangeBook) {
+                return res.status(404).json({ message: 'Sách trao đổi không tồn tại' });
+            }
+
+            if (exchangeBook.status !== 'available') {
+                return res.status(400).json({ message: 'Sách trao đổi không khả dụng' });
+              }
+              
+            const pointDifference = bookRequested.creditPoints - exchangeBook.creditPoints;
+
+            if (pointDifference < 0) {
+                if (user.grade < Math.abs(pointDifference)) {
+                    return res.status(400).json({ message: 'Bạn không có đủ điểm để bù chênh lệch' });
+                }
+                user.grade += pointDifference;
+            } else if (pointDifference > 0) {
+                if (requester.grade < pointDifference) {
+                    return res.status(400).json({ message: 'Người trao đổi không có đủ điểm để bù chênh lệch' });
+                }
+                requester.grade -= pointDifference;
+                await requester.save();
+            }
+
+            exchangeBook.status = 'pending';
+            await exchangeBook.save();
+        }
+
+        exchangeRequest.status = 'approved';
+        bookRequested.status = 'pending';
+
+        await exchangeRequest.save();
+        await bookRequested.save();
+        await user.save();
+
+        res.status(200).json({ message: 'Yêu cầu trao đổi đã được chấp nhận' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi chấp nhận yêu cầu trao đổi' });
+    }
+};
+
+
+module.exports = { createExchangeRequest, checkExchangeRequest, deleteRequest,getExchangeRequestByBookRequested, acceptExchangeRequest};
