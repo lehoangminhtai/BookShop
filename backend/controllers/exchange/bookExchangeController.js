@@ -114,7 +114,7 @@ const getBooksExchanges = async (req, res) => {
 const getBooksExchange = async (req, res) => {
     const { bookExchangeId } = req.params;
     try {
-        const bookExchange = await BookExchange.findById(bookExchangeId);
+        const bookExchange = await BookExchange.findById(bookExchangeId).populate('ownerId');
         if (!bookExchange) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy sách trao đổi' });
         }
