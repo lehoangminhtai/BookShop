@@ -125,4 +125,17 @@ const acceptExchangeRequest = async (req, res) => {
     }
 };
 
-module.exports = { createExchangeRequest, acceptExchangeRequest };
+const getExchangeRequestsByRequester = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const requests = await ExchangeRequest.find({ requesterId: userId })
+       
+        res.status(200).json({success:true, requests});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi lấy yêu cầu trao đổi' });
+    }
+}
+
+module.exports = { createExchangeRequest, acceptExchangeRequest, getExchangeRequestsByRequester };

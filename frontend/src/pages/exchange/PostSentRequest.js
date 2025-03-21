@@ -1,38 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useStateContext } from "../../context/UserContext";
+import { getRequestsByRequesterSer } from "../../services/exchange/exchangeRequestService";
+import { getBookExchangeSer } from "../../services/exchange/bookExchangeService";
 //scss
 import '../../css/user/MyPost.scss'
 
 const PostSentRequest = () => {
-    const [posts, setPosts] = useState([
-        {
-            id: 1,
-            title: "Sách lập trình JavaScript",
-            image: "https://m.media-amazon.com/images/I/71787OImkEL.jpg",
-            date: "2024-02-10",
-            location: "Hồ Chí Minh",
-            status: "pending"
-        },
-        {
-            id: 2,
-            title: "Bộ truyện Harry Potter",
-            image: "https://img.posterstore.com/zoom/wb0001-8harrypotter-sorcerersstone50x70.jpg",
-            date: "2024-02-08",
-            location: "Hà Nội",
-            status: "processing"
-        },
-        {
-            id: 3,
-            title: "Sách kinh tế học vĩ mô",
-            image: "https://hvpnvn.edu.vn/wp-content/uploads/sites/63/2024/02/26102016120000-0001.jpg",
-            date: "2024-02-06",
-            location: "Đà Nẵng",
-            status: "completed"
-        }
-    ]);
-
+    const [posts, setPosts] = useState([]);
+    const { user } = useStateContext();
+    const userId = user?._id;
     const navigate = useNavigate();
+
+    const fetchPosts = async () => {
+        try {
+            const response = await getRequestsByRequesterSer(userId);
+            if (response.data.success) {
+                const requests = response.data.requests;
+
+                const postsRequest = await Promise.all(
+                    requests.map(async (request) => {
+                        const bookRequested = await getBookExchangeSer(request.bookRequestedId);
+
+                        let exchangeBook = null;
+
+                        if (request.exchangeMethod === "book") {
+                            exchangeBook = await getBookExchangeSer(request.exchangeBookId);
+                        }
+                        return {
+                            id: request._id,
+                            date: request.createdAt,
+                            status: request.status,
+                            exchangeMethod: request.exchangeMethod,
+                            bookRequested: bookRequested.data.bookExchange,
+                            exchangeBook: exchangeBook ? exchangeBook.data.bookExchange : null,
+                        }
+
+                    })
+                );
+                setPosts(postsRequest);
+                console.log("Posts: ", postsRequest);
+            }
+        } catch (error) {
+            console.log("Failed to fetch posts: ", error);
+        }
+    }
+
+    useEffect(() => {
+        fetchPosts();
+    }, [userId]);
 
     const handleClickPost = (postId) => {
         navigate(`/exchange-post-detail/${postId}`);
@@ -41,11 +58,11 @@ const PostSentRequest = () => {
     const getStatusBadge = (status) => {
         switch (status) {
             case "pending":
-                return <span className="status-badge status-pending">⏳ Đang đợi trao đổi</span>;
-            case "processing":
-                return <span className="status-badge status-processing">🔄 Đang xử lý</span>;
+                return <span className="status-badge status-pending">⏳ Chưa phản hồi</span>;
+            case "approved":
+                return <span className="status-badge status-processing">🔄 Đã được chấp nhận</span>;
             case "completed":
-                return <span className="status-badge status-completed">✅ Đã đổi</span>;
+                return <span className="status-badge status-completed">✅ Hoàn Thành</span>;
             default:
                 return null;
         }
@@ -64,32 +81,79 @@ const PostSentRequest = () => {
             <h2 className="h2 text-center mt-5 mb-5 text-primary">-- <span className=""> Danh sách yêu cầu </span> --</h2>
             <div className="row">
                 {posts.map((post) => (
-                    <div key={post.id} className="col-md-6 col-lg-4 mb-4">
+
+                    <div key={post?._id} className="col-md-6 col-lg-4 mb-4">
                         <div
-                            className="card p-3 shadow-lg card-custom"
-                            onClick={() => handleClickPost(post.id)}
+                            className="card p-3 shadow-lg card-custom "
+
                             style={{ cursor: "pointer" }}
                         >
-                            <div className="d-flex">
-                                <img
-                                    src={post.image}
-                                    className="img-fluid card-img-custom me-3"
-                                    alt={post.title}
-                                />
+                            <div className="d-flex align-items-start">
+                                <div className="flex-shrink-0 me-2"
+                                    onClick={() => handleClickPost(post.bookRequested?._id)}>
+                                    <img
+                                        src={post.bookRequested?.images[0] || "/placeholder.jpg"}
+                                        className="img-fluid card-img-custom "
+                                        style={{ width: "120px", height: "120px", objectFit: "cover" }}
+                                        alt={post.bookRequested?.title || "Không có tiêu đề"}
+                                    />
+                                </div>
+
                                 <div className="flex-grow-1">
-                                    <h3 className="h6 text-truncate-2 fw-bold text-dark">
-                                        {post.title}
-                                    </h3>
+
+                                    <h6 className="fw-bold mb-1"
+                                        onClick={() => handleClickPost(post.bookRequested?._id)}
+                                        onMouseEnter={(e) => e.target.style.color = "#007bff"}
+                                        onMouseLeave={(e) => e.target.style.color = "#333"}>
+                                        {post.bookRequested?.title
+                                            ? post.bookRequested.title.length > 30
+                                                ? post.bookRequested.title.substring(0, 30) + "..."
+                                                : post.bookRequested.title
+                                            : "Không có tiêu đề"}
+
+                                    </h6>
+
+                                    {/* Nếu có sách trao đổi, hiển thị bên dưới */}
+                                    {post.exchangeMethod === "book" && post.exchangeBook ? (
+                                        <div className="d-flex align-items-center p-2 bg-light rounded mt-2"
+                                            onClick={() => handleClickPost(post.exchangeBook?._id)}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.transform = "scale(1.05)"; // Hiệu ứng phóng to nhẹ
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.transform = "scale(1)"; // Kích thước về ban đầu
+                                            }}
+                                            >
+                                            <img
+                                                src={post.exchangeBook.images[0] || "/placeholder.jpg"}
+                                                className=" me-1 "
+                                                style={{ width: "40px", height: "45px", objectFit: "cover" }}
+                                                alt={post.exchangeBook.title}
+                                            />
+                                            <span className="text-muted small">
+                                                {post.exchangeBook?.title
+                                                    ? post.exchangeBook.title.length > 25
+                                                        ? post.exchangeBook.title.substring(0, 25) + "..."
+                                                        : post.exchangeBook.title
+                                                    : "Không có tiêu đề"}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <div className="fw-bold text-warning d-flex align-items-center mt-3 mb-3">
+                                            <span className="me-2 fs-4">{post.bookRequested.creditPoints}</span>
+                                            <i className="fas fa-coins fs-5"></i>
+                                        </div>
+                                    )}
+
+
                                     <p className="text-muted mb-1">
-                                        📅 Ngày đăng: {post.date}
-                                    </p>
-                                    <p className="text-muted">
-                                        📍 {post.location}
+                                        📅 Ngày yêu cầu: {new Date(post.date).toLocaleDateString('vi-VN')}
                                     </p>
                                     <div className="mt-2">{getStatusBadge(post.status)}</div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 ))}
             </div>
