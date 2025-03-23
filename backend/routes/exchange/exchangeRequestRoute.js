@@ -1,5 +1,6 @@
 const express = require('express');
-const { createExchangeRequest, checkExchangeRequest, deleteRequest, getExchangeRequestByBookRequested, acceptExchangeRequest } = require('../../controllers/exchange/exchangeRequestController');
+const { createExchangeRequest, checkExchangeRequest, deleteRequest,
+     getExchangeRequestByBookRequested, acceptExchangeRequest, getExchangeRequestsByRequester } = require('../../controllers/exchange/exchangeRequestController');
 
 const router = express.Router();
 
@@ -8,5 +9,6 @@ router.post('/', createExchangeRequest);
 router.post("/check-exchange-request", checkExchangeRequest);
 router.delete('/delete/:bookRequestedId', deleteRequest)
 router.post('/accept', acceptExchangeRequest);
+router.get('/requests/:userId', getExchangeRequestsByRequester);
 
 module.exports = router;
