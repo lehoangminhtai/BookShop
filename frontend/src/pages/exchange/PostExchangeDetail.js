@@ -96,8 +96,7 @@ const PostExchangeDetail = () => {
 
                 if (response.data.success) {
                     const result = response.data.data;
-                    setLisRequest(result);
-                   
+                    setLisRequest(Array.isArray(result) ? result : [result]);
                 }
                 handleCloseProgress();
             }
