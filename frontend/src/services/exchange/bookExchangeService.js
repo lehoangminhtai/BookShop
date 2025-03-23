@@ -30,3 +30,7 @@ export const getBookExchangesAvailableByUser = async (userId, categoryId) => {
 };
 
 export const getBookExchangesByCategory = async (category) => await API.get(`/category/${category}`);
+
+export const countUserExchanges  = async (userId) => await API.get(`/count-exchanges/${userId}`);
+
+export const getListCategoryBooks = async () => await axios.create({ baseURL: `${serverUrl}/api/categoryBooks` }).get('/')

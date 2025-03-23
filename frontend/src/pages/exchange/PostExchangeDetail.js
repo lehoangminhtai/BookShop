@@ -398,12 +398,13 @@ const PostExchangeDetail = () => {
                     </div>
                 </div>
                 <div className="user-section d-flex justify-content-between align-items-center mt-5">
-                    <div className="user-profile d-flex justify-content-center text-center align-items-center">
+                    <Link to={user?._id === bookExchangeDetail?.ownerId ? '/my-post-exchange' : `/user-profile/${bookExchangeDetail?.ownerId?._id}`} 
+                    className="user-profile d-flex justify-content-center text-center align-items-center text-decoration-none">
                         <img alt='user-image' className='rounded-circle me-2 border' style={{ width: '50px', height: '50px' }}
                             src={bookExchangeDetail?.ownerId?.image}
                         />
                         <span className='text-dark fw-bold'>{bookExchangeDetail?.ownerId?.fullName}</span>
-                    </div>
+                    </Link>
                     <button className='btn btn-primary'><span className='me-2'>Trao đổi</span>
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>

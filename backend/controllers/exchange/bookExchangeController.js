@@ -291,6 +291,31 @@ const getExchangeBookAvailableByUser = async (req, res) => {
     }
 };
 
+const countUserExchanges  = async (req, res) => {
+    // Đếm số lần trao đổi thành công của user và số bài đăng của useruser
+    try {
+        const { userId } = req.params;
+        // Đếm số lượng giao dịch mà user là chủ sách và đã hoàn thành
+        const ownerExchangesCount = await BookExchange.countDocuments({
+            ownerId: userId,
+            status: "completed",
+        });
+        // Đếm số lượng sách mà user là người nhận
+        const receiverExchangesCount = await BookExchange.countDocuments({
+            receiverId: userId,
+            status: "completed",
+        });
+        // Tổng số lần trao đổi thành công
+        const totalExchanges = ownerExchangesCount + receiverExchangesCount;
+
+        // Đếm số bài đăng của user
+        const totalPosts = await BookExchange.countDocuments({ ownerId: userId });
+
+        res.status(200).json({success: true, totalExchanges, totalPosts });
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi khi đếm số lần trao đổi", error });
+    }
+};
 
 module.exports = {
     createBookExchange,
@@ -299,5 +324,6 @@ module.exports = {
     updateBookExchange,
     deleteBookExchange,
     getExchangeBookByUser,
-    getExchangeBookAvailableByUser
+    getExchangeBookAvailableByUser,
+    countUserExchanges,
 };
