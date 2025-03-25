@@ -27,6 +27,7 @@ const logRoutes = require('./routes/logRoute');
 //exchange
 const bookExchangeRoutes = require('./routes/exchange/bookExchangeRoute');
 const exchangeRequestRoutes = require('./routes/exchange/exchangeRequestRoute');
+const exchangeInforRoutes = require('./routes/exchange/exchangeInforRoute');
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
@@ -64,9 +65,11 @@ app.use('/api/user/addresses', addressRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/logs', logRoutes);
 
+
 //exchange
 app.use('/api/book-exchange', bookExchangeRoutes);
 app.use('/api/exchange-requests', exchangeRequestRoutes);
+app.use('/api/exchange-infor', exchangeInforRoutes);
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);
