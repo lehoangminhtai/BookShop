@@ -1,6 +1,7 @@
 const { default: mongoose } = require('mongoose');
 const cloudinary = require("../../utils/cloudinary");
 const BookExchange = require("../../models/exchange/bookExchangeModel");
+const ExchangeRequest = require('../../models/exchange/exchangeRequestModel');
 const { logAction } = require("../../middleware/logMiddleware.js");
 const User = require("../../models/userModel");
 
@@ -114,12 +115,11 @@ const getBooksExchanges = async (req, res) => {
 const getBooksExchange = async (req, res) => {
     const { bookExchangeId } = req.params;
     try {
-        const bookExchange = await BookExchange.findById(bookExchangeId);
-        const owner = await User.findById(bookExchange.ownerId);
+        const bookExchange = await BookExchange.findById(bookExchangeId).populate('ownerId');
         if (!bookExchange) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy sách trao đổi' });
         }
-        res.status(200).json({ success: true, bookExchange, owner: owner });
+        res.status(200).json({ success: true, bookExchange});
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi khi lấy sách trao đổi' });
     }
@@ -200,6 +200,22 @@ const updateBookExchange = async (req, res) => {
         });
     }
 };
+
+const deleteAssociatedExchangeRequests = async (bookExchangeId) => {
+    try {
+      await ExchangeRequest.deleteMany({
+        $or: [
+          { bookRequestedId: bookExchangeId },
+          { exchangeBookId: bookExchangeId }
+        ]
+      });
+      console.log("Đã xóa các yêu cầu trao đổi liên quan.");
+    } catch (error) {
+      console.error("Lỗi khi xóa yêu cầu trao đổi liên quan:", error);
+    }
+  };
+  
+
 const deleteBookExchange = async (req, res) => {
     const { bookId } = req.params; // Lấy ID sách cần xóa
 
@@ -226,7 +242,10 @@ const deleteBookExchange = async (req, res) => {
         }
 
         // Xóa sách trao đổi khỏi database
-        await BookExchange.findByIdAndDelete(bookId);
+        const exchangeBook = await BookExchange.findByIdAndDelete(bookId);
+        if(exchangeBook){
+            await deleteAssociatedExchangeRequests(bookId);
+        }
 
         res.status(200).json({
             success: true,
@@ -272,6 +291,7 @@ const getExchangeBookAvailableByUser = async (req, res) => {
         res.status(500).json({ success: false, message: "Lỗi khi lấy danh sách sách trao đổi của người dùng: " + error.message });
     }
 };
+
 const countUserExchanges  = async (req, res) => {
     // Đếm số lần trao đổi thành công của user và số bài đăng của useruser
     try {
@@ -306,5 +326,5 @@ module.exports = {
     deleteBookExchange,
     getExchangeBookByUser,
     getExchangeBookAvailableByUser,
-    countUserExchanges 
+    countUserExchanges,
 };

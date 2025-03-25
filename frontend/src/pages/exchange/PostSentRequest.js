@@ -39,8 +39,9 @@ const PostSentRequest = () => {
 
                     })
                 );
-                setPosts(postsRequest);
-                console.log("Posts: ", postsRequest);
+                const filteredPosts = postsRequest.filter(post => post.bookRequested.status === 'available');
+
+                setPosts(filteredPosts);
             }
         } catch (error) {
             console.log("Failed to fetch posts: ", error);
@@ -123,7 +124,7 @@ const PostSentRequest = () => {
                                             onMouseLeave={(e) => {
                                                 e.currentTarget.style.transform = "scale(1)"; // Kích thước về ban đầu
                                             }}
-                                            >
+                                        >
                                             <img
                                                 src={post.exchangeBook.images[0] || "/placeholder.jpg"}
                                                 className=" me-1 "

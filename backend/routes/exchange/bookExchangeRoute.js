@@ -1,7 +1,7 @@
 const express = require("express");
 const { createBookExchange, getBooksExchange, getBooksExchanges, 
-    updateBookExchange, deleteBookExchange, getExchangeBookByUser,
-     getExchangeBookAvailableByUser, countUserExchanges  } = require("../../controllers/exchange/bookExchangeController");
+    updateBookExchange, deleteBookExchange, getExchangeBookByUser, 
+    getExchangeBookAvailableByUser, countUserExchanges } = require("../../controllers/exchange/bookExchangeController");
 
 const router = express.Router();
 
@@ -14,7 +14,6 @@ router.delete("/:bookId", deleteBookExchange);
 router.get("/user/:userId", getExchangeBookByUser);
 router.get("/user/get-posts-available/:userId", getExchangeBookAvailableByUser);
 router.get("/count-exchanges/:userId", countUserExchanges );
-
 module.exports = router;
 
 

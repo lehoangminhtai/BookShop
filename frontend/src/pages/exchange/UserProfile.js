@@ -5,7 +5,7 @@ import { getBookExchangesAvailableByUser } from "../../services/exchange/bookExc
 import { getUser } from "../../services/accountService";
 import { countUserExchanges } from "../../services/exchange/bookExchangeService";
 import ReviewUser from "../../components/customer/BookExchange/ReviewUser";
-import { getListCategoryBooks } from "../../services/categoryBookService";
+import { getListCategoryBooks } from "../../services/exchange/bookExchangeService";
 
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';

@@ -8,18 +8,6 @@ const ReviewUser = ({ userId }) => {
     reviews: []
   });
 
-  // useEffect(() => {
-  //   const fetchReviews = async () => {
-  //     try {
-  //       const { data } = await axios.get(`/api/reviews/${bookId}`);
-  //       setReviewsData(data);
-  //     } catch (error) {
-  //       console.error('Lỗi khi tải đánh giá:', error);
-  //     }
-  //   };
-
-  //   fetchReviews();
-  // }, [bookId]);
 
   const { averageRating, ratingCounts, reviews } = reviewsData;
 

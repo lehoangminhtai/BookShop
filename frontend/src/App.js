@@ -37,7 +37,9 @@ import HomeExchange from './pages/exchange/HomeExchange';
 import PostExchangeDetail from './pages/exchange/PostExchangeDetail';
 import MyPosts from './pages/exchange/MyPost';
 import PostSentRequest from './pages/exchange/PostSentRequest';
+import ExchangeInfoForm from './pages/exchange/ExchangeInfoForm';
 import UserProfile from './pages/exchange/UserProfile';
+
 import AdminRoute from './components/ProtectedRoute';
 
 import AddBookExchange from './pages/exchange/AddBookExchange'
@@ -88,6 +90,8 @@ function AppContent() {
           <Route path='/exchange-post-detail/:bookExchangeId' element={<PostExchangeDetail />} />
           <Route path='/my-post-exchange' element={<MyPosts />} />
           <Route path='/post-request' element={<PostSentRequest />} />
+          <Route path='/exchange-form' element={<ExchangeInfoForm />} />
+          <Route path="/user-profile/:userId" element={<UserProfile />} />
 
           <Route path="/not-found" element={<Page404 />} />
           <Route path="*" element={<Page404 />} />
