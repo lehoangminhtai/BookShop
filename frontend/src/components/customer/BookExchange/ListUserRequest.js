@@ -4,7 +4,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
 //service 
-import { getExchangeRequestByBookRequested, deleteRequestSer, acceptExchangeRequest } from '../../../services/exchange/exchangeRequestService';
+import { getExchangeRequestByBookRequested, deleteRequestSer, acceptExchangeRequest, cancelExchangeRequest } from '../../../services/exchange/exchangeRequestService';
 
 const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
 
@@ -32,7 +32,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
 
     useEffect(() => {
         fetchListRequest();
-    }, [bookRequestedId])
+    }, [])
 
     const handleDeleteRequest = async (requestId) => {
         try {
@@ -49,37 +49,69 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
 
     const handleAcceptRequest = async () => {
         try {
-            if (formAccept.requestId) {
-                const response = await acceptExchangeRequest(formAccept);
-                if (response.data.success) {
-                    toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
-                        Đã chấp nhận yêu cầu
+            const response = await acceptExchangeRequest(formAccept);
+            console.log(response)
+            if (response.data.success) {
+                toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                    {response.data.message}
+                </div>,
+                    {
+                        position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                        autoClose: 1500, // Đóng sau 3 giây
+                        hideProgressBar: true, // Ẩn thanh tiến độ
+                        closeButton: false, // Ẩn nút đóng
+                        className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                        draggable: false, // Tắt kéo di chuyển
+                        rtl: false, // Không hỗ trợ RTL
+                    }
+                );
+                fetchListRequest();
+            }
+            if (!response.data.success) {
+                toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                    {response.data.message}
 
-                    </div>,
-                        {
-                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
-                            autoClose: 1500, // Đóng sau 3 giây
-                            hideProgressBar: true, // Ẩn thanh tiến độ
-                            closeButton: false, // Ẩn nút đóng
-                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
-                            draggable: false, // Tắt kéo di chuyển
-                            rtl: false, // Không hỗ trợ RTL
-                        }
-                    );
-                    fetchListRequest();
-                }
+                </div>,
+                    {
+                        position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                        autoClose: 1500, // Đóng sau 3 giây
+                        hideProgressBar: true, // Ẩn thanh tiến độ
+                        closeButton: false, // Ẩn nút đóng
+                        className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                        draggable: false, // Tắt kéo di chuyển
+                        rtl: false, // Không hỗ trợ RTL
+                    }
+                );
             }
         } catch (error) {
 
         }
     }
 
+    useEffect(() => {
+        console.log(formAccept.requestId)
+        if (formAccept.requestId) {
+            handleAcceptRequest();
+        }
+    }, [formAccept.requestId])
+
     const handleClickRequest = async (requestId) => {
         if (requestId) {
             setFormAccept({ ...formAccept, requestId: requestId });
-            handleAcceptRequest();
         }
+    }
 
+    const handleCancelRequest = async (requestId) => {
+        try {
+            if (requestId) {
+                const response = await cancelExchangeRequest(requestId);
+                if (response.data.success) {
+                    fetchListRequest();
+                }
+            }
+        } catch (error) {
+
+        }
     }
 
 
@@ -104,7 +136,17 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                         <img alt='user-image' className='rounded-circle me-2' style={{ width: '50px', height: '50px' }}
                                                             src={request.requesterId?.image}
                                                         />
-                                                        <span className='text-dark fw-bold'>  {request.requesterId?.fullName} {request?.status === 'pending' ? (<span className='text-light bg-secondary rounded pe-1 ps-1'>Đang đợi</span>) : <span className='text-light bg-success rounded pe-1 ps-1'>Đã chấp nhận</span>}</span>
+                                                        <div>
+
+
+                                                            <span className='text-dark fw-bold'>  {request.requesterId?.fullName} </span>
+                                                            <br/>
+                                                            {request?.status === 'pending'
+                                                                ? (<span className='text-start fw-bold text-light bg-secondary rounded pe-1 ps-1'>Đang đợi</span>) : (request?.status === 'accepted'
+                                                                    ? <span className='text-start fw-bold text-light bg-success rounded pe-1 ps-1'>Đã chấp nhận</span> :
+                                                                    <span className='text-start fw-bold text-light bg-danger rounded pe-1 ps-1'>Đã hủy</span>)
+                                                            }
+                                                        </div>
                                                     </div>
                                                     {request?.status === 'pending' && (
                                                         <div className="d-flex gap-1 me-2">
@@ -132,13 +174,13 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                     {request?.status === 'accepted' && (
                                                         <div className="d-flex gap-1 me-2">
                                                             <Link to={'/exchange-form'}>
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-outline-success d-flex align-items-center justify-content-center"
-                                                            >
-                                                                Bắt đầu trao đổi
-                                                                <i className="ms-1 fa fa-check"></i>
-                                                            </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-outline-success d-flex align-items-center justify-content-center"
+                                                                >
+                                                                    Bắt đầu trao đổi
+                                                                    <i className="ms-1 fa fa-check"></i>
+                                                                </button>
                                                             </Link>
                                                             <button
                                                                 type="button"
@@ -160,15 +202,17 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                             <p className="mb-0 text-dark">
                                                                 Yêu cầu trao đổi bằng <strong className='text-danger'>điểm</strong> để trao đổi sách.
                                                             </p>
-                                                            <button
+                                                            {request?.status === 'accepted' && (
+                                                                <button
                                                                     type="button"
                                                                     className="btn btn-outline-danger  d-flex align-items-center justify-content-center"
 
-                                                                    onClick={() => handleDeleteRequest(request?._id)}
+                                                                    onClick={() => handleCancelRequest(request?._id)}
                                                                 >
                                                                     Hủy trao đổi
                                                                     <i className=" ms-1 fa fa-times"></i>
                                                                 </button>
+                                                            )}
                                                         </div>
                                                     ) : request.exchangeMethod === "book" && request.exchangeBookId && (
                                                         <div className="d-flex justify-content-between align-items-center">
@@ -197,15 +241,17 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                                 </div>
                                                             </div>
                                                             <div>
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-outline-danger  d-flex align-items-center justify-content-center"
+                                                                {request?.status === 'accepted' && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-outline-danger  d-flex align-items-center justify-content-center"
 
-                                                                    onClick={() => handleDeleteRequest(request?._id)}
-                                                                >
-                                                                    Hủy trao đổi
-                                                                    <i className=" ms-1 fa fa-times"></i>
-                                                                </button>
+                                                                        onClick={() => handleCancelRequest(request?._id)}
+                                                                    >
+                                                                        Hủy trao đổi
+                                                                        <i className=" ms-1 fa fa-times"></i>
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     )}

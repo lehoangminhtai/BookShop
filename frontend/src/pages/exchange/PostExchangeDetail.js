@@ -29,7 +29,8 @@ const PostExchangeDetail = () => {
         bookRequestedId: bookExchangeId,
         bookExchangeMethod: "",
         exchangeBookId: null,
-        requesterId: user ? user._id : null
+        requesterId: user ? user._id : null,
+        status: 'pending',
     };
 
     const [requestForm, setRequestForm] = useState(initialRequestForm);
@@ -76,11 +77,10 @@ const PostExchangeDetail = () => {
 
                 setRequestForm({
                     ...requestForm, requestId: result.request._id, bookExchangeMethod: result.request.exchangeMethod,
-                    exchangeBookId: result.request.exchangeBookId
+                    exchangeBookId: result.request.exchangeBookId, status: result.request.status
                 })
                 if (result.request.exchangeMethod === 'book') {
                     setExchangeBook(result.book);
-                    console.log(requestForm)
                 }
             }
 
@@ -264,7 +264,10 @@ const PostExchangeDetail = () => {
                 {requestForm.bookExchangeMethod !== '' && (
                     <div className="card my-3 shadow">
                         <div className="card-header text-dark fw-bold">
-                            Thông tin yêu cầu trao đổi
+                            Thông tin yêu cầu trao đổi 
+                            {requestForm.status === 'pending' ? <span className="badge bg-warning text-dark ms-2">Chờ xác nhận</span> : requestForm.status === 'accepted' 
+                            ? <span className="badge bg-success text-white ms-2">Đã chấp nhận</span> : requestForm.status === 'cancelled' 
+                            ? <span className="badge bg-danger text-white ms-2">Đã bị hủy</span> : <span className="badge bg-success text-white ms-2">Đã trao đổi</span>}
                         </div>
                         <div className="card-body">
                             {requestForm.bookExchangeMethod === "points" ? (
@@ -313,7 +316,8 @@ const PostExchangeDetail = () => {
                                 >
                                     Đề nghị trao đổi
                                 </button>
-                                :
+                                : requestForm.status === 'pending' ?
+
                                 <button
 
                                     className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
@@ -323,6 +327,23 @@ const PostExchangeDetail = () => {
                                     <i class="fa-solid fa-x me-2"></i>
                                     Hủy yêu cầu
                                 </button>
+
+                                : requestForm.status === 'accepted' ?
+
+                                <button
+
+                                className="btn btn-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                onClick={() => handleDeleteRequest()}
+
+                            >
+                                <i class="fa-solid fa-check me-2"></i>
+                                Xác nhận trao đổi
+                            </button>
+
+                            : <></>
+
+                            
+
 
                         )}
 
@@ -335,6 +356,7 @@ const PostExchangeDetail = () => {
 
                             className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap me-2"
                             onClick={() => handleShowModal()}
+                            disabled = {bookExchangeDetail?.status !== 'available'}
 
                         >
                             Chỉnh sửa thông tin
@@ -343,6 +365,7 @@ const PostExchangeDetail = () => {
 
                             className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
                             onClick={() => handleShowModalDelete()}
+                            disabled = {bookExchangeDetail?.status !== 'available'}
 
                         >
                             Xóa bài đăng <i class="fa-solid fa-trash text-light ms-2"></i>
