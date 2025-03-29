@@ -14,3 +14,5 @@ export const getExchangeRequestByBookRequested = async (bookRequestedId) => awai
 export const acceptExchangeRequest = async (data) => await API.post(`/accept`,data)
 
 export const getRequestsByRequesterSer = async (userId) => API.get(`/requests/${userId}`)
+
+export const cancelExchangeRequest = async (requestId) => API.post(`/cancel/${requestId}`)
