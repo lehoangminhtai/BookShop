@@ -1,19 +1,56 @@
-import React, { useState } from 'react';
-import { createExchangeInforSer } from '../../services/exchange/exchangeInforService';
+import React, { useEffect, useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import { createExchangeInforSer, getExchangeInforSer, updateExchangeInforSer } from '../../services/exchange/exchangeInforService';
 
-const ExchangeInforForm = ({ requestId }) => {
+const ExchangeInforForm = ({ requestId, onClose }) => {
+
+    const [exchangeInfor, setExchangeInfor] = useState(null);
     const [formData, setFormData] = useState({
-        fullName: '',
+        fullName: '',  
         transactionLocation: '',
         transactionDate: '',
         transactionTime: '',
-        deliveryMethod: 'Giao trực tiếp',
+        deliveryMethod: 'direct',
         contactPhone: '',
         notes: '',
     });
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const [isUpdate, setIsUpdate] = useState(false); // Thêm state để kiểm tra chế độ cập nhật
+
+    const getExchangeInfor = async () => {
+        try {
+            const res = await getExchangeInforSer(requestId);
+            console.log(res.exchangeInfor);
+            setExchangeInfor(res.exchangeInfor);
+
+            // Kiểm tra nếu trạng thái là "pending", chuyển sang chế độ cập nhật
+            if (res.exchangeInfor && res.exchangeInfor.status === 'pending') {
+                setIsUpdate(true);
+            }
+        } catch (error) {
+            toast.error('Lỗi khi lấy thông tin giao dịch: ' + error.message);
+        }
+    };
+
+    useEffect(() => {
+        if (exchangeInfor) {
+            setFormData({
+                fullName: exchangeInfor.fullName || '',  
+                transactionLocation: exchangeInfor.transactionLocation || '',
+                transactionDate: exchangeInfor.transactionDate || '',
+                transactionTime: exchangeInfor.transactionTime || '',
+                deliveryMethod: exchangeInfor.deliveryMethod || 'direct',
+                contactPhone: exchangeInfor.contactPhone || '',
+                notes: exchangeInfor.notes || '',
+            });
+        }
+    }, [exchangeInfor]);
+
+    useEffect(() => {
+        getExchangeInfor();
+    }, [requestId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -27,8 +64,21 @@ const ExchangeInforForm = ({ requestId }) => {
 
         try {
             const dataToSend = { ...formData, requestId };
-            await createExchangeInforSer(dataToSend);
-            setMessage('Tạo giao dịch thành công!');
+
+            if (isUpdate) {
+                // Gọi API cập nhật giao dịch
+                const res = await updateExchangeInforSer(dataToSend); // Thêm hàm cập nhật
+                if (res.data.succes) {
+                    toast.success('Cập nhật giao dịch thành công!');
+                }
+            } else {
+                // Gọi API tạo giao dịch
+                const res = await createExchangeInforSer(dataToSend);
+                if (res.data.succes) {
+                    toast.success('Tạo giao dịch thành công!');
+                }
+            }
+
             setFormData({
                 fullName: '',
                 transactionLocation: '',
@@ -39,7 +89,7 @@ const ExchangeInforForm = ({ requestId }) => {
                 notes: '',
             });
         } catch (error) {
-            setMessage('Lỗi khi tạo giao dịch: ' + error.message);
+            setMessage('Lỗi khi xử lý giao dịch: ' + error.message);
         } finally {
             setLoading(false);
         }
@@ -48,7 +98,10 @@ const ExchangeInforForm = ({ requestId }) => {
     return (
         <div className="container mt-4">
             <div className="card shadow-lg p-4">
-                <h2 className="text-center text-primary">Thông tin trao đổi</h2>
+                <div className="modal-header">
+                    <h2 className="text-center text-primary">Thông tin trao đổi</h2>
+                    <button type="button" className="btn-close" onClick={onClose}></button>
+                </div>
                 {message && <div className="alert alert-info text-center">{message}</div>}
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
@@ -75,9 +128,9 @@ const ExchangeInforForm = ({ requestId }) => {
                     <div className="mb-3">
                         <label className="form-label">Phương thức giao nhận:</label>
                         <select className="form-select" name="deliveryMethod" value={formData.deliveryMethod} onChange={handleChange} required>
-                            <option value="Giao trực tiếp">Giao trực tiếp</option>
-                            <option value="Qua bưu điện">Qua bưu điện</option>
-                            <option value="Qua shipper">Qua shipper</option>
+                            <option value="direct">Giao trực tiếp</option>
+                            <option value="post-office">Qua bưu điện</option>
+                            <option value="shipping">Qua shipper</option>
                         </select>
                     </div>
 
@@ -93,11 +146,12 @@ const ExchangeInforForm = ({ requestId }) => {
 
                     <div className="text-center">
                         <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-                            {loading ? 'Đang gửi...' : 'Tạo giao dịch'}
+                            {loading ? 'Đang xử lý...' : isUpdate ? 'Cập nhật giao dịch' : 'Tạo giao dịch'}
                         </button>
                     </div>
                 </form>
             </div>
+            <ToastContainer />
         </div>
     );
 };

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useStateContext } from '../../../context/UserContext';
 import { toast, ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
-
+import ExchangeInforForm from '../../../pages/exchange/ExchangeInfoForm';
 //service 
 import { getExchangeRequestByBookRequested, deleteRequestSer, acceptExchangeRequest, cancelExchangeRequest } from '../../../services/exchange/exchangeRequestService';
 
@@ -15,11 +15,17 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
         userId: user._id
     })
 
+    const [startExchangeRequestId, setStartExchangeRequestId] = useState(null);
+
+    const handleStartExchange = (requestId) => {
+        setStartExchangeRequestId(requestId);
+    };
+
     const fetchListRequest = async () => {
         try {
             if (bookRequestedId) {
                 const response = await getExchangeRequestByBookRequested(bookRequestedId);
-
+console.log(response)
                 if (response.data.success) {
                     const result = response.data.data;
                     setLisRequest(Array.isArray(result) ? result : [result]);
@@ -140,7 +146,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
 
 
                                                             <span className='text-dark fw-bold'>  {request.requesterId?.fullName} </span>
-                                                            <br/>
+                                                            <br />
                                                             {request?.status === 'pending'
                                                                 ? (<span className='text-start fw-bold text-light bg-secondary rounded pe-1 ps-1'>Đang đợi</span>) : (request?.status === 'accepted'
                                                                     ? <span className='text-start fw-bold text-light bg-success rounded pe-1 ps-1'>Đã chấp nhận</span> :
@@ -155,7 +161,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                                 type="button"
                                                                 className="btn btn-outline-success rounded-circle d-flex align-items-center justify-content-center"
                                                                 style={{ width: "40px", height: "40px" }}
-                                                                onClick={() => handleClickRequest(request._id)}
+                                                                onClick={() => handleClickRequest(request?._id)}
                                                             >
                                                                 <i className="fa fa-check"></i>
                                                             </button>
@@ -173,15 +179,15 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                     )}
                                                     {request?.status === 'accepted' && (
                                                         <div className="d-flex gap-1 me-2">
-                                                            <Link to={'/exchange-form'}>
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-outline-success d-flex align-items-center justify-content-center"
-                                                                >
-                                                                    Bắt đầu trao đổi
-                                                                    <i className="ms-1 fa fa-check"></i>
-                                                                </button>
-                                                            </Link>
+
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-outline-success d-flex align-items-center justify-content-center"
+                                                                onClick={() => handleStartExchange(request._id)}
+                                                            >
+                                                                Bắt đầu trao đổi
+                                                                <i className="ms-1 fa fa-check"></i>
+                                                            </button>
                                                             <button
                                                                 type="button"
                                                                 className="btn btn-primary d-flex align-items-center justify-content-center"
@@ -189,6 +195,29 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                                 Nhắn tin
                                                                 <i class="ms-1 fa fa-paper-plane" aria-hidden="true"></i>
                                                             </button>
+
+
+
+                                                        </div>
+                                                    )}
+                                                     {request?.status === 'processing' && (
+                                                        <div className="d-flex gap-1 me-2">
+
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-outline-success d-flex align-items-center justify-content-center"
+                                                            >
+                                                                Xác nhận hoàn thành
+                                                                <i className="ms-1 fa fa-check"></i>
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-primary d-flex align-items-center justify-content-center"
+                                                            >
+                                                                Nhắn tin
+                                                                <i class="ms-1 fa fa-paper-plane" aria-hidden="true"></i>
+                                                            </button>
+
 
 
                                                         </div>
@@ -268,7 +297,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
 
 
                     </div>
-                    <div className="modal-footer">
+                    {/* <div className="modal-footer">
                         <button
                             type="button"
                             className="btn"
@@ -277,9 +306,15 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                             Đóng
                         </button>
 
-                    </div>
+                    </div> */}
+                      {/* Hiển thị form nếu đã chọn requestId */}
+                      {startExchangeRequestId && (
+                                                                <ExchangeInforForm requestId={startExchangeRequestId} onClose={() => setStartExchangeRequestId(null)} />
+                                                            )}
                 </div>
+                
             </div>
+            
             <ToastContainer />
         </div>
     );
