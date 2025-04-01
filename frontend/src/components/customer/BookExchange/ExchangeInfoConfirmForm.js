@@ -17,8 +17,8 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
         deliveryMethod: 'direct',
         contactPhone_owner: '',
         contactPhone_requester: '',
-        status: '',
         notes: '',
+        status: 'accepted',
     });
 
     const [loading, setLoading] = useState(false);
@@ -47,9 +47,8 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
                 deliveryMethod: exchangeInfor.deliveryMethod || 'direct',
                 contactPhone_owner: exchangeInfor.contactPhone_owner || '',
                 contactPhone_requester: exchangeInfor.contactPhone_requester || '',
-                status: exchangeInfor.status || '',
                 notes: exchangeInfor.notes || '',
-
+                status: 'accepted',
             });
         }
 

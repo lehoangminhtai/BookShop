@@ -77,9 +77,14 @@ exports.updateExchangeInfor = async (req, res) => {
       contactPhone_owner,
       contactPhone_requester,
       notes,
+      status
     } = req.body;
 
     // Check if the exchange information exists
+    const exchangeRequest = await ExchangeRequest.findById(requestId);
+    if (!exchangeRequest) {
+      return res.status(404).json({ success: false, message: 'Yêu cầu trao đổi không tồn tại' });
+    }
     const existExchangeInfor = await ExchangeInfor.findOne({ requestId });
     if (!existExchangeInfor) {
       return res.status(404).json({ success: false, message: 'Thông tin giao dịch không tồn tại' });
@@ -95,11 +100,17 @@ exports.updateExchangeInfor = async (req, res) => {
     existExchangeInfor.contactPhone_owner = contactPhone_owner || existExchangeInfor.contactPhone_owner;
     existExchangeInfor.contactPhone_requester = contactPhone_requester || existExchangeInfor.contactPhone_requester;
     existExchangeInfor.notes = notes || existExchangeInfor.notes;
-    existExchangeInfor.status = 'accepted'; 
+    existExchangeInfor.status = status || existExchangeInfor.status;
 
+    await existExchangeInfor.save();
+    
+    if(status === 'accepted') {
+      exchangeRequest.status = 'processing';
+      await exchangeRequest.save();
+    }
 
     // Save the updated exchange information
-    await existExchangeInfor.save();
+    
 
     res.status(200).json({ success: true, message: 'Cập nhật thông tin giao dịch thành công', exchangeInfor: existExchangeInfor });
   } catch (error) {

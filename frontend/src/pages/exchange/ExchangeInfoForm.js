@@ -16,6 +16,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
         deliveryMethod: 'direct',
         contactPhone_owner: '',
         notes: '',
+        status: 'pending',
     });
 
     const [loading, setLoading] = useState(false);
@@ -47,6 +48,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                 deliveryMethod: exchangeInfor.deliveryMethod || 'direct',
                 contactPhone_owner: exchangeInfor.contactPhone_owner || '',
                 notes: exchangeInfor.notes || '',
+                status: exchangeInfor.status || 'pending',
             });
         }
        

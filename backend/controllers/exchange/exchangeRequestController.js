@@ -98,7 +98,7 @@ const getExchangeRequestByBookRequested = async (req, res) => {
             .populate('requesterId');
 
        
-        const acceptedRequest = listRequest.find(request => request.status === 'accepted');
+            const acceptedRequest = listRequest.find(request => request.status === 'accepted' || request.status === 'processing');
 
         if (acceptedRequest) {
             return res.status(200).json({

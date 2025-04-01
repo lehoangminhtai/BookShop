@@ -150,6 +150,10 @@ console.log(response)
                                                             {request?.status === 'pending'
                                                                 ? (<span className='text-start fw-bold text-light bg-secondary rounded pe-1 ps-1'>Đang đợi</span>) : (request?.status === 'accepted'
                                                                     ? <span className='text-start fw-bold text-light bg-success rounded pe-1 ps-1'>Đã chấp nhận</span> :
+                                                                  (request?.status === 'processing')
+                                                                    ? <span className='text-start fw-bold text-light bg-primary rounded pe-1 ps-1'>Đang giao dịch</span> :
+                                                                  (request?.status === 'completed')
+                                                                    ? <span className='text-start fw-bold text-light bg-success rounded pe-1 ps-1'>Đã trao đổi</span> :
                                                                     <span className='text-start fw-bold text-light bg-danger rounded pe-1 ps-1'>Đã hủy</span>)
                                                             }
                                                         </div>
@@ -207,8 +211,8 @@ console.log(response)
                                                                 type="button"
                                                                 className="btn btn-outline-success d-flex align-items-center justify-content-center"
                                                             >
-                                                                Xác nhận hoàn thành
-                                                                <i className="ms-1 fa fa-check"></i>
+                                                                Thông tin giao dịch
+                                                                <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i> 
                                                             </button>
                                                             <button
                                                                 type="button"
