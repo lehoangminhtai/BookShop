@@ -40,6 +40,7 @@ import PostSentRequest from './pages/exchange/PostSentRequest';
 import ExchangeInfoForm from './pages/exchange/ExchangeInfoForm';
 import UserProfile from './pages/exchange/UserProfile';
 import Chat from './pages/exchange/Message/Chat';
+import ExchangeInfoDetail from './pages/exchange/ExchangeInfoDetail';
 
 import AdminRoute from './components/ProtectedRoute';
 
@@ -91,6 +92,7 @@ function AppContent() {
           <Route path='/exchange-form' element={<ExchangeInfoForm />} />
           <Route path="/user-profile/:userId" element={<UserProfile />} />
           <Route path="/exchange/chat" element={<Chat />} />
+          <Route path="/exchange/exchange-info-detail" element={<ExchangeInfoDetail />} />
 
           <Route path="/not-found" element={<Page404 />} />
           <Route path="*" element={<Page404 />} />
