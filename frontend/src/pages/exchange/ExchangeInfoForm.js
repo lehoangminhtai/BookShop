@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
+//service
 import { createExchangeInforSer, getExchangeInforSer, updateExchangeInforSer } from '../../services/exchange/exchangeInforService';
+//format
+import { formatDate } from '../../lib/utils';
 
 const ExchangeInforForm = ({ requestId, onClose }) => {
 
     const [exchangeInfor, setExchangeInfor] = useState(null);
     const [formData, setFormData] = useState({
-        fullName: '',  
+        fullName_owner: '',  
         transactionLocation: '',
         transactionDate: '',
         transactionTime: '',
         deliveryMethod: 'direct',
-        contactPhone: '',
+        contactPhone_owner: '',
         notes: '',
     });
 
@@ -37,15 +40,16 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
     useEffect(() => {
         if (exchangeInfor) {
             setFormData({
-                fullName: exchangeInfor.fullName || '',  
+                fullName_owner: exchangeInfor.fullName_owner || '',  
                 transactionLocation: exchangeInfor.transactionLocation || '',
-                transactionDate: exchangeInfor.transactionDate || '',
+                transactionDate: formatDate(exchangeInfor.transactionDate) || '',
                 transactionTime: exchangeInfor.transactionTime || '',
                 deliveryMethod: exchangeInfor.deliveryMethod || 'direct',
-                contactPhone: exchangeInfor.contactPhone || '',
+                contactPhone_owner: exchangeInfor.contactPhone_owner || '',
                 notes: exchangeInfor.notes || '',
             });
         }
+       
     }, [exchangeInfor]);
 
     useEffect(() => {
@@ -79,15 +83,6 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                 }
             }
 
-            setFormData({
-                fullName: '',
-                transactionLocation: '',
-                transactionDate: '',
-                transactionTime: '',
-                deliveryMethod: 'Giao trực tiếp',
-                contactPhone: '',
-                notes: '',
-            });
         } catch (error) {
             setMessage('Lỗi khi xử lý giao dịch: ' + error.message);
         } finally {
@@ -106,7 +101,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
                         <label className="form-label">Họ và Tên:</label>
-                        <input type="text" className="form-control" name="fullName" value={formData.fullName} onChange={handleChange} required />
+                        <input type="text" className="form-control" name="fullName_owner" value={formData.fullName_owner} onChange={handleChange} required />
                     </div>
 
                     <div className="mb-3">
@@ -136,7 +131,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
 
                     <div className="mb-3">
                         <label className="form-label">Số điện thoại liên hệ:</label>
-                        <input type="text" className="form-control" name="contactPhone" value={formData.contactPhone} onChange={handleChange} required />
+                        <input type="text" className="form-control" name="contactPhone_owner" value={formData.contactPhone_owner} onChange={handleChange} required />
                     </div>
 
                     <div className="mb-3">

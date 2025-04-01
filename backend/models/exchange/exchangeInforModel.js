@@ -1,9 +1,13 @@
 const mongoose = require('mongoose');
 
 const ExchangeInforSchema = new mongoose.Schema({
-  fullName: {
+  fullName_owner: {
     type: String,
     required: true,
+  },
+  fullName_requester: {
+    type: String,
+    
   },
   transactionLocation: {
     type: String,
@@ -21,9 +25,13 @@ const ExchangeInforSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  contactPhone: {
+  contactPhone_owner: {
     type: String,
     required: true,
+    match: /^[0-9]{10,11}$/ // Kiểm tra số điện thoại hợp lệ
+  },
+  contactPhone_requester : {
+    type: String,
     match: /^[0-9]{10,11}$/ // Kiểm tra số điện thoại hợp lệ
   },
   notes: {

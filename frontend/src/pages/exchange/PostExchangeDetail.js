@@ -12,6 +12,7 @@ import ListUserRequest from '../../components/customer/BookExchange/ListUserRequ
 import RequestForm from '../../components/customer/BookExchange/RequestForm';
 import EditPostForm from '../../components/customer/BookExchange/EditPostForm';
 import ConfirmDialog from '../../components/customer/BookExchange/ConfirmDialog';
+import ExchangeInfoConfirmForm from '../../components/customer/BookExchange/ExchangeInfoConfirmForm';
 //service
 import { getBookExchangeSer, deleteBookExchange } from '../../services/exchange/bookExchangeService';
 import { checkRequestSer, deleteRequestSer,getExchangeRequestByBookRequested } from '../../services/exchange/exchangeRequestService';
@@ -40,6 +41,7 @@ const PostExchangeDetail = () => {
 
     const [showModal, setShowModal] = useState(false);
     const [showModalDelete, setShowModalDelete] = useState(false);
+    const [showModalConfirm, setShowModalConfirm] = useState(false);
     const [showRequestForm, setShowRequestForm] = useState(false);
     const [showListRequesterForm, setShowListRequesterForm] = useState(false);
 
@@ -246,6 +248,12 @@ const PostExchangeDetail = () => {
         fetchListRequest();
     }
 
+    const handleShowModalConfirm = () => {
+        setShowModalConfirm(true);
+    }
+    const handleCloseModalConfirm = () => {
+        setShowModalConfirm(false);
+    }
 
     return (
         <div className="container mt-4">
@@ -333,7 +341,7 @@ const PostExchangeDetail = () => {
                                 <button
 
                                 className="btn btn-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                                onClick={() => handleDeleteRequest()}
+                                onClick={() => handleShowModalConfirm()}
 
                             >
                                 <i class="fa-solid fa-check me-2"></i>
@@ -449,6 +457,9 @@ const PostExchangeDetail = () => {
             )}
             {showListRequesterForm && (
                 <ListUserRequest handleCloseListRequest={handleCloseListRequest} bookRequestedId={bookExchangeId}/>
+            )}
+             {showModalConfirm && (
+                <ExchangeInfoConfirmForm onClose={handleCloseModalConfirm} requestId={requestForm.requestId} />
             )}
             {openProgress && <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
