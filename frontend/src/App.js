@@ -92,7 +92,7 @@ function AppContent() {
           <Route path='/exchange-form' element={<ExchangeInfoForm />} />
           <Route path="/user-profile/:userId" element={<UserProfile />} />
           <Route path="/exchange/chat" element={<Chat />} />
-          <Route path="/exchange/exchange-info-detail" element={<ExchangeInfoDetail />} />
+          <Route path="/exchange/exchange-info-detail/:requestId" element={<ExchangeInfoDetail />} />
 
           <Route path="/not-found" element={<Page404 />} />
           <Route path="*" element={<Page404 />} />

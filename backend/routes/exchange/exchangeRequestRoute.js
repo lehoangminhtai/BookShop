@@ -1,7 +1,7 @@
 const express = require('express');
 const { createExchangeRequest, checkExchangeRequest, deleteRequest,
      getExchangeRequestByBookRequested, acceptExchangeRequest, getExchangeRequestsByRequester,
-     cancelExchangeRequest } = require('../../controllers/exchange/exchangeRequestController');
+     cancelExchangeRequest, getExchangeRequestById } = require('../../controllers/exchange/exchangeRequestController');
 
 const router = express.Router();
 
@@ -12,5 +12,6 @@ router.delete('/delete/:bookRequestedId', deleteRequest)
 router.post('/accept', acceptExchangeRequest);
 router.get('/requests/:userId', getExchangeRequestsByRequester);
 router.post('/cancel/:requestId', cancelExchangeRequest);
+router.get('/request/:requestId', getExchangeRequestById);
 
 module.exports = router;

@@ -62,7 +62,7 @@ const PostExchangeDetail = () => {
             console.log(response);
             if (response.data.success) {
                 setBookExchangeDetail(response.data.bookExchange);
-
+                
             }
 
         } catch (error) {
@@ -107,16 +107,15 @@ const PostExchangeDetail = () => {
         }
     }
 
-    useEffect(() => {
-        getBookExchange();
-    }, []);
 
     useEffect(() => {
+        getBookExchange();
         fetchListRequest();
+        checkRequest();
     }, [bookExchangeId])
 
     useEffect(() => {
-        checkRequest();
+        
     }, [user?._id])
 
     const handleSendRequest = () => {
@@ -255,6 +254,10 @@ const PostExchangeDetail = () => {
         setShowModalConfirm(false);
     }
 
+    const handleNavigateToDetail = () =>{
+        navigate(`/exchange/exchange-info-detail/${requestForm.requestId}`)
+    }
+
     return (
         <div className="container mt-4">
 
@@ -353,6 +356,7 @@ const PostExchangeDetail = () => {
                                         <button
                                             type="button"
                                             className="btn btn-warning w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                            onClick={() => handleNavigateToDetail()}
                                         >
                                             Thông tin giao dịch
                                             <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i>

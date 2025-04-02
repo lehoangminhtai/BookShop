@@ -16,3 +16,5 @@ export const acceptExchangeRequest = async (data) => await API.post(`/accept`,da
 export const getRequestsByRequesterSer = async (userId) => API.get(`/requests/${userId}`)
 
 export const cancelExchangeRequest = async (requestId) => API.post(`/cancel/${requestId}`)
+
+export const getRequestByRequestId = async (requestId) => API.get(`/request/${requestId}`)

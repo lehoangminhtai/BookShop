@@ -264,6 +264,21 @@ const cancelExchangeRequest = async (req, res) => {
     }
 };
 
+const getExchangeRequestById = async (req, res) => {
+    try {
+        const { requestId } = req.params;
+
+        const request = await ExchangeRequest.findById(requestId).populate('bookRequestedId').populate('exchangeBookId')
+       if(!request){
+        return  res.status(200).json({success:false});
+       }
+        return res.status(200).json({success:true, data: request});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi lấy yêu cầu trao đổi' });
+    }
+}
+
 module.exports = { createExchangeRequest, checkExchangeRequest, deleteRequest,
      getExchangeRequestByBookRequested, acceptExchangeRequest, getExchangeRequestsByRequester,
-    cancelExchangeRequest };
+    cancelExchangeRequest, getExchangeRequestById };
