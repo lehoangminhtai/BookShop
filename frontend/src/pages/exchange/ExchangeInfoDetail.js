@@ -112,10 +112,23 @@ const ExchangeInfoDetail = (props) => {
                         </div>
                     </div>
 
-
-                    <div className="alert alert-info text-center fw-bold" role="alert">
-                        Trạng thái: Đang trao đổi
+                    <div className={`alert text-center fw-bold d-flex align-items-center justify-content-center gap-2 
+    ${infoForm?.status === 'accepted' ? 'alert-warning text-dark' : 'alert-success text-white'}`}
+                        role="alert"
+                    >
+                        {infoForm?.status === 'accepted' ? (
+                            <>
+                                <i className="bi bi-arrow-repeat text-warning fs-5"></i>
+                                <span>Trạng thái: <span className="badge bg-warning text-dark">Đang trao đổi</span></span>
+                            </>
+                        ) : (
+                            <>
+                                <i className="bi bi-check-circle-fill text-success fs-5"></i>
+                                <span>Trạng thái: <span className="badge bg-success">Đã hoàn thành</span></span>
+                            </>
+                        )}
                     </div>
+
 
                     <div className="mb-3">
                         <label className="form-label text-dark fw-bold">Địa điểm trao đổi</label>
@@ -156,34 +169,34 @@ const ExchangeInfoDetail = (props) => {
                         </div>
                     </div>
                     <div className="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 p-3 rounded shadow bg-light">
-    {/* Chủ sở hữu */}
-    <div className="mb-3 w-100">
-        <label className="form-label fw-bold text-dark">
-            <i className="bi bi-person-fill text-primary me-2"></i> Chủ sở hữu
-        </label>
-        <div className="bg-primary text-white p-3 rounded fw-bold">
-            {infoForm?.fullName_owner}
-        </div>
-        <div className="mt-2 d-flex align-items-center">
-            <i className="bi bi-telephone-fill text-success me-2"></i>
-            <span className="fw-semibold text-dark fst-italic text-decoration-underline">{infoForm?.contactPhone_owner}</span>
-        </div>
-    </div>
+                        {/* Chủ sở hữu */}
+                        <div className="mb-3 w-100">
+                            <label className="form-label fw-bold text-dark">
+                                <i className="bi bi-person-fill text-primary me-2"></i> Chủ sở hữu
+                            </label>
+                            <div className="bg-primary text-white p-3 rounded fw-bold">
+                                {infoForm?.fullName_owner}
+                            </div>
+                            <div className="mt-2 d-flex align-items-center">
+                                <i className="bi bi-telephone-fill text-success me-2"></i>
+                                <span className="fw-semibold text-dark fst-italic ">{infoForm?.contactPhone_owner}</span>
+                            </div>
+                        </div>
 
-    {/* Người yêu cầu */}
-    <div className="mb-3 w-100">
-        <label className="form-label fw-bold text-dark">
-            <i className="bi bi-person-lines-fill text-danger me-2"></i> Người yêu cầu
-        </label>
-        <div className="bg-danger text-white p-3 rounded fw-bold">
-            {infoForm?.fullName_requester}
-        </div>
-        <div className="mt-2 d-flex align-items-center">
-            <i className="bi bi-telephone-fill text-success me-2"></i>
-            <span className="fw-semibold text-dark fst-italic">{infoForm?.contactPhone_requester}</span>
-        </div>
-    </div>
-</div>
+                        {/* Người yêu cầu */}
+                        <div className="mb-3 w-100">
+                            <label className="form-label fw-bold text-dark">
+                                <i className="bi bi-person-lines-fill text-danger me-2"></i> Người yêu cầu
+                            </label>
+                            <div className="bg-danger text-white p-3 rounded fw-bold">
+                                {infoForm?.fullName_requester}
+                            </div>
+                            <div className="mt-2 d-flex align-items-center">
+                                <i className="bi bi-telephone-fill text-success me-2"></i>
+                                <span className="fw-semibold text-dark fst-italic">{infoForm?.contactPhone_requester}</span>
+                            </div>
+                        </div>
+                    </div>
 
 
 
