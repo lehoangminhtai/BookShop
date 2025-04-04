@@ -6,6 +6,8 @@ import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 //context
 import { useStateContext } from "../../../../context/UserContext";
+//formatting date
+import { formatMessageTime } from "../../../../lib/utils";
 
 const ChatContainer = () => {
   const {
@@ -42,56 +44,81 @@ const ChatContainer = () => {
   }
 
   return (
-    <div className="d-flex flex-column flex-grow-1 overflow-auto">
+    <div className="d-flex flex-column  position-relative" style={{ height: "100%" }}>
       <ChatHeader />
 
-      {/* Messages Container */}
-      <div className="flex-grow-1 overflow-auto p-3">
-        {messages.map((message) => (
-          <div
-            key={message._id}
-            className={`d-flex ${message.senderId === user?._id ? "align-self-end text-end" : "align-self-start text-start"}`}
-            ref={messageEndRef}
-          >
-            {/* Avatar */}
-            <div className="me-2">
-              {/* <img
-                src={
-                  message.senderId === user?._id
-                    ? authUser.profilePic || "/avatar.png"
-                    : selectedUser.profilePic || "/avatar.png"
-                }
-                alt="profile pic"
-                className="rounded-circle border"
-                width="40"
-                height="40"
-              /> */}
-            </div>
-
-            {/* Message Content */}
-            <div>
-              <div className="text-muted small">
-                <time>{(message.createdAt)}</time>
-              </div>
-
-              <div className="bg-light p-2 rounded shadow-sm">
-                {message.image && (
+      {/* Khung tin nhắn cuộn được */}
+      <div
+        className="flex-grow-1 navbar-nav-scroll px-3"
+        style={{ marginBottom: "70px" }} // Chừa chỗ cho input
+      >
+        {messages.map((message) => {
+          const isMe = message.senderId === user?._id;
+          return (
+            <div
+              key={message._id}
+              className={`d-flex mb-3 ${isMe ? "justify-content-end" : "justify-content-start"}`}
+              ref={messageEndRef}
+            >
+              {!isMe && (
+                <div className="me-2">
                   <img
-                    src={message.image}
-                    alt="Attachment"
-                    className="img-fluid rounded mb-2"
-                    style={{ maxWidth: "200px" }}
+                    src={selectedUser.image}
+                    alt="profile"
+                    className="rounded-circle border"
+                    width="40"
+                    height="40"
                   />
-                )}
-                {message.text && <p className="mb-0">{message.text}</p>}
+                </div>
+              )}
+
+              <div className={`d-flex flex-column ${isMe ? "align-items-end" : "align-items-start"}`}>
+                <div className="small mb-1">
+                  <time>{formatMessageTime(message.createdAt)}</time>
+                </div>
+
+                <div
+                  className={`p-3 rounded shadow-sm ${isMe ? "bg-primary text-white" : "bg-light text-dark"
+                    }`}
+
+                >
+                  {message.image && (
+                    <img
+                      src={message.image}
+                      alt="Attachment"
+                      className="img-fluid rounded mb-2"
+                      style={{ maxWidth: "200px" }}
+                    />
+                  )}
+                  {message.text && <p className="mb-0">{message.text}</p>}
+                </div>
               </div>
+
+              {isMe && (
+                <div className="ms-2">
+                  <img
+                    src={user.image}
+                    alt="profile"
+                    className="rounded-circle border"
+                    width="40"
+                    height="40"
+                  />
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      <MessageInput />
+      {/* Message Input cố định ở dưới */}
+      <div
+        className="position-absolute bottom-0 start-0 end-0 bg-white shadow-sm"
+        style={{ zIndex: 100 }}
+      >
+        <MessageInput />
+      </div>
     </div>
+
   );
 };
 

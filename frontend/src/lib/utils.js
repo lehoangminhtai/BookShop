@@ -6,3 +6,11 @@ export const formatDate = (date) => {
     const day = String(d.getDate()).padStart(2, '0'); // Thêm số 0 nếu ngày < 10
     return `${year}-${month}-${day}`; // Trả về chuỗi theo định dạng YYYY-MM-DD
   };
+
+  export const formatMessageTime = (date) => {
+    return new Date(date).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  }

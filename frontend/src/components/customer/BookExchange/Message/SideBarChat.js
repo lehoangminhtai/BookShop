@@ -27,8 +27,8 @@ const Sidebar = () => {
   if (isUsersLoading) return <SidebarSkeleton />
 
   return (
-    <aside className="h-100 border-end  transition-all">
-      <div className="border-bottom p-3">
+    <aside className=" border-end  transition-all">
+      <div className="border-bottom">
         <div className="d-flex justify-content-center align-items-center gap-2">
          <i className="fa fa-users" style={{ fontSize: "24px" }}></i>
           <span className="fw-medium d-none d-lg-block">Contacts</span>
@@ -47,7 +47,7 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <div className="overflow-auto py-3 flex-grow-1">
+      <div className="navbar-nav-scroll py-3 flex-grow-1">
         {filteredUsers.map((user) => (
           <button
             key={user._id}

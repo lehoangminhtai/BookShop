@@ -10,7 +10,7 @@ const ChatHeader = () => {
           {/* Avatar */}
           <div className="position-relative">
             <img 
-              src={selectedUser?.image || "/avatar.png"} 
+              src={selectedUser?.image} 
               alt={selectedUser?.fullName} 
               className="rounded-circle" 
               width="40" 

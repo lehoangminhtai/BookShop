@@ -8,10 +8,10 @@ const Chat = () => {
 
   return (
     <div className="shadow d-flex align-items-center justify-content-center">
-      <div className="container py-5">
-        <div className=" w-100" style={{  height: "calc(100vh - 8rem)" }}>
-          <div className="row h-100 g-0">
-            <div className="col-4 bg-white border-end">
+      <div className="container py-4">
+        <div className=" w-100" >
+          <div className="row g-0">
+            <div className="col-4 ">
               <Sidebar />
             </div>
             <div className="col-8 bg-white">
