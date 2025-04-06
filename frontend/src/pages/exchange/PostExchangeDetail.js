@@ -12,9 +12,10 @@ import ListUserRequest from '../../components/customer/BookExchange/ListUserRequ
 import RequestForm from '../../components/customer/BookExchange/RequestForm';
 import EditPostForm from '../../components/customer/BookExchange/EditPostForm';
 import ConfirmDialog from '../../components/customer/BookExchange/ConfirmDialog';
+import ExchangeInfoConfirmForm from '../../components/customer/BookExchange/ExchangeInfoConfirmForm';
 //service
 import { getBookExchangeSer, deleteBookExchange } from '../../services/exchange/bookExchangeService';
-import { checkRequestSer, deleteRequestSer,getExchangeRequestByBookRequested } from '../../services/exchange/exchangeRequestService';
+import { checkRequestSer, deleteRequestSer, getExchangeRequestByBookRequested } from '../../services/exchange/exchangeRequestService';
 
 
 
@@ -40,6 +41,7 @@ const PostExchangeDetail = () => {
 
     const [showModal, setShowModal] = useState(false);
     const [showModalDelete, setShowModalDelete] = useState(false);
+    const [showModalConfirm, setShowModalConfirm] = useState(false);
     const [showRequestForm, setShowRequestForm] = useState(false);
     const [showListRequesterForm, setShowListRequesterForm] = useState(false);
 
@@ -63,7 +65,7 @@ const PostExchangeDetail = () => {
             console.log(response);
             if (response.data.success) {
                 setBookExchangeDetail(response.data.bookExchange);
-                setOwnerBook(response.data.owner);
+                
             }
 
         } catch (error) {
@@ -108,16 +110,15 @@ const PostExchangeDetail = () => {
         }
     }
 
-    useEffect(() => {
-        getBookExchange();
-    }, []);
 
     useEffect(() => {
+        getBookExchange();
         fetchListRequest();
+        checkRequest();
     }, [bookExchangeId])
 
     useEffect(() => {
-        checkRequest();
+        
     }, [user?._id])
 
     const handleSendRequest = () => {
@@ -171,10 +172,10 @@ const PostExchangeDetail = () => {
     }
     const handleCloseModal = () => setShowModal(false);
 
-    const handleShowModalDelete = () =>{
+    const handleShowModalDelete = () => {
         setShowModalDelete(true);
     }
-    const handleCloseModalDelete = () =>{
+    const handleCloseModalDelete = () => {
         setShowModalDelete(false);
     }
 
@@ -240,15 +241,25 @@ const PostExchangeDetail = () => {
         window.location.reload(true)
     }
 
-    const handleOpenListRequest = () =>{
+    const handleOpenListRequest = () => {
         setShowListRequesterForm(true);
     }
 
-    const handleCloseListRequest = () =>{
+    const handleCloseListRequest = () => {
         setShowListRequesterForm(false);
         fetchListRequest();
     }
 
+    const handleShowModalConfirm = () => {
+        setShowModalConfirm(true);
+    }
+    const handleCloseModalConfirm = () => {
+        setShowModalConfirm(false);
+    }
+
+    const handleNavigateToDetail = () =>{
+        navigate(`/exchange/exchange-info-detail/${requestForm.requestId}`)
+    }
 
     return (
         <div className="container mt-4">
@@ -267,10 +278,11 @@ const PostExchangeDetail = () => {
                 {requestForm.bookExchangeMethod !== '' && (
                     <div className="card my-3 shadow">
                         <div className="card-header text-dark fw-bold">
-                            Thông tin yêu cầu trao đổi 
-                            {requestForm.status === 'pending' ? <span className="badge bg-warning text-dark ms-2">Chờ xác nhận</span> : requestForm.status === 'accepted' 
-                            ? <span className="badge bg-success text-white ms-2">Đã chấp nhận</span> : requestForm.status === 'cancelled' 
-                            ? <span className="badge bg-danger text-white ms-2">Đã bị hủy</span> : <span className="badge bg-success text-white ms-2">Đã trao đổi</span>}
+                            Thông tin yêu cầu trao đổi
+                            {requestForm.status === 'pending' ? <span className="badge bg-warning text-dark ms-2">Chờ xác nhận</span> : requestForm.status === 'accepted'
+                                ? <span className="badge bg-success text-white ms-2">Đã chấp nhận</span> : requestForm.status === 'cancelled'
+                                    ? <span className="badge bg-danger text-white ms-2">Đã bị hủy</span> : requestForm.status === 'processing'
+                                    ? <span className="badge bg-primary text-white ms-2">Đang giao dịch</span> : <span className="badge bg-success text-white ms-2">Đã trao đổi</span>}
                         </div>
                         <div className="card-body">
                             {requestForm.bookExchangeMethod === "points" ? (
@@ -306,7 +318,7 @@ const PostExchangeDetail = () => {
                             onClick={() => handleOpenListRequest()}
 
                         >
-                         <h4 className='h4 text-danger me-2'> ({listRequest.length}) </h4>   Danh sách yêu cầu trao đổi <i class=" ms-2 me-2 fa fa-external-link text-light" aria-hidden="true"></i> 
+                            <h4 className='h4 text-danger me-2'> ({listRequest.length}) </h4>   Danh sách yêu cầu trao đổi <i class=" ms-2 me-2 fa fa-external-link text-light" aria-hidden="true"></i>
                         </button>)
                         :
                         (
@@ -321,33 +333,37 @@ const PostExchangeDetail = () => {
                                 </button>
                                 : requestForm.status === 'pending' ?
 
-                                <button
+                                    <button
 
-                                    className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                                    onClick={() => handleDeleteRequest()}
+                                        className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                        onClick={() => handleDeleteRequest()}
 
-                                >
-                                    <i class="fa-solid fa-x me-2"></i>
-                                    Hủy yêu cầu
-                                </button>
+                                    >
+                                        <i class="fa-solid fa-x me-2"></i>
+                                        Hủy yêu cầu
+                                    </button>
 
-                                : requestForm.status === 'accepted' ?
+                                    : requestForm.status === 'accepted' ?
 
-                                <button
+                                        <button
 
-                                className="btn btn-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                                onClick={() => handleDeleteRequest()}
+                                            className="btn btn-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                            onClick={() => handleShowModalConfirm()}
 
-                            >
-                                <i class="fa-solid fa-check me-2"></i>
-                                Xác nhận trao đổi
-                            </button>
+                                        >
+                                            <i class="fa-solid fa-check me-2"></i>
+                                            Xác nhận trao đổi
+                                        </button>
 
-                            : <></>
-
-                            
-
-
+                                        :
+                                        <button
+                                            type="button"
+                                            className="btn btn-warning w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                            onClick={() => handleNavigateToDetail()}
+                                        >
+                                            Thông tin giao dịch
+                                            <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i>
+                                        </button>
                         )}
 
                 </div>
@@ -359,7 +375,7 @@ const PostExchangeDetail = () => {
 
                             className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap me-2"
                             onClick={() => handleShowModal()}
-                            disabled = {bookExchangeDetail?.status !== 'available'}
+                            disabled={bookExchangeDetail?.status !== 'available'}
 
                         >
                             Chỉnh sửa thông tin
@@ -368,7 +384,7 @@ const PostExchangeDetail = () => {
 
                             className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
                             onClick={() => handleShowModalDelete()}
-                            disabled = {bookExchangeDetail?.status !== 'available'}
+                            disabled={bookExchangeDetail?.status !== 'available'}
 
                         >
                             Xóa bài đăng <i class="fa-solid fa-trash text-light ms-2"></i>
@@ -424,8 +440,8 @@ const PostExchangeDetail = () => {
                     </div>
                 </div>
                 <div className="user-section d-flex justify-content-between align-items-center mt-5">
-                    <Link to={user?._id === bookExchangeDetail?.ownerId ? '/my-post-exchange' : `/user-profile/${bookExchangeDetail?.ownerId?._id}`} 
-                    className="user-profile d-flex justify-content-center text-center align-items-center text-decoration-none">
+                    <Link to={user?._id === bookExchangeDetail?.ownerId ? '/my-post-exchange' : `/user-profile/${bookExchangeDetail?.ownerId?._id}`}
+                        className="user-profile d-flex justify-content-center text-center align-items-center text-decoration-none">
                         <img alt='user-image' className='rounded-circle me-2 border' style={{ width: '50px', height: '50px' }}
                             src={bookExchangeDetail?.ownerId?.image}
                         />
@@ -445,13 +461,16 @@ const PostExchangeDetail = () => {
                 <EditPostForm handleCloseModal={handleCloseModal} exchangeBook={bookExchangeDetail} />
             )}
             {showModalDelete && (
-                <ConfirmDialog handleClose={handleCloseModalDelete} content={'Xác nhận xóa bài đăng'} onConfirm={handleDeletePost}/>
+                <ConfirmDialog handleClose={handleCloseModalDelete} content={'Xác nhận xóa bài đăng'} onConfirm={handleDeletePost} />
             )}
             {showRequestForm && (
                 <RequestForm handleCloseModal={handleCloseRequestForm} checkRequest={checkRequest} bookExchangeId={bookExchangeId} />
             )}
             {showListRequesterForm && (
-                <ListUserRequest handleCloseListRequest={handleCloseListRequest} bookRequestedId={bookExchangeId}/>
+                <ListUserRequest handleCloseListRequest={handleCloseListRequest} bookRequestedId={bookExchangeId} />
+            )}
+            {showModalConfirm && (
+                <ExchangeInfoConfirmForm onClose={handleCloseModalConfirm} requestId={requestForm.requestId} />
             )}
             {openProgress && <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}

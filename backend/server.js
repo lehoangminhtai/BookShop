@@ -6,7 +6,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 
 const mongoose = require('mongoose')
-const app = express()
+const {app, server} = require('./utils/socket');
 const bookRoutes = require('./routes/bookroute');
 const categoryBookRoutes = require('./routes/categoryBookRoute');
 const userRoutes = require('./routes/userRoute');
@@ -28,11 +28,12 @@ const logRoutes = require('./routes/logRoute');
 const bookExchangeRoutes = require('./routes/exchange/bookExchangeRoute');
 const exchangeRequestRoutes = require('./routes/exchange/exchangeRequestRoute');
 const exchangeInforRoutes = require('./routes/exchange/exchangeInforRoute');
+const messageRoutes = require('./routes/exchange/messageRoute');
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
-        app.listen(process.env.PORT, () => {
+        server.listen(process.env.PORT, () => {
             console.log('listen on port ', process.env.PORT)
         })
     })
@@ -70,6 +71,7 @@ app.use('/api/logs', logRoutes);
 app.use('/api/book-exchange', bookExchangeRoutes);
 app.use('/api/exchange-requests', exchangeRequestRoutes);
 app.use('/api/exchange-infor', exchangeInforRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);
