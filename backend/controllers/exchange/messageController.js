@@ -2,15 +2,59 @@ const User = require("../../models/userModel");
 const Message = require("../../models/exchange/messageModel");
 
 const cloudinary = require("../../utils/cloudinary");
-const {getReceiverSocketId, io} = require("../../utils/socket");
-const { stack } = require("../../routes/bookroute");
+const { getReceiverSocketId, io } = require("../../utils/socket");
 
+const mongoose = require("mongoose");
 const getUsersForSidebar = async (req, res) => {
   try {
-    const {userId} = req.params;
-    const filteredUsers = await User.find().select("-password");
+    const { userId } = req.params;
 
-    res.status(200).json({success: true,data: filteredUsers});
+    const messages = await Message.aggregate([
+      {
+          $match: {
+              $or: [
+                  { senderId: new mongoose.Types.ObjectId(userId) },
+                  { receiverId: new mongoose.Types.ObjectId(userId) }
+              ]
+          }
+      },
+      {
+          $project: {
+              otherUserId: {
+                  $cond: [
+                      { $eq: ["$senderId", new mongoose.Types.ObjectId(userId)] },
+                      "$receiverId",
+                      "$senderId"
+                  ]
+              }
+          }
+      },
+      {
+          $group: {
+              _id: "$otherUserId"
+          }
+      },
+      {
+          $lookup: {
+              from: 'users',
+              localField: '_id',
+              foreignField: '_id',
+              as: 'userDetails'
+          }
+      },
+      {
+          $unwind: "$userDetails"
+      },
+      {
+          $project: {
+              _id: "$userDetails._id",
+              fullName: "$userDetails.fullName",
+              image: "$userDetails.image",
+          }
+      }
+  ]);
+
+  res.status(200).json({success: true, data: messages});
   } catch (error) {
     console.error("Error in getUsersForSidebar: ", error.message);
     res.status(500).json({ error: "Internal server error" });
@@ -19,8 +63,8 @@ const getUsersForSidebar = async (req, res) => {
 
 const getMessages = async (req, res) => {
   try {
-    const { senderId,receiverId } = req.params;
-    
+    const { senderId, receiverId } = req.params;
+
 
     const messages = await Message.find({
       $or: [
@@ -29,7 +73,7 @@ const getMessages = async (req, res) => {
       ],
     });
 
-    res.status(200).json({success:true,data: messages});
+    res.status(200).json({ success: true, data: messages });
   } catch (error) {
     console.log("Error in getMessages controller: ", error.message);
     res.status(500).json({ error: "Internal server error" });
@@ -42,7 +86,7 @@ const sendMessage = async (req, res) => {
     const { receiverId, senderId } = req.params;
 
     if (!text && !image) {
-      return res.status(200).json({success: false, error: "Message text or image is required" });
+      return res.status(200).json({ success: false, error: "Message text or image is required" });
     }
     let imageUrl;
     if (image) {
@@ -65,7 +109,7 @@ const sendMessage = async (req, res) => {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
-    res.status(201).json({success: true,data: newMessage});
+    res.status(201).json({ success: true, data: newMessage });
   } catch (error) {
     console.log("Error in sendMessage controller: ", error.message);
     res.status(500).json({ error: "Internal server error" });

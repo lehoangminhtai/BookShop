@@ -16,7 +16,8 @@ import ExchangeInfoConfirmForm from '../../components/customer/BookExchange/Exch
 //service
 import { getBookExchangeSer, deleteBookExchange } from '../../services/exchange/bookExchangeService';
 import { checkRequestSer, deleteRequestSer, getExchangeRequestByBookRequested } from '../../services/exchange/exchangeRequestService';
-
+//store
+import { useChatStore } from '../../store/useChatStore';
 
 
 const PostExchangeDetail = () => {
@@ -44,6 +45,9 @@ const PostExchangeDetail = () => {
     const [showModalConfirm, setShowModalConfirm] = useState(false);
     const [showRequestForm, setShowRequestForm] = useState(false);
     const [showListRequesterForm, setShowListRequesterForm] = useState(false);
+
+    //chat
+    const {setSelectedUser} = useChatStore();
 
     const navigate = useNavigate();
     const exchangeButtonRef = useRef(null);
@@ -258,6 +262,15 @@ const PostExchangeDetail = () => {
         navigate(`/exchange/exchange-info-detail/${requestForm.requestId}`)
     }
 
+    const handleClickChatButton = () => {
+        if (user) {
+            setSelectedUser(bookExchangeDetail?.ownerId);
+            navigate(`/exchange/chat`);
+        } else {
+            navigate('/auth?redirect=/exchange-post-detail/${bookExchangeId}`, { replace: true });');
+        }
+    }
+
     return (
         <div className="container mt-4">
 
@@ -444,7 +457,10 @@ const PostExchangeDetail = () => {
                         />
                         <span className='text-dark fw-bold'>{bookExchangeDetail?.ownerId?.fullName}</span>
                     </Link>
-                    <button className='btn btn-primary'><span className='me-2'>Trao đổi</span>
+                    <button className='btn btn-primary'
+                        onClick={() => handleClickChatButton()}
+                        disabled={bookExchangeDetail?.status !== 'available'}
+                    ><span className='me-2'>Trao đổi</span>
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>

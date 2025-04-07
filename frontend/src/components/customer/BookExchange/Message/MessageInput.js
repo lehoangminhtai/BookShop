@@ -1,15 +1,26 @@
 import { useRef, useState } from "react";
 import { useChatStore } from "../../../../store/useChatStore";
 import { toast } from "react-toastify";
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 //context
 import { useStateContext } from "../../../../context/UserContext";
 
 const MessageInput = () => {
-  const {user} = useStateContext();
+  const { user } = useStateContext();
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
   const { sendMessage } = useChatStore();
+
+  const [openProgress, setOpenProgress] = useState(false);
+  const handleCloseProgress = () => {
+    setOpenProgress(false);
+  };
+  const handleOpenProgress = () => {
+    setOpenProgress(true);
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -33,9 +44,9 @@ const MessageInput = () => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
-
+    handleOpenProgress();
     try {
-      await sendMessage(user,{
+      await sendMessage(user, {
         text: text.trim(),
         image: imagePreview,
       });
@@ -46,10 +57,13 @@ const MessageInput = () => {
     } catch (error) {
       console.error("Failed to send message:", error);
     }
+    finally {
+      handleCloseProgress();
+    }
   };
 
   return (
-    <div className="p-3 border-top bg-white">
+    <div className=" bg-white">
       {/* Image Preview */}
       {imagePreview && (
         <div className="mb-2 d-flex align-items-center">
@@ -66,7 +80,7 @@ const MessageInput = () => {
               style={{ width: "24px", height: "24px", lineHeight: "1" }}
               type="button"
             >
-                <i class="fa fa-times"  aria-hidden="true" style={{fontSize:"12px"}}></i>
+              <i class="fa fa-times" aria-hidden="true" style={{ fontSize: "12px" }}></i>
             </button>
           </div>
         </div>
@@ -108,6 +122,18 @@ const MessageInput = () => {
           <i class="fa fa-paper-plane" aria-hidden="true"></i>
         </button>
       </form>
+      {openProgress && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={openProgress}
+        >
+          <Box display="flex" flexDirection="column" alignItems="center">
+            <CircularProgress color="inherit" />
+            <span style={{ marginTop: 12, fontSize: 16 }}>Đang gửi...</span>
+          </Box>
+        </Backdrop>
+      )}
+
     </div>
   );
 };

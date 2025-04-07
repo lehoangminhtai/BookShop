@@ -4,7 +4,7 @@ import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { useStateContext } from "../../../../context/UserContext";
 
 const Sidebar = () => {
-  const {connectSocket, getUsers, users, selectedUser, setSelectedUser, isUsersLoading, onlineUsers } = useChatStore();
+  const { connectSocket, getUsers, users, selectedUser, setSelectedUser, isUsersLoading, onlineUsers } = useChatStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const { user } = useStateContext();
 
@@ -28,11 +28,7 @@ const Sidebar = () => {
 
   return (
     <aside className=" border-end  transition-all">
-      <div className="border-bottom">
-        <div className="d-flex justify-content-center align-items-center gap-2">
-         <i className="fa fa-users" style={{ fontSize: "24px" }}></i>
-          <span className="fw-medium d-none d-lg-block">Contacts</span>
-        </div>
+      <div className="border-bottom pb-2">
         <div className="mt-3 d-none d-lg-flex align-items-center gap-2">
           <label className="cursor-pointer d-flex align-items-center gap-2">
             <input
@@ -41,9 +37,9 @@ const Sidebar = () => {
               onChange={(e) => setShowOnlineOnly(e.target.checked)}
               className="form-check-input"
             />
-            <span className="small">Show online only</span>
+            <span className="small text-dark">Online</span>
           </label>
-          <span className="text-muted small">({onlineUsers.length - 1} online)</span>
+          <span className="text-muted small">({onlineUsers.length - 1})</span>
         </div>
       </div>
 

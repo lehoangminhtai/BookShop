@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useStateContext } from '../../../context/UserContext';
 import { toast, ToastContainer } from 'react-toastify';
-import { Link } from 'react-router-dom';
 import ExchangeInforForm from '../../../pages/exchange/ExchangeInfoForm';
+import { useNavigate } from 'react-router-dom';
 //service 
 import { getExchangeRequestByBookRequested, deleteRequestSer, acceptExchangeRequest, cancelExchangeRequest } from '../../../services/exchange/exchangeRequestService';
+//store
+import { useChatStore } from '../../../store/useChatStore';
 
 const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
 
@@ -17,6 +19,9 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
 
     const [startExchangeRequestId, setStartExchangeRequestId] = useState(null);
 
+    const { setSelectedUser } = useChatStore();
+    const navigate = useNavigate();
+
     const handleStartExchange = (requestId) => {
         setStartExchangeRequestId(requestId);
     };
@@ -25,7 +30,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
         try {
             if (bookRequestedId) {
                 const response = await getExchangeRequestByBookRequested(bookRequestedId);
-console.log(response)
+                console.log(response)
                 if (response.data.success) {
                     const result = response.data.data;
                     setLisRequest(Array.isArray(result) ? result : [result]);
@@ -120,6 +125,10 @@ console.log(response)
         }
     }
 
+    const handleClickChatButton = (requester) => {
+        setSelectedUser(requester);
+        navigate(`/exchange/chat`);
+    }
 
     return (
         <div className="modal show fade" tabIndex="-1" style={{ display: "block" }}>
@@ -150,11 +159,11 @@ console.log(response)
                                                             {request?.status === 'pending'
                                                                 ? (<span className='text-start fw-bold text-light bg-secondary rounded pe-1 ps-1'>Đang đợi</span>) : (request?.status === 'accepted'
                                                                     ? <span className='text-start fw-bold text-light bg-success rounded pe-1 ps-1'>Đã chấp nhận</span> :
-                                                                  (request?.status === 'processing')
-                                                                    ? <span className='text-start fw-bold text-light bg-primary rounded pe-1 ps-1'>Đang giao dịch</span> :
-                                                                  (request?.status === 'completed')
-                                                                    ? <span className='text-start fw-bold text-light bg-success rounded pe-1 ps-1'>Đã trao đổi</span> :
-                                                                    <span className='text-start fw-bold text-light bg-danger rounded pe-1 ps-1'>Đã hủy</span>)
+                                                                    (request?.status === 'processing')
+                                                                        ? <span className='text-start fw-bold text-light bg-primary rounded pe-1 ps-1'>Đang giao dịch</span> :
+                                                                        (request?.status === 'completed')
+                                                                            ? <span className='text-start fw-bold text-light bg-success rounded pe-1 ps-1'>Đã trao đổi</span> :
+                                                                            <span className='text-start fw-bold text-light bg-danger rounded pe-1 ps-1'>Đã hủy</span>)
                                                             }
                                                         </div>
                                                     </div>
@@ -195,6 +204,7 @@ console.log(response)
                                                             <button
                                                                 type="button"
                                                                 className="btn btn-primary d-flex align-items-center justify-content-center"
+                                                                onClick={() => handleClickChatButton(request.requesterId)}
                                                             >
                                                                 Nhắn tin
                                                                 <i class="ms-1 fa fa-paper-plane" aria-hidden="true"></i>
@@ -204,7 +214,7 @@ console.log(response)
 
                                                         </div>
                                                     )}
-                                                     {request?.status === 'processing' && (
+                                                    {request?.status === 'processing' && (
                                                         <div className="d-flex gap-1 me-2">
 
                                                             <button
@@ -212,11 +222,12 @@ console.log(response)
                                                                 className="btn btn-outline-success d-flex align-items-center justify-content-center"
                                                             >
                                                                 Thông tin giao dịch
-                                                                <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i> 
+                                                                <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i>
                                                             </button>
                                                             <button
                                                                 type="button"
                                                                 className="btn btn-primary d-flex align-items-center justify-content-center"
+                                                                onClick={() => handleClickChatButton(request.requesterId)}
                                                             >
                                                                 Nhắn tin
                                                                 <i class="ms-1 fa fa-paper-plane" aria-hidden="true"></i>
@@ -311,14 +322,14 @@ console.log(response)
                         </button>
 
                     </div> */}
-                      {/* Hiển thị form nếu đã chọn requestId */}
-                      {startExchangeRequestId && (
-                                                                <ExchangeInforForm requestId={startExchangeRequestId} onClose={() => setStartExchangeRequestId(null)} />
-                                                            )}
+                    {/* Hiển thị form nếu đã chọn requestId */}
+                    {startExchangeRequestId && (
+                        <ExchangeInforForm requestId={startExchangeRequestId} onClose={() => setStartExchangeRequestId(null)} />
+                    )}
                 </div>
-                
+
             </div>
-            
+
             <ToastContainer />
         </div>
     );
