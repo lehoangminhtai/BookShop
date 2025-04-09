@@ -73,13 +73,7 @@ app.use('/api/exchange-requests', exchangeRequestRoutes);
 app.use('/api/exchange-infor', exchangeInforRoutes);
 app.use('/api/messages', messageRoutes);
 
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-  });
-app.use(express.static(path.join(__dirname, 'build')));
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-  });
+
 app.use((req, res, next) => {
     console.log(req.path, req.method);
     next();
