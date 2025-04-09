@@ -6,6 +6,8 @@ import { ToastContainer } from 'react-toastify';
 import AdSidebar from '../../components/admin/AdSidebar';
 import BookForm from '../../components/BookForm';
 import BookFormEdit from '../../components/admin/AdBookFormEdit';
+//service
+import { serverUrl } from '../../services/config';
 
 const AdBook = () => {
     const [books, setBooks] = useState([]);
@@ -21,7 +23,7 @@ const AdBook = () => {
 
     const fetchBooks = async () => {
         try {
-            const response = await fetch(`/api/books?page=${currentPage}&limit=${limit}`);
+            const response = await fetch(`${serverUrl}/api/books?page=${currentPage}&limit=${limit}`);
             const data = await response.json();
             if (response.ok) {
                 setBooks(data.data); // Mảng sách
@@ -50,7 +52,7 @@ const AdBook = () => {
     }, [showModal]);
 
     const handleDelete = async (bookId) => {
-        const response = await fetch(`/api/books/${bookId}`, { method: 'DELETE' });
+        const response = await fetch(`${serverUrl}/api/books/${bookId}`, { method: 'DELETE' });
         if (response.ok) {
             setBooks(books.filter(book => book._id !== bookId));
         }

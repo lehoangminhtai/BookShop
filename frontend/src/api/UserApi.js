@@ -1,7 +1,7 @@
 import axios from 'axios'
+import { serverUrl } from '../services/config'
 
-
-const API = axios.create({ baseURL: 'http://localhost:4000' })
+const API = axios.create({ baseURL: `${serverUrl}` })
 
 
 export const sendRegisterOTP = (email) => API.post('/api/admin/users/send-register-otp', { email })
