@@ -6,6 +6,8 @@ import { addItemToCart } from '../../services/cartService';
 import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
 import '../../css/user/ProductDetail.scss'
+//service
+import { serverUrl } from '../../services/config';
 
 import BookReviews from '../../components/BookReviews';
 
@@ -25,7 +27,7 @@ const ProductDetail = () => {
 
     useEffect(() => {
         const fetchBookSaleDetails = async () => {
-            const response = await fetch(`http://localhost:4000/api/bookSales/${productId}`);
+            const response = await fetch(`${serverUrl}/api/bookSales/${productId}`);
             const data = await response.json();
 
             if (response.ok) {

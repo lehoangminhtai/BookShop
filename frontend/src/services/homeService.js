@@ -1,6 +1,7 @@
 import axios from "axios"
+import { serverUrl } from "./config"
 
-const API = axios.create({ baseURL: 'http://localhost:4000/api' })
+const API = axios.create({ baseURL: `${serverUrl}/api` })
 
 export const getTopCategoryBooks = async () =>{
    

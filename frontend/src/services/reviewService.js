@@ -1,6 +1,8 @@
 import axios from "axios";
+//service
+import { serverUrl } from "./config";
 
-const API = axios.create({ baseURL: 'http://localhost:4000/api/reviews' });
+const API = axios.create({ baseURL: `${serverUrl}/api/reviews` });
 
 export const createReview = async (reviewData) => await API.post('/', reviewData);
 

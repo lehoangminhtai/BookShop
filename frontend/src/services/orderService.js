@@ -1,8 +1,10 @@
 import axios from "axios"
 import Cookie from 'js-cookie'
+//service
+import { serverUrl } from "./config"
 
 
-const API = axios.create({ baseURL: 'http://localhost:4000/api/orders' })
+const API = axios.create({ baseURL: `${serverUrl}/api/orders`})
 API.interceptors.request.use((req) => {
     const profile = JSON.parse(Cookie.get('profile'))                           // profile cookie get saved in browser during login
     if (profile) {

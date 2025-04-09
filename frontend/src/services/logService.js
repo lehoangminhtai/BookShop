@@ -1,6 +1,8 @@
 import axios from "axios";
+//service
+import { serverUrl } from "./config";
 
-const API = axios.create({ baseURL: 'http://localhost:4000/api/logs' });
+const API = axios.create({ baseURL: `${serverUrl}/api/logs` });
 
 export const getLogs = async (page = 1, limit = 10) => {
     try {
