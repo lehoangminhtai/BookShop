@@ -48,7 +48,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
 }));
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin:[ 'http://localhost:3000', 'https://bookshop-vn.onrender.com'] }));
 app.use('/api/books', bookRoutes);
 app.use('/api/categoryBooks', categoryBookRoutes);
 app.use('/api/admin/users', userRoutes);
