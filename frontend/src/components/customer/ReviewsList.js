@@ -3,6 +3,8 @@ import axios from 'axios';
 import CustomerSidebar from './CustomerSidebar';
 import { useStateContext } from '../../context/UserContext';
 
+import { serverUrl } from '../../services/config';
+
 const ReviewsList = () => {
     const { user } = useStateContext(); // Lấy thông tin user từ context
 
@@ -14,7 +16,7 @@ const ReviewsList = () => {
         if (user && user._id) { // Kiểm tra nếu user tồn tại và có _id
             const fetchReviews = async () => {
                 try {
-                    const response = await axios.get(`/api/reviews/account/${user._id}`);
+                    const response = await axios.get(`${serverUrl}/api/reviews/account/${user._id}`);
                     setReviews(response.data.reviews);
                 } catch (err) {
                     setError(err.response?.data?.message || 'Không thể lấy danh sách đánh giá');

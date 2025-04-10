@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { serverUrl } from '../services/config';
 
 const BookReviews = ({ bookId }) => {
   const [reviewsData, setReviewsData] = useState({
@@ -11,7 +12,7 @@ const BookReviews = ({ bookId }) => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const { data } = await axios.get(`/api/reviews/${bookId}`);
+        const { data } = await axios.get(`${serverUrl}/api/reviews/${bookId}`);
         setReviewsData(data);
       } catch (error) {
         console.error('Lỗi khi tải đánh giá:', error);
