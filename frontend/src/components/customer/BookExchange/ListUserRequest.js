@@ -25,7 +25,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
         try {
             if (bookRequestedId) {
                 const response = await getExchangeRequestByBookRequested(bookRequestedId);
-console.log(response)
+                console.log(response)
                 if (response.data.success) {
                     const result = response.data.data;
                     setLisRequest(Array.isArray(result) ? result : [result]);
@@ -150,11 +150,11 @@ console.log(response)
                                                             {request?.status === 'pending'
                                                                 ? (<span className='text-start fw-bold text-light bg-secondary rounded pe-1 ps-1'>Đang đợi</span>) : (request?.status === 'accepted'
                                                                     ? <span className='text-start fw-bold text-light bg-success rounded pe-1 ps-1'>Đã chấp nhận</span> :
-                                                                  (request?.status === 'processing')
-                                                                    ? <span className='text-start fw-bold text-light bg-primary rounded pe-1 ps-1'>Đang giao dịch</span> :
-                                                                  (request?.status === 'completed')
-                                                                    ? <span className='text-start fw-bold text-light bg-success rounded pe-1 ps-1'>Đã trao đổi</span> :
-                                                                    <span className='text-start fw-bold text-light bg-danger rounded pe-1 ps-1'>Đã hủy</span>)
+                                                                    (request?.status === 'processing')
+                                                                        ? <span className='text-start fw-bold text-light bg-primary rounded pe-1 ps-1'>Đang giao dịch</span> :
+                                                                        (request?.status === 'completed')
+                                                                            ? <span className='text-start fw-bold text-light bg-success rounded pe-1 ps-1'>Đã trao đổi</span> :
+                                                                            <span className='text-start fw-bold text-light bg-danger rounded pe-1 ps-1'>Đã hủy</span>)
                                                             }
                                                         </div>
                                                     </div>
@@ -204,7 +204,7 @@ console.log(response)
 
                                                         </div>
                                                     )}
-                                                     {request?.status === 'processing' && (
+                                                    {request?.status === 'processing' && (
                                                         <div className="d-flex gap-1 me-2">
 
                                                             <button
@@ -212,7 +212,7 @@ console.log(response)
                                                                 className="btn btn-outline-success d-flex align-items-center justify-content-center"
                                                             >
                                                                 Thông tin giao dịch
-                                                                <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i> 
+                                                                <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i>
                                                             </button>
                                                             <button
                                                                 type="button"
@@ -311,14 +311,14 @@ console.log(response)
                         </button>
 
                     </div> */}
-                      {/* Hiển thị form nếu đã chọn requestId */}
-                      {startExchangeRequestId && (
-                                                                <ExchangeInforForm requestId={startExchangeRequestId} onClose={() => setStartExchangeRequestId(null)} />
-                                                            )}
+                    {/* Hiển thị form nếu đã chọn requestId */}
+                    {startExchangeRequestId && (
+                        <ExchangeInforForm requestId={startExchangeRequestId} onClose={() => setStartExchangeRequestId(null)} />
+                    )}
                 </div>
-                
+
             </div>
-            
+
             <ToastContainer />
         </div>
     );

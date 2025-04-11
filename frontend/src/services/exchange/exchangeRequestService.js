@@ -17,4 +17,8 @@ export const getRequestsByRequesterSer = async (userId) => API.get(`/requests/${
 
 export const cancelExchangeRequest = async (requestId) => API.post(`/cancel/${requestId}`)
 
-export const getRequestByRequestId = async (requestId) => API.get(`/request/${requestId}`)
+export const getRequestByRequestId = async (requestId) => API.get(`/request/${requestId}`) 
+
+export const getExchangeRequestsByOwnerBook = async (userId) => API.get(`/requests/owner/${userId}`)
+
+export const getExchangeRequestsByUserId = async (userId) => API.get(`/requests/user/${userId}`)

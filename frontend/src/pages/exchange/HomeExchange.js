@@ -120,7 +120,7 @@ const HomeExchange = () => {
     const handlePageChange = (event, value) => {
         fetchExchangeBooks(value);
     };
-    
+
 
     return (
         <div >
@@ -292,9 +292,9 @@ const HomeExchange = () => {
                                     <Pagination
                                         count={totalPages}
                                         page={currentPage}
-                                       onChange={handlePageChange}
+                                        onChange={handlePageChange}
                                         size="large"
-                                       
+
                                     />
                                 </div>
                             </div>
@@ -330,10 +330,12 @@ const HomeExchange = () => {
                                         </div>
                                     </Link>
                                     <hr />
-                                    <div className="option-exchange mb-2">
-                                        <i className="fa fa-history me-2"></i>
-                                        <span className="fs-6">Lịch sử giao dịch</span>
-                                    </div>
+                                    <Link to='/my-exchange'>
+                                        <div className="option-exchange mb-2">
+                                            <i className="fa fa-history me-2"></i>
+                                            <span className="fs-6">Giao dịch của tôi</span>
+                                        </div>
+                                    </Link>
                                     <hr />
                                     <div className="option-exchange mb-2">
                                         <i className="fa fa-star me-2"></i>
