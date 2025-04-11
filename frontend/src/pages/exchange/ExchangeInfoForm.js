@@ -9,7 +9,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
 
     const [exchangeInfor, setExchangeInfor] = useState(null);
     const [formData, setFormData] = useState({
-        fullName_owner: '',  
+        fullName_owner: '',
         transactionLocation: '',
         transactionDate: '',
         transactionTime: '',
@@ -41,7 +41,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
     useEffect(() => {
         if (exchangeInfor) {
             setFormData({
-                fullName_owner: exchangeInfor.fullName_owner || '',  
+                fullName_owner: exchangeInfor.fullName_owner || '',
                 transactionLocation: exchangeInfor.transactionLocation || '',
                 transactionDate: formatDate(exchangeInfor.transactionDate) || '',
                 transactionTime: exchangeInfor.transactionTime || '',
@@ -51,7 +51,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                 status: exchangeInfor.status || 'pending',
             });
         }
-       
+
     }, [exchangeInfor]);
 
     useEffect(() => {
@@ -93,60 +93,68 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
     };
 
     return (
-        <div className="container mt-4">
-            <div className="card shadow-lg p-4">
-                <div className="modal-header">
-                    <h2 className="text-center text-primary">Thông tin trao đổi</h2>
-                    <button type="button" className="btn-close" onClick={onClose}></button>
+        <div className="modal show fade" tabIndex="-1" style={{ display: "block" }}>
+            <div className="modal-dialog modal-lg">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <h5 className="text-center text-primary">Điền thông tin trao đổi</h5>
+                        <button type="button" className="btn-close" onClick={onClose}></button>
+                    </div>
+                    {message && <div className="alert alert-info text-center">{message}</div>}
+                    <div className="modal-body">
+                        <div className="container mt-4">
+                            <div className="card shadow-lg p-4">
+                                <form onSubmit={handleSubmit}>
+                                    <div className="mb-3">
+                                        <label className="form-label text-dark">Họ và Tên:</label>
+                                        <input type="text" className="form-control" name="fullName_owner" value={formData.fullName_owner} onChange={handleChange} required />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label text-dark">Địa điểm giao dịch:</label>
+                                        <input type="text" className="form-control" name="transactionLocation" value={formData.transactionLocation} onChange={handleChange} required />
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label text-dark">Ngày giao dịch:</label>
+                                            <input type="date" className="form-control" name="transactionDate" value={formData.transactionDate} onChange={handleChange} required />
+                                        </div>
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label text-dark">Thời gian giao dịch:</label>
+                                            <input type="time" className="form-control" name="transactionTime" value={formData.transactionTime} onChange={handleChange} required />
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label text-dark">Phương thức giao nhận:</label>
+                                        <select className="form-select" name="deliveryMethod" value={formData.deliveryMethod} onChange={handleChange} required>
+                                            <option value="direct">Giao trực tiếp</option>
+                                            <option value="post-office">Qua bưu điện</option>
+                                            <option value="shipping">Qua shipper</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label text-dark">Số điện thoại liên hệ:</label>
+                                        <input type="text" className="form-control" name="contactPhone_owner" value={formData.contactPhone_owner} onChange={handleChange} required />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label text-dark">Ghi chú:</label>
+                                        <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange}></textarea>
+                                    </div>
+
+                                    <div className="text-center">
+                                        <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                                            {loading ? 'Đang xử lý...' : isUpdate ? 'Cập nhật giao dịch' : 'Tạo giao dịch'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                {message && <div className="alert alert-info text-center">{message}</div>}
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label className="form-label">Họ và Tên:</label>
-                        <input type="text" className="form-control" name="fullName_owner" value={formData.fullName_owner} onChange={handleChange} required />
-                    </div>
-
-                    <div className="mb-3">
-                        <label className="form-label">Địa điểm giao dịch:</label>
-                        <input type="text" className="form-control" name="transactionLocation" value={formData.transactionLocation} onChange={handleChange} required />
-                    </div>
-
-                    <div className="row">
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label">Ngày giao dịch:</label>
-                            <input type="date" className="form-control" name="transactionDate" value={formData.transactionDate} onChange={handleChange} required />
-                        </div>
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label">Thời gian giao dịch:</label>
-                            <input type="time" className="form-control" name="transactionTime" value={formData.transactionTime} onChange={handleChange} required />
-                        </div>
-                    </div>
-
-                    <div className="mb-3">
-                        <label className="form-label">Phương thức giao nhận:</label>
-                        <select className="form-select" name="deliveryMethod" value={formData.deliveryMethod} onChange={handleChange} required>
-                            <option value="direct">Giao trực tiếp</option>
-                            <option value="post-office">Qua bưu điện</option>
-                            <option value="shipping">Qua shipper</option>
-                        </select>
-                    </div>
-
-                    <div className="mb-3">
-                        <label className="form-label">Số điện thoại liên hệ:</label>
-                        <input type="text" className="form-control" name="contactPhone_owner" value={formData.contactPhone_owner} onChange={handleChange} required />
-                    </div>
-
-                    <div className="mb-3">
-                        <label className="form-label">Ghi chú:</label>
-                        <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange}></textarea>
-                    </div>
-
-                    <div className="text-center">
-                        <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-                            {loading ? 'Đang xử lý...' : isUpdate ? 'Cập nhật giao dịch' : 'Tạo giao dịch'}
-                        </button>
-                    </div>
-                </form>
             </div>
             <ToastContainer />
         </div>
