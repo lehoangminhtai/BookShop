@@ -4,12 +4,25 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import React, { useRef } from 'react';
+
+import { ToastContainer } from 'react-toastify';
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import CheckIcon from '@mui/icons-material/Check';
 
 //service
 import { getRequestByRequestId } from '../../services/exchange/exchangeRequestService';
 import { getExchangeInforSer } from '../../services/exchange/exchangeInforService';
 //format
 import { formatDate } from '../../lib/utils';
+//component
+import ConfirmDialog from '../../components/customer/BookExchange/ConfirmDialog';
+import ReportExchangeForm from '../../components/customer/BookExchange/ReportExchangeForm';
 
 const ExchangeInfoDetail = (props) => {
     const { requestId } = useParams();
@@ -23,7 +36,18 @@ const ExchangeInfoDetail = (props) => {
     ];
 
     const [request, setRequest] = useState(null);
-    const [infoForm, setInfoForm] = useState(null)
+    const [infoForm, setInfoForm] = useState(null);
+
+    const [openConfirm, setOpenConfirm] = useState(false);
+    const [openReport, setOpenReport] = useState(false);
+
+    //Notify
+
+    const [open, setOpen] = useState(true);
+
+    const handleClose = () => {
+        setOpen(false);
+    };
 
     const getRequestById = async () => {
         try {
@@ -34,17 +58,14 @@ const ExchangeInfoDetail = (props) => {
                 }
             }
         } catch (error) {
-
         }
     }
     const getExchangeInfoByRequestId = async () => {
         try {
             if (requestId) {
                 const res = await getExchangeInforSer(requestId);
-
                 if (res.success) {
                     setInfoForm(res.exchangeInfor);
-
                 }
             }
         } catch (error) {
@@ -57,8 +78,53 @@ const ExchangeInfoDetail = (props) => {
         getExchangeInfoByRequestId();
     }, [requestId])
 
+    const creditA = request?.bookRequestedId?.creditPoints || 0;
+    const creditB = request?.exchangeBookId?.creditPoints || 0;
+
+    const creditDiff = Math.abs(creditA - creditB);
+
+    const handleCloseConfirm = () => {
+        setOpenConfirm(false);
+    }
+    const handleOpenConfirm = () => {
+        setOpenConfirm(true);
+    }
+    const handleCloseReport = () => {
+        setOpenReport(false);
+    }
+    const handleOpenReport = () => {
+        setOpenReport(true);
+    }
+
+    const handleConfirm = () => {
+        alert('Xác nhận hoàn tất giao dịch');
+    }
+
     return (
         <div className='container mt-5'>
+            <React.Fragment>
+               
+                <Dialog
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="scroll-dialog-title"
+                    aria-describedby="scroll-dialog-description"
+                >
+                    <DialogTitle id="scroll-dialog-title">Chú ý</DialogTitle>
+                    <DialogContent dividers>
+                        <DialogContentText
+                            id="scroll-dialog-description"
+                          
+                            tabIndex={-1}
+                        >
+                            <h4 className='h4 text-center text-danger fw-bold fst-italic'>* Sau khi hoàn tất trao đổi vui lòng lướt xuống xác nhận hoàn thành để nhận điểm *</h4>
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions sx={{ justifyContent: 'center' }} onClick={handleClose}>
+                        <CheckIcon />
+                    </DialogActions>
+                </Dialog>
+            </React.Fragment>
             <Box sx={{ width: '100%' }}>
                 <Stepper activeStep={1 && 2 && 3} alternativeLabel>
                     {steps.map((label) => (
@@ -85,6 +151,11 @@ const ExchangeInfoDetail = (props) => {
                                 style={{ maxWidth: "150px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
                             >{request?.bookRequestedId?.title}</p>
                             <h5 className='h5  text-danger fw-bold'>{request?.bookRequestedId?.creditPoints} đ</h5>
+                            <div className="mt-2">
+                                <span className="badge bg-success px-3 py-1">
+                                    <i className="bi bi-person-fill me-1"></i> Chủ sở hữu
+                                </span>
+                            </div>
                         </div>
 
                         <hr className="flex-grow-1 mx-3 text-primary" style={{ height: "1px" }} />
@@ -109,6 +180,12 @@ const ExchangeInfoDetail = (props) => {
                                 style={{ maxWidth: "150px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
                             >{request?.exchangeBookId?.title}</p>
                             <h5 className='h5  text-danger fw-bold'>{request?.exchangeBookId?.creditPoints} đ</h5>
+                            <div className="mt-2">
+                                <span className="badge bg-danger px-3 py-1">
+                                    <i className="bi bi-person-lines-fill me-1"></i> Người yêu cầu
+                                </span>
+                            </div>
+
                         </div>
                     </div>
 
@@ -128,6 +205,7 @@ const ExchangeInfoDetail = (props) => {
                             </>
                         )}
                     </div>
+
 
 
                     <div className="mb-3">
@@ -198,14 +276,89 @@ const ExchangeInfoDetail = (props) => {
                         </div>
                     </div>
 
+                    {/* Hiển thị thông tin bù điểm */}
+                    {request && (
+                        <div className="text-center my-4">
+                            {request.bookRequestedId.creditPoints !== request.exchangeBookId.creditPoints ? (
+                                <div className="alert alert-info d-flex flex-column align-items-center gap-2 p-3 shadow-sm">
+                                    <i className="fa-solid fa-scale-balanced text-primary fs-3"></i>
+                                    {request.bookRequestedId.creditPoints > request.exchangeBookId.creditPoints ? (
+                                        <p className="mb-0 fw-bold text-dark">
+                                            <span className="text-danger">{infoForm?.fullName_requester}</span> sẽ trả thêm
+                                            <span className="text-primary fs-4"> {creditDiff} điểm</span> cho
+                                            <span className="text-success"> {infoForm?.fullName_owner}</span> để cân bằng giao dịch.
+                                        </p>
+                                    ) : (
+                                        <p className="mb-0 fw-bold text-dark">
+                                            <span className="text-danger">{infoForm?.fullName_owner}</span> sẽ trả thêm
+                                            <span className="text-primary fs-4"> {creditDiff} điểm</span> cho
+                                            <span className="text-success"> {infoForm?.fullName_requester}</span>.
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="alert alert-success text-center fw-bold">
+                                    <i className="fa-solid fa-handshake me-2 text-success"></i>
+                                    Giao dịch ngang điểm không cần bù thêm!
+                                </div>
+                            )}
+                        </div>
+                    )}
 
-
-                    <div className="d-flex justify-content-between">
-                        <button className="btn btn-success w-48">Xác nhận hoàn thành</button>
-                        <button className="btn btn-danger w-48">Báo cáo vấn đề</button>
+                    <div className="d-flex align-items-start bg-light border rounded p-3 mb-3">
+                        <span className="me-2 text-primary fs-5">
+                            <i className="bi bi-stickies"></i>
+                        </span>
+                        <div className="text-dark">
+                            {infoForm?.notes || <span className="text-muted fst-italic">Không có ghi chú nào.</span>}
+                        </div>
                     </div>
+
+
+                    <div className="mt-3">
+                        {infoForm?.status === 'completed' ? (
+                            <button className="btn btn-secondary d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm">
+                                <i className="fa-solid fa-user-check me-2"></i>
+                                Đánh giá người dùng
+                            </button>
+                        ) : (
+                            <div className="d-flex flex-column flex-md-row  justify-content-between gap-3 mt-3">
+                                <button className="btn btn-success d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
+                                    onClick={handleOpenConfirm}>
+                                    <i className="fa-solid fa-check-circle me-2"></i>
+                                    Xác nhận hoàn thành
+
+                                </button>
+
+                                <button className="btn btn-outline-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
+                                    onClick={handleOpenReport}
+                                >
+                                    <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                                    Báo cáo vấn đề
+                                </button>
+                            </div>
+                        )}
+
+                    </div>
+
+                    <p className='text-center mt-3 text-danger text-start fst-italic'>* Sau khi hoàn tất trao đổi nếu đối phương không xác nhận để có thể nhận điểm thì vui lòng báo cáo vấn đề và gửi minh chứng để quản trị giải quyết *</p>
+
                 </div>
             </div>
+            {openConfirm && (
+                <ConfirmDialog
+                    handleClose={handleCloseConfirm}
+                    content="Xác nhận hoàn tất giao dịch ?"
+                    onConfirm={handleConfirm}
+                />
+            )}
+            {openReport && (
+                <ReportExchangeForm
+                    handleClose={handleCloseReport}
+                    requestId={requestId}
+                />
+            )}
+            <ToastContainer/>
         </div>
     );
 }
