@@ -8,7 +8,8 @@ import ExchangeInfoConfirmForm from '../../components/customer/BookExchange/Exch
 
 //service
 import {
-    getExchangeRequestsByUserId, getRequestsByRequesterSer, getExchangeRequestsByOwnerBook, acceptExchangeRequest
+    getExchangeRequestsByUserId, getRequestsByRequesterSer, getExchangeRequestsByOwnerBook, acceptExchangeRequest,
+    completeExchangeRequest
 } from '../../services/exchange/exchangeRequestService'
 import { getUserInfo } from '../../services/userService'
 import { getBookExchangeSer } from '../../services/exchange/bookExchangeService'
@@ -43,13 +44,12 @@ const MyExchangeOverview = () => {
             } else {
                 return;
             }
-            console.log("response", response)
-            console.log("activeTab", activeTab)
+
             if (response.data.success) {
                 const data = response.data.requests;
                 let filteredRequests = data;
                 if (activeTab === "in-progress") {
-                    filteredRequests = data.filter(req => req.status === 'accepted' || req.status === 'processing');
+                    filteredRequests = data.filter(req => req.status === 'accepted' || req.status === 'processing' || req.status === 'owner_confirmed' || req.status === 'requester_confirmed');
                 } else if (activeTab === "completed") {
                     filteredRequests = data.filter(req => req.status === "completed");
                 } else if (activeTab === "canceled") {
@@ -63,7 +63,6 @@ const MyExchangeOverview = () => {
                         if (request.exchangeMethod === "book") {
                             exchangeBook = await getBookExchangeSer(request.exchangeBookId);
                         }
-                        console.log("exchangeBook", exchangeBook)
                         let partner = null;
                         let isOwner = request.requesterId !== userId;
                         if (isOwner) {
@@ -75,7 +74,6 @@ const MyExchangeOverview = () => {
                             partner = bookRequested.data.bookExchange.ownerId;
 
                         }
-                        console.log("partner", partner)
                         let exchangeInfo = null;
                         if (request.status === "accepted" || request.status === "processing" || request.status === "completed") {
                             try {
@@ -83,8 +81,6 @@ const MyExchangeOverview = () => {
 
                                 exchangeInfo = exchangeInfoRes.exchangeInfor;
 
-
-                                console.log("exchangeInfo", exchangeInfo)
                             } catch (err) {
                                 console.error("Lỗi khi lấy exchange info", err);
                             }
@@ -112,11 +108,9 @@ const MyExchangeOverview = () => {
     };
 
     const handleClickRequest = async (requestId) => {
-        console.log("Click Chấp nhận với ID:", requestId);
         if (requestId) {
             try {
                 const response = await acceptExchangeRequest({ requestId, userId });
-                console.log(response)
                 if (response.data.success) {
                     toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
                         {response.data.message}
@@ -152,6 +146,48 @@ const MyExchangeOverview = () => {
                 }
             } catch (error) {
                 console.error("Lỗi khi chấp nhận yêu cầu:", error);
+            }
+        }
+    }
+    const handleCompletedRequest = async (requestId) => {
+        if (requestId) {
+            try {
+                const response = await completeExchangeRequest({ requestId, userId });
+                if (response.data.success) {
+                    toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                        {response.data.message}
+                    </div>,
+                        {
+                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                            autoClose: 1500, // Đóng sau 3 giây
+                            hideProgressBar: true, // Ẩn thanh tiến độ
+                            closeButton: false, // Ẩn nút đóng
+                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                            draggable: false, // Tắt kéo di chuyển
+                            rtl: false, // Không hỗ trợ RTL
+                        }
+                    );
+                    fetchData();
+
+                }
+                if (!response.data.success) {
+                    toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                        {response.data.message}
+
+                    </div>,
+                        {
+                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                            autoClose: 1500, // Đóng sau 3 giây
+                            hideProgressBar: true, // Ẩn thanh tiến độ
+                            closeButton: false, // Ẩn nút đóng
+                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                            draggable: false, // Tắt kéo di chuyển
+                            rtl: false, // Không hỗ trợ RTL
+                        }
+                    );
+                }
+            } catch (error) {
+                console.error("Lỗi khi xác nhận hoàn thành:", error);
             }
         }
     }
@@ -209,11 +245,57 @@ const MyExchangeOverview = () => {
         if (request.status === "processing" && request.exchangeInfo?.status === "accepted") {
             return (
                 <>
-                    <button className="btn btn-success me-2">Xác nhận đã trao đổi</button>
+                    <button className="btn btn-success me-2"
+                        onClick={() => handleCompletedRequest(request.id)}>Xác nhận hoàn thành</button>
                     <button className="btn btn-info"
                         onClick={() => handleConfirmRequest(request.id)}>Xem thông tin</button>
                 </>
             );
+        }
+
+        if (request.status === "owner_confirmed") {
+            if (request.isOwner) {
+                return (
+                    <>
+                        <button className="btn btn-success me-2">Đã xác nhận hoàn thành</button>
+                        <button className="btn btn-info"
+                            onClick={() => handleConfirmRequest(request.id)}>Xem thông tin</button>
+                    </>
+                );
+            }
+            else {
+                return (
+                    <>
+                        <button className="btn btn-success me-2"
+                            onClick={() => handleCompletedRequest(request.id)}>Xác nhận hoàn thành</button>
+                        <button className="btn btn-info"
+                            onClick={() => handleConfirmRequest(request.id)}>Xem thông tin</button>
+                    </>
+                );
+            }
+
+        }
+        if (request.status === "requester_confirmed") {
+            if (!request.isOwner) {
+                return (
+                    <>
+                        <button className="btn btn-success me-2">Đã xác nhận hoàn thành</button>
+                        <button className="btn btn-info"
+                            onClick={() => handleConfirmRequest(request.id)}>Xem thông tin</button>
+                    </>
+                );
+            }
+            else {
+                return (
+                    <>
+                        <button className="btn btn-success me-2"
+                            onClick={() => handleCompletedRequest(request.id)}>Xác nhận hoàn thành</button>
+                        <button className="btn btn-info"
+                            onClick={() => handleConfirmRequest(request.id)}>Xem thông tin</button>
+                    </>
+                );
+            }
+
         }
 
         if (request.status === "completed") {
@@ -298,11 +380,15 @@ const MyExchangeOverview = () => {
                                                         ? "Chờ xác nhận thông tin giao dịch"
                                                         : request.status === "processing" && request.exchangeInfo?.status === "accepted"
                                                             ? "Đang thực hiện trao đổi"
-                                                            : request.status === "completed"
-                                                                ? "Hoàn thành trao đổi"
-                                                                : request.status === "canceled"
-                                                                    ? "Đã hủy"
-                                                                    : "Đang xử lý"
+                                                            : request.status === "owner_confirmed"
+                                                                ? "Chờ xác nhận hoàn thành từ hai phía"
+                                                                : request.status === "requester_confirmed"
+                                                                    ? "Chờ xác nhận hoàn thành từ hai phía"
+                                                                    : request.status === "completed"
+                                                                        ? "Hoàn thành trao đổi"
+                                                                        : request.status === "canceled"
+                                                                            ? "Đã hủy"
+                                                                            : "Đang xử lý"
                                         }
                                     </span>
 

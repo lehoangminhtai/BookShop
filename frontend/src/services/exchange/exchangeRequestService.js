@@ -22,3 +22,5 @@ export const getRequestByRequestId = async (requestId) => API.get(`/request/${re
 export const getExchangeRequestsByOwnerBook = async (userId) => API.get(`/requests/owner/${userId}`)
 
 export const getExchangeRequestsByUserId = async (userId) => API.get(`/requests/user/${userId}`)
+
+export const completeExchangeRequest = async (data) => API.post(`/complete`,data)

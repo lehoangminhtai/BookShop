@@ -164,8 +164,8 @@ const acceptExchangeRequest = async (req, res) => {
             if (requester.grade < bookRequested.creditPoints) {
                 return res.status(400).json({ success: false, message: 'Điểm của người trao đổi không đủ' });
             }
-            requester.grade -= bookRequested.creditPoints;
-            await requester.save();
+            // requester.grade -= bookRequested.creditPoints;
+            // await requester.save();
         }
 
         if (exchangeRequest.exchangeMethod === 'book') {
@@ -275,7 +275,7 @@ const getExchangeRequestById = async (req, res) => {
         return res.status(200).json({ success: true, data: request });
     } catch (error) {
         console.error(error);
-        res.status(500).json({success: false, message: 'Lỗi khi lấy yêu cầu trao đổi' });
+        res.status(500).json({ success: false, message: 'Lỗi khi lấy yêu cầu trao đổi' });
     }
 }
 
@@ -296,7 +296,7 @@ const getExchangeRequestsByOwnerBook = async (req, res) => {
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({success: false, message: 'Lỗi khi lấy yêu cầu trao đổi' });
+        res.status(500).json({ success: false, message: 'Lỗi khi lấy yêu cầu trao đổi' });
     }
 }
 
@@ -305,11 +305,11 @@ const getExchangeRequestsByUserId = async (req, res) => {
     const { status } = req.query;
 
     try {
-      
+
 
         // B1: Lấy các request mà user là người gửi
         let requests = await ExchangeRequest.find({ requesterId: userId })
-           
+
 
         // B2: Tìm các cuốn sách mà user là chủ sở hữu
         const userBooks = await BookExchange.find({ ownerId: userId });
@@ -317,20 +317,95 @@ const getExchangeRequestsByUserId = async (req, res) => {
 
         // B3: Lấy các request mà sách được yêu cầu là sách của user
 
-        const requestsByOwner = await ExchangeRequest.find({bookRequestedId: { $in: userBookIds }})
-           
+        const requestsByOwner = await ExchangeRequest.find({ bookRequestedId: { $in: userBookIds } })
+
         // B4: Gộp 2 danh sách lại
         const allRequests = [...requests, ...requestsByOwner];
 
-        res.status(200).json({success: true, requests: allRequests});
+        res.status(200).json({ success: true, requests: allRequests });
     } catch (err) {
         console.error(err);
-        res.status(500).json({success: false, message: 'Lỗi khi lấy danh sách yêu cầu trao đổi.' });
+        res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách yêu cầu trao đổi.' });
     }
 };
+
+const completeExchangeRequest = async (req, res) => {
+    try {
+        const { requestId, userId } = req.body;
+
+        const exchangeRequest = await ExchangeRequest.findById(requestId);
+        if (!exchangeRequest) {
+            return res.status(404).json({ success: false, message: 'Yêu cầu không tồn tại' });
+        }
+
+        if (exchangeRequest.status === 'processing') {
+            if (exchangeRequest.requesterId.toString() === userId) {
+                exchangeRequest.status = 'requester_confirmed';
+            }
+            else {
+                exchangeRequest.status = 'owner_confirmed';
+            } // 1 bên đã xác nhận
+        } else if (exchangeRequest.status === 'requester_confirmed' || exchangeRequest.status === 'owner_confirmed') {
+            exchangeRequest.status = 'completed'; // hoàn tất giao dịch
+        }
+        else {
+            return res.status(400).json({ success: false, message: 'Yêu cầu không thể hoàn tất' });
+        }
+        await exchangeRequest.save();
+
+        if (exchangeRequest.status === 'completed') {
+            const bookRequested = await BookExchange.findById(exchangeRequest.bookRequestedId);
+            if (bookRequested) {
+                bookRequested.status = 'completed';
+                await bookRequested.save();
+            }
+            const exchangeBook = await BookExchange.findById(exchangeRequest.exchangeBookId);
+            if (exchangeBook) {
+                exchangeBook.status = 'completed';
+                await exchangeBook.save();
+            }
+
+            const bookOwner = await User.findById(bookRequested.ownerId);
+            if (!bookOwner) {
+                return res.status(404).json({ success: false, message: 'Người dùng không tồn tại' });
+            }
+
+            const requester = await User.findById(exchangeRequest.requesterId);
+            if (!requester) {
+                return res.status(404).json({ success: false, message: 'Người dùng không tồn tại' });
+            }
+
+            if (exchangeRequest.exchangeMethod === 'point') {
+                bookOwner.grade += bookRequested.creditPoints;
+                await bookOwner.save();
+            }
+            if (exchangeRequest.exchangeMethod === 'book') {
+                const exchangeBook = await BookExchange.findById(exchangeRequest.exchangeBookId);
+                if (!exchangeBook) {
+                    return res.status(404).json({ success: false, message: 'Sách trao đổi không tồn tại' });
+                }
+
+                const pointDifference = bookRequested.creditPoints - exchangeBook.creditPoints;
+
+                if (pointDifference > 0) {
+                    bookOwner.grade += pointDifference;
+                    await bookOwner.save();
+                } else if (pointDifference < 0) {
+                    requester.grade -= pointDifference;// trừ số âm
+                    await requester.save();
+                }
+            }
+
+        }
+        res.status(200).json({ success: true, message: 'Hoàn thành trao đổi thành công' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Lỗi khi xác nhận hoàn thành trao đổi' });
+    }
+}
 
 module.exports = {
     createExchangeRequest, checkExchangeRequest, deleteRequest,
     getExchangeRequestByBookRequested, acceptExchangeRequest, getExchangeRequestsByRequester,
-    cancelExchangeRequest, getExchangeRequestById, getExchangeRequestsByOwnerBook, getExchangeRequestsByUserId
+    cancelExchangeRequest, getExchangeRequestById, getExchangeRequestsByOwnerBook, getExchangeRequestsByUserId, completeExchangeRequest
 };
