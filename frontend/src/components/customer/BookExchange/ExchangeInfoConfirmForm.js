@@ -154,18 +154,18 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
 
                                     <div className="mb-3">
                                         <label className="form-label text-dark">Ghi chú:</label>
-                                        <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange} readOnly={formData.fullName_requester && formData.contactPhone_requester}></textarea>
+                                        <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange} readOnly={exchangeInfor && exchangeInfor.fullName_requester && exchangeInfor.contactPhone_requester}></textarea>
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label text-dark">Họ Tên (người nhận):</label>
-                                        <input type="text" className="form-control bg-light" name="fullName_requester" onChange={handleChange} value={formData?.fullName_requester} required readOnly={formData.fullName_requester && formData.contactPhone_requester} />
+                                        <input type="text" className="form-control bg-light" name="fullName_requester" onChange={handleChange} value={formData?.fullName_requester} required readOnly={exchangeInfor && exchangeInfor.fullName_requester && exchangeInfor.contactPhone_requester} />
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label text-dark">Số điện thoại liên hệ:</label>
-                                        <input type="text" className="form-control bg-light" name="contactPhone_requester" onChange={handleChange} value={formData?.contactPhone_requester} required readOnly={formData.fullName_requester && formData.contactPhone_requester} />
+                                        <input type="text" className="form-control bg-light" name="contactPhone_requester" onChange={handleChange} value={formData?.contactPhone_requester} required readOnly={exchangeInfor && exchangeInfor.fullName_requester && exchangeInfor.contactPhone_requester} />
                                     </div>
 
-                                    {!(formData.fullName_requester && formData.contactPhone_requester) && (
+                                    {!(exchangeInfor && exchangeInfor.fullName_requester && exchangeInfor.contactPhone_requester) && (
                                         <div className="text-center">
                                             <button type="submit" className="btn btn-primary w-100" disabled={loading}>
                                                 Xác nhận <i className="ms-1 fas fa-check"></i>
