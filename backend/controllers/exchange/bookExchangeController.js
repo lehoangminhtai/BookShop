@@ -91,9 +91,34 @@ const getBooksExchanges = async (req, res) => {
         const page = parseInt(req.query.page) || 1; // Trang hiện tại (mặc định là 1)
         const limit = parseInt(req.query.limit) || 8; // Số sách mỗi trang (mặc định là 8)
         const skip = (page - 1) * limit; // Tính số lượng sách cần bỏ qua
+        
+        const query = {};
 
-        const totalBooks = await BookExchange.countDocuments(); // Tổng số sách
-        const books = await BookExchange.find().skip(skip).limit(limit).sort({ createdAt: -1 });
+        if (req.query.location) {
+            query.location = req.query.location;
+        }
+
+        if (req.query.categoryId) {
+            query.categoryId = req.query.categoryId;
+        }
+
+        if (req.query.condition) {
+            query.condition = req.query.condition;
+        }
+
+        if (req.query.dateFilter) {
+            const dateFilter = parseInt(req.query.dateFilter); // Lấy giá trị số ngày từ query
+            const currentDate = new Date();
+            const startDate = new Date(currentDate.setDate(currentDate.getDate() - dateFilter)); // Tính ngày bắt đầu từ ngày hiện tại trừ đi số ngày
+
+            query.createdAt = {
+                $gte: startDate // Lọc các sách có ngày tạo từ ngày bắt đầu
+            };
+        }
+
+
+        const totalBooks = await BookExchange.countDocuments(query); // Tổng số sách
+        const books = await BookExchange.find(query).skip(skip).limit(limit).sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
