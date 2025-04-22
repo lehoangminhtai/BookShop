@@ -31,6 +31,9 @@ const exchangeInforRoutes = require('./routes/exchange/exchangeInforRoute');
 const messageRoutes = require('./routes/exchange/messageRoute');
 const reportExchangeRoutes = require('./routes/exchange/reportRoute');
 
+//AI
+const summarizeBookRoutes = require('./routes/AI/summarizeBookRoute')
+
 //connect database
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
@@ -75,6 +78,8 @@ app.use('/api/exchange-infor', exchangeInforRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/report_exchange', reportExchangeRoutes);
 
+//AI
+app.use('/api/summarize', summarizeBookRoutes)
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);
