@@ -3,9 +3,9 @@ import { serverUrl } from "../config";
 
 const API = axios.create({ baseURL: `${serverUrl}/api/book-exchange` });
 
-export const getBookExchanges = async (page, limit) => {
+export const getBookExchanges = async (queryParams = "") => {
     try {
-        const res = await API.get(`/?page=${page}&limit=${limit}`);
+        const res = await API.get(`/?${queryParams}`);
         return res.data;
     } catch (error) {
         return { success: false, message: error.message

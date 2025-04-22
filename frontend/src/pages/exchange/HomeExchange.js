@@ -5,6 +5,7 @@ import Pagination from "@mui/material/Pagination";
 //service
 import '../../css/user/HomeExchange.scss'
 import { getBookExchanges } from "../../services/exchange/bookExchangeService";
+import { getCategoryBooks } from "../../services/categoryBookService";
 
 //userContext
 import { useStateContext } from "../../context/UserContext";
@@ -31,23 +32,88 @@ const HomeExchange = () => {
 
     const { user } = useStateContext();
 
-    const fetchExchangeBooks = async (page = 1) => {
+    const [filters, setFilters] = useState({
+        location: "",
+        categoryId: "",
+        condition: "",
+        dateFilter: "",
+    });
+    const [categoryBooks, setCategoryBooks] = useState([]);
+    const [provinces, setProvinces] = useState([]);
+
+    const fetchExchangeBooks = async (page = 1, filters = {}) => {
         try {
-            const response = await getBookExchanges(page, 8);
+            const params = new URLSearchParams({
+                page: String(page),
+                limit: String(8),
+                ...filters,
+            });
+            console.log("params", params.toString())
+            const response = await getBookExchanges(params.toString());
             if (response.success) {
                 setExchangeBooks(response.data);
                 setTotalPages(response.pagination.totalPages);
                 setCurrentPage(page);
             }
         } catch (error) {
-            console.log(error);
+            console.log("Lỗi khi tải sách trao đổi:", error);
         }
     };
 
     useEffect(() => {
         if (user) setAnimate(true);
-        fetchExchangeBooks(1);
+        fetchExchangeBooks(1, filters);
+    }, [filters]);
+
+    useEffect(() => {
+        fetchCategories();
+        fetchProvinces();
     }, []);
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+    const handleFilterReset = () => {
+        setFilters({
+            location: "",
+            categoryId: "",
+            condition: "",
+            dateFilter: "",
+        });
+    };
+
+    const handlePageChange = (event, newPage) => {
+        console.log("newPage", newPage);
+        fetchExchangeBooks(newPage, filters);
+    };
+
+    const fetchCategories = async () => {
+        try {
+            const response = await getCategoryBooks();
+            setCategoryBooks(response.data);  // Store categories in state
+        } catch (error) {
+            console.log("Error fetching categories:", error);
+        }
+    };
+
+    const fetchProvinces = async () => {
+        try {
+            const response = await fetch('https://esgoo.net/api-tinhthanh/1/0.htm');
+            const data = await response.json();
+
+            if (data.error === 0) {
+                setProvinces(data.data);
+            } else {
+                console.error('Error fetching provinces:', data.error);
+            }
+        } catch (error) {
+            console.error('Failed to fetch provinces:', error);
+        }
+    };
 
     const toggleChatBox = () => {
         setIsChatBoxExpanded(!isChatBoxExpanded);
@@ -88,39 +154,8 @@ const HomeExchange = () => {
 
     const [viewMode, setViewMode] = useState("grid"); // 'grid' hoặc 'list'
 
-    const books = [
-        {
-            id: 1,
-            title: "Từ Vựng IELTS 8.0 - Từ Vựng Đắt Để Đạt Điểm Cao 4 Kỹ Năng",
-            date: "16/02/2025",
-            location: "TP.Hồ Chí Minh",
-            image: "https://res.cloudinary.com/dyu419id3/image/upload/v1734341567/uploads/cl3qool78uh38wytk29h.webp"
-        },
-        {
-            id: 2,
-            title: "Giải Thích Ngữ Pháp Tiếng Anh (Tái Bản 2024)",
-            date: "11/02/2025",
-            location: "TP. Hồ Chí Minh",
-            image: "https://res.cloudinary.com/dyu419id3/image/upload/v1734341457/uploads/xjns2efi1m1ebwbsu8fz.webp"
-        },
-        {
-            id: 3,
-            title: "Giáo Trình Chuẩn HSK 2 - Bài Học",
-            date: "15/02/2025",
-            location: "Hà Nội",
-            image: "https://res.cloudinary.com/dyu419id3/image/upload/v1734341319/uploads/q47iz5fx8axac68v4mg2.webp"
-        },
-        {
-            id: 4,
-            title: "Giáo Trình Chuẩn HSK 3 - Sách Bài Tập",
-            date: "14/02/2025",
-            location: "Đà Nẵng",
-            image: "https://res.cloudinary.com/dyu419id3/image/upload/v1734341362/uploads/zlqtsy3zkdhvcf2qicrg.webp"
-        }
-    ];
-    const handlePageChange = (event, value) => {
-        fetchExchangeBooks(value);
-    };
+
+
 
 
     return (
@@ -169,10 +204,10 @@ const HomeExchange = () => {
 
                             </div>
                             <div class="d-flex justify-content-end mb-3 me-2">
-                                <select class="form-select w-auto">
-                                    <option>Tất cả</option>
-                                    <option>7 ngày qua</option>
-                                    <option>30 ngày qua</option>
+                                <select className="form-select w-auto" name="dateFilter" value={filters.dateFilter} onChange={handleFilterChange}>
+                                    <option value="">Tất cả</option>
+                                    <option value="7">7 ngày qua</option>
+                                    <option value="30">30 ngày qua</option>
                                 </select>
                             </div>
                             <div className="d-flex justify-content-end mb-3">
@@ -198,97 +233,90 @@ const HomeExchange = () => {
                         <div class="col-lg-3 mb-4 ">
                             <div class="card p-3 shadow-lg">
                                 <h2 class="h5">Địa điểm</h2>
-
                                 <div class="d-flex">
-                                    <select class="form-select">
-                                        <option>Chọn vị trí</option>
-                                        <option>Hồ Chí Minh</option>
-                                        <option>Hà Nội</option>
-                                        <option>Đà Nẵng</option>
+                                    <select class="form-select" name="location" value={filters.location} onChange={handleFilterChange}>
+                                        <option value="">Chọn vị trí</option>
+                                        {provinces.map((province) => (
+                                            <option key={province.id} value={province.full_name}>{province.full_name}</option>
+                                        ))}
                                     </select>
 
                                 </div>
                                 <h2 class="h5 mt-3">Thể loại</h2>
-                                <ul class="list-unstyled">
-                                    <li></li>
-                                    <li>
-                                        <select class=" w-auto">
-                                            <option><a href="#" class="text-primary">Tất cả</a></option>
-                                            <option>7 ngày qua</option>
-                                            <option>30 ngày qua</option>
-                                        </select>
-                                    </li>
-
-                                </ul>
-                                <h2 class="h5 mt-3">Tình trạng</h2>
-                                <ul class="list-unstyled">
-                                    <li><input type="radio" name="property-type" /> Mới <span class="text-muted">(6)</span></li>
-                                    <li><input type="radio" name="property-type" /> Đã qua sử dụng <span class="text-muted">(10)</span></li>
-                                    <li><input type="radio" name="property-type" /> Cũ <span class="text-muted">(4)</span></li>
-                                </ul>
-                                <h2 class="h5 mt-3">Người đăng</h2>
-                                <div className="d-flex justify-content-between">
-                                    <div className="d-flex justify-content-between">
-                                        <label className="form-check-label me-4">
-                                            <input type="radio" name="user-type" className="form-check-input" value="canhan" />
-                                            Cá nhân
-                                        </label>
-                                        <label className="form-check-label">
-                                            <input type="radio" name="user-type" className="form-check-input" value="cuahang" />
-                                            Cửa hàng
-                                        </label>
-                                    </div>
-
+                                <div class="d-flex">
+                                    <select className="form-select" name="categoryId" value={filters.categoryId} onChange={handleFilterChange}>
+                                        <option value="">Tất cả</option>
+                                        {categoryBooks.map((category) => (
+                                            <option key={category._id} value={category._id}>
+                                                {category.nameCategory}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
+                                <h2 class="h5 mt-3">Tình trạng</h2>
+                                <div class="d-flex">
+                                    <select className="form-select" name="condition" value={filters.condition} onChange={handleFilterChange}>
+                                        <option value="">Tất cả</option>
+                                        <option value="new-unused">Mới - Chưa sử dụng</option>
+                                        <option value="new-used">Mới - Đã sử dụng (ít)</option>
+                                        <option value="old-intact">Cũ - Còn nguyên vẹn</option>
+                                        <option value="old-damaged">Cũ - Không còn nguyên vẹn</option>
+                                    </select>
+                                </div>
+                                <button className="btn btn-primary border-2 mt-3" onClick={handleFilterReset}>Xóa bộ lọc</button>
                             </div>
                         </div>
                         <div className="col-lg-9 mt-3">
                             <div className="row g-3">
                                 <div className={`row ${viewMode === "grid" ? "g-3" : ""}`}>
-                                    {exchangeBooks.map((book) => (
-                                        <div key={book?._id}
-                                            className={`mt-2 ${viewMode === "grid" ? "col-md-6" : "col-12"}`}
-                                            onClick={() => handleClickPost(book?._id)}
-                                            style={{
-                                                transition: 'transform 0.2s ease-in-out',
-                                                cursor: 'pointer',
-                                                minHeight: "150px", // Cố định chiều cao tối thiểu cho item
-                                                height: "160px" // Cố định chiều cao đồng đều
-                                            }}
-                                            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                                            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                                    {exchangeBooks.length > 0 ? (
 
-                                            <div className={`card p-3 d-flex ${viewMode === "grid" ? "flex-row" : "flex-row"}`}
+                                        exchangeBooks.map((book) => (
+                                            <div key={book?._id}
+                                                className={`mt-2 ${viewMode === "grid" ? "col-md-6" : "col-12"}`}
+                                                onClick={() => handleClickPost(book?._id)}
                                                 style={{
-                                                    height: "100%",
-                                                    alignItems: "center"
-                                                }}>
+                                                    transition: 'transform 0.2s ease-in-out',
+                                                    cursor: 'pointer',
+                                                    minHeight: "150px", // Cố định chiều cao tối thiểu cho item
+                                                    height: "160px" // Cố định chiều cao đồng đều
+                                                }}
+                                                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
 
-                                                <div className="position-relative me-3">
-                                                    <img
-                                                        src={book?.images[0]}
-                                                        className="img-fluid rounded"
-                                                        width="100"
-                                                        height="100"
-                                                        alt={book?.title}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                            borderRadius: "8px"
-                                                        }}
-                                                    />
+                                                <div className={`card p-3 d-flex ${viewMode === "grid" ? "flex-row" : "flex-row"}`}
+                                                    style={{
+                                                        height: "100%",
+                                                        alignItems: "center"
+                                                    }}>
+
+                                                    <div className="position-relative me-3">
+                                                        <img
+                                                            src={book?.images[0]}
+                                                            className="img-fluid rounded"
+                                                            width="100"
+                                                            height="100"
+                                                            alt={book?.title}
+                                                            style={{
+                                                                objectFit: "cover",
+                                                                borderRadius: "8px"
+                                                            }}
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex-grow-1">
+                                                        <h3 className={`h6 text-truncate text-danger`} style={{ maxWidth: viewMode === "grid" ? "200px" : "" }}>{book.title}</h3>
+                                                        <p className="text-muted mb-1">Ngày đăng: {new Date(book?.createdAt).toLocaleDateString('vi-VN')}</p>
+                                                        <p className="text-muted"><i className="fa fa-map-marker-alt text-primary"></i> {book?.location}</p>
+                                                    </div>
+
+                                                    <i className="far fa-heart ms-auto text-secondary"></i>
                                                 </div>
-
-                                                <div className="flex-grow-1">
-                                                    <h3 className={`h6 text-truncate text-danger`} style={{ maxWidth: viewMode === "grid" ? "200px" : "" }}>{book.title}</h3>
-                                                    <p className="text-muted mb-1">Ngày đăng: {new Date(book?.createdAt).toLocaleDateString('vi-VN')}</p>
-                                                    <p className="text-muted"><i className="fa fa-map-marker-alt text-primary"></i> {book?.location}</p>
-                                                </div>
-
-                                                <i className="far fa-heart ms-auto text-secondary"></i>
                                             </div>
-                                        </div>
-                                    ))}
-
+                                        ))
+                                    ) : (
+                                        <p className="text-center">Không tìm thấy sách phù hợp.</p>
+                                    )}
                                 </div>
                                 <div className="d-flex justify-content-center mt-4">
                                     <Pagination
