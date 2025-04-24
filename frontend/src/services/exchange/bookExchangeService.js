@@ -34,3 +34,5 @@ export const getBookExchangesByCategory = async (category) => await API.get(`/ca
 export const countUserExchanges  = async (userId) => await API.get(`/count-exchanges/${userId}`);
 
 export const getListCategoryBooks = async () => await axios.create({ baseURL: `${serverUrl}/api/categoryBooks` }).get('/')
+
+export const approvePostExchange = async (bookId, userId) => await API.put(`/approve-post-exchange/${bookId}/${userId}`);

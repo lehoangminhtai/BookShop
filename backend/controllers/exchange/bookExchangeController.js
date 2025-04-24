@@ -65,7 +65,7 @@ const createBookExchange = async (req, res) => {
         const newBookExchange = await BookExchange.create({
             title, author, description, images: imageUrls, publisher,
             publicationYear, categoryId, condition, creditPoints,
-            ownerId, location, pageCount, status: "available",
+            ownerId, location, pageCount, status: "pending",
         });
 
         // Ghi log hành động
@@ -90,7 +90,7 @@ const getBooksExchanges = async (req, res) => {
         const page = parseInt(req.query.page) || 1; // Trang hiện tại (mặc định là 1)
         const limit = parseInt(req.query.limit) || 8; // Số sách mỗi trang (mặc định là 8)
         const skip = (page - 1) * limit; // Tính số lượng sách cần bỏ qua
-        
+
         const query = {};
 
         if (req.query.location) {
@@ -117,7 +117,12 @@ const getBooksExchanges = async (req, res) => {
 
 
         const totalBooks = await BookExchange.countDocuments(query); // Tổng số sách
-        const books = await BookExchange.find(query).skip(skip).limit(limit).sort({ createdAt: -1 });
+        const books = await BookExchange.find(query)
+            .populate('ownerId', 'fullName email phone')
+            .populate('categoryId', 'nameCategory')
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
@@ -227,18 +232,18 @@ const updateBookExchange = async (req, res) => {
 
 const deleteAssociatedExchangeRequests = async (bookExchangeId) => {
     try {
-      await ExchangeRequest.deleteMany({
-        $or: [
-          { bookRequestedId: bookExchangeId },
-          { exchangeBookId: bookExchangeId }
-        ]
-      });
-      console.log("Đã xóa các yêu cầu trao đổi liên quan.");
+        await ExchangeRequest.deleteMany({
+            $or: [
+                { bookRequestedId: bookExchangeId },
+                { exchangeBookId: bookExchangeId }
+            ]
+        });
+        console.log("Đã xóa các yêu cầu trao đổi liên quan.");
     } catch (error) {
-      console.error("Lỗi khi xóa yêu cầu trao đổi liên quan:", error);
+        console.error("Lỗi khi xóa yêu cầu trao đổi liên quan:", error);
     }
-  };
-  
+};
+
 
 const deleteBookExchange = async (req, res) => {
     const { bookId } = req.params; // Lấy ID sách cần xóa
@@ -267,7 +272,7 @@ const deleteBookExchange = async (req, res) => {
 
         // Xóa sách trao đổi khỏi database
         const exchangeBook = await BookExchange.findByIdAndDelete(bookId);
-        if(exchangeBook){
+        if (exchangeBook) {
             await deleteAssociatedExchangeRequests(bookId);
         }
 
@@ -316,7 +321,7 @@ const getExchangeBookAvailableByUser = async (req, res) => {
     }
 };
 
-const countUserExchanges  = async (req, res) => {
+const countUserExchanges = async (req, res) => {
     // Đếm số lần trao đổi thành công của user và số bài đăng của useruser
     try {
         const { userId } = req.params;
@@ -336,11 +341,49 @@ const countUserExchanges  = async (req, res) => {
         // Đếm số bài đăng của user
         const totalPosts = await BookExchange.countDocuments({ ownerId: userId });
 
-        res.status(200).json({success: true, totalExchanges, totalPosts });
+        res.status(200).json({ success: true, totalExchanges, totalPosts });
     } catch (error) {
         res.status(500).json({ message: "Lỗi khi đếm số lần trao đổi", error });
     }
 };
+
+const approvePostExchange = async (req, res) => {
+    const { bookId } = req.params;
+    const { userId } = req.params;
+    try {
+        // Tìm sách theo bookId
+        const bookExchange = await BookExchange.findById(bookId);
+
+        if (!bookExchange) {
+            return res.status(404).json({
+                success: false,
+                message: 'Sách trao đổi không tồn tại',
+            });
+        }
+        const user = await User.findById(userId);
+        if (!user || user.role !== 1) { // Giả sử role 1 là admin
+            return res.status(403).json({ success: false, message: 'Bạn không có quyền duyệt sách trao đổi' });
+        }
+        if (bookExchange.status === "pending") {
+            bookExchange.status = "available";
+        }
+        else {
+            return res.status(400).json({ success: false, message: 'Sách trao đổi đã được duyệt hoặc không thể duyệt lại', });
+        }
+        await bookExchange.save();
+
+        // Ghi log hành động
+        await logAction(
+            'Duyệt sách trao đổi',
+            userId,
+            `Người dùng ${userId} đã duyệt sách trao đổi: ${bookExchange.title}`,
+            bookExchange
+        );
+        res.status(200).json({ success: true, message: 'Duyệt sách trao đổi thành công', bookExchange, });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: 'Duyệt sách trao đổi thất bại: ' + error.message, });
+    }
+}
 
 module.exports = {
     createBookExchange,
@@ -351,4 +394,5 @@ module.exports = {
     getExchangeBookByUser,
     getExchangeBookAvailableByUser,
     countUserExchanges,
+    approvePostExchange,
 };

@@ -12,7 +12,8 @@ import '../../css/bootstrap.min.css'
 import '../../css/style.css'
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
+//component
+import AdSidebar from '../../components/admin/AdSidebar';
 import ReviewUser from '../../components/customer/BookExchange/ReviewUser';
 import ListUserRequest from '../../components/customer/BookExchange/ListUserRequest';
 import RequestForm from '../../components/customer/BookExchange/RequestForm';
@@ -20,7 +21,7 @@ import EditPostForm from '../../components/customer/BookExchange/EditPostForm';
 import ConfirmDialog from '../../components/customer/BookExchange/ConfirmDialog';
 import ExchangeInfoConfirmForm from '../../components/customer/BookExchange/ExchangeInfoConfirmForm';
 //service
-import { getBookExchangeSer, deleteBookExchange } from '../../services/exchange/bookExchangeService';
+import { getBookExchangeSer, deleteBookExchange, approvePostExchange } from '../../services/exchange/bookExchangeService';
 import { checkRequestSer, deleteRequestSer, getExchangeRequestByBookRequested } from '../../services/exchange/exchangeRequestService';
 //store
 import { useChatStore } from '../../store/useChatStore';
@@ -80,6 +81,7 @@ const PostExchangeDetail = () => {
             if (response.data.success) {
                 setBookExchangeDetail(response.data.bookExchange);
 
+
             }
 
         } catch (error) {
@@ -133,6 +135,7 @@ const PostExchangeDetail = () => {
 
     useEffect(() => {
 
+
     }, [user?._id])
 
     const handleSendRequest = () => {
@@ -165,6 +168,8 @@ const PostExchangeDetail = () => {
 
     const getStatusBadge = (status) => {
         switch (status) {
+            case "pending":
+                return <span className="status-badge status-pending">⏳ Đang chờ duyệt bởi quản trị viên</span>;
             case "available":
                 return <span className="status-badge status-pending">⏳ Đang đợi trao đổi</span>;
             case "processing":
@@ -284,10 +289,39 @@ const PostExchangeDetail = () => {
         }
     }
 
-    return (
-        <div className="container mt-4">
+    const handleApprovePost = async () => {
+        handleOpenProgress();
+        try {
+            const response = await approvePostExchange(bookExchangeId, user._id);
+            console.log(response)
+            if (response.data.success) {
+                toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                    Duyệt bài đăng thành công
+                </div>,
+                    {
+                        position: "top-center",
+                        autoClose: 1500,
+                        hideProgressBar: true,
+                        closeButton: false,
+                        className: "custom-toast",
+                        draggable: false,
+                        rtl: false,
+                    }
+                );
+                handleCloseProgress();
+                getBookExchange();
+            }
+        } catch (error) {
 
-            <div className="row">
+        }
+    }
+
+    return (
+        <div className="d-flex">
+          {user?.role === 1 && (<AdSidebar />)}
+            <div className="container mt-4" style={{ marginLeft: user?.role === 1 ? '11px' : '9px' }}>
+
+                <div className="row">
                 {bookExchangeDetail?.images.length > 1 ? 
                 <div className="bg-white p-3 rounded shadow-sm  align-items-center" >
                     <Slider {...settings}>
@@ -303,176 +337,190 @@ const PostExchangeDetail = () => {
                     </Slider>
                 </div>
                 : 
-                <div className="bg-white p-3 rounded shadow-sm d-flex justify-content-center align-items-center">
-                    <img
-                        alt={`${bookExchangeDetail?.title}`}
-                        className="img-fluid w-90 d-block rounded"
-                        src={bookExchangeDetail?.images[0]}
-                        style={{ height: "300px", objectFit: "cover" }}
-                        ref={exchangeButtonRef}
-                    />
-                </div>
+                    <div className="bg-white p-3 rounded shadow-sm d-flex justify-content-center align-items-center">
+                        <img
+                            alt={`${bookExchangeDetail?.title}`}
+                            className="img-fluid w-90 d-block rounded"
+                            src={bookExchangeDetail?.images[0]}
+                            style={{ height: "300px", objectFit: "cover" }}
+                            ref={exchangeButtonRef}
+                        />
+                    </div>
 }
-                {requestForm.bookExchangeMethod !== '' && (
-                    <div className="card my-3 shadow">
-                        <div className="card-header text-dark fw-bold">
-                            Thông tin yêu cầu trao đổi
-                            {requestForm.status === 'pending' ? <span className="badge bg-warning text-dark ms-2">Chờ xác nhận</span> : requestForm.status === 'accepted'
-                                ? <span className="badge bg-success text-white ms-2">Đã chấp nhận</span> : requestForm.status === 'cancelled'
-                                    ? <span className="badge bg-danger text-white ms-2">Đã bị hủy</span> : requestForm.status === 'processing'
-                                        ? <span className="badge bg-primary text-white ms-2">Đang giao dịch</span> : <span className="badge bg-success text-white ms-2">Đã trao đổi</span>}
-                        </div>
-                        <div className="card-body">
-                            {requestForm.bookExchangeMethod === "points" ? (
-                                <div>
-                                    <p className="mb-0">
-                                        Bạn đã yêu cầu trao đổi bằng <strong className='text-danger'>{bookExchangeDetail?.creditPoints} điểm</strong> để trao đổi sách.
-                                    </p>
-                                </div>
-                            ) : requestForm.bookExchangeMethod === "book" && exchangeBook && (
-                                <div className="d-flex align-items-center">
-                                    <img
-                                        src={exchangeBook?.images[0]}
-                                        alt={exchangeBook?.title}
-                                        className="img-thumbnail me-3"
-                                        style={{ width: "100px", height: "100px", objectFit: "cover" }}
-                                        onClick={() => handleClickDetailExchangeBook(exchangeBook._id)}
-                                    />
+                    {requestForm.bookExchangeMethod !== '' && (
+                        <div className="card my-3 shadow">
+                            <div className="card-header text-dark fw-bold">
+                                Thông tin yêu cầu trao đổi
+                                {requestForm.status === 'pending' ? <span className="badge bg-warning text-dark ms-2">Chờ xác nhận</span> : requestForm.status === 'accepted'
+                                    ? <span className="badge bg-success text-white ms-2">Đã chấp nhận</span> : requestForm.status === 'cancelled'
+                                        ? <span className="badge bg-danger text-white ms-2">Đã bị hủy</span> : requestForm.status === 'processing'
+                                                ? <span className="badge bg-primary text-white ms-2">Đang giao dịch</span> : <span className="badge bg-success text-white ms-2">Đã trao đổi</span>}
+                            </div>
+                            <div className="card-body">
+                                {requestForm.bookExchangeMethod === "points" ? (
                                     <div>
-                                        <h5 className="card-title mb-1">{exchangeBook?.title}</h5>
-                                        <p className="card-text mb-0">Tác giả: {exchangeBook?.author}</p>
+                                        <p className="mb-0">
+                                            Bạn đã yêu cầu trao đổi bằng <strong className='text-danger'>{bookExchangeDetail?.creditPoints} điểm</strong> để trao đổi sách.
+                                        </p>
                                     </div>
-                                </div>
-                            )}
+                                ) : requestForm.bookExchangeMethod === "book" && exchangeBook && (
+                                    <div className="d-flex align-items-center">
+                                        <img
+                                            src={exchangeBook?.images[0]}
+                                            alt={exchangeBook?.title}
+                                            className="img-thumbnail me-3"
+                                            style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                                            onClick={() => handleClickDetailExchangeBook(exchangeBook._id)}
+                                        />
+                                        <div>
+                                            <h5 className="card-title mb-1">{exchangeBook?.title}</h5>
+                                            <p className="card-text mb-0">Tác giả: {exchangeBook?.author}</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                <div className="d-flex justify-content-between mt-3 mb-3">
-                    {(user?._id === bookExchangeDetail?.ownerId?._id) ?
-                        (<button
-
-                            className="btn btn-outline-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                            onClick={() => handleOpenListRequest()}
-
-                        >
-                            <h4 className='h4 text-danger me-2'> ({listRequest.length}) </h4>   Danh sách yêu cầu trao đổi <i class=" ms-2 me-2 fa fa-external-link text-light" aria-hidden="true"></i>
-                        </button>)
-                        :
-                        (
-                            requestForm.bookExchangeMethod === "" ?
-                                <button
-
-                                    className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                                    onClick={() => handleSendRequest()}
-
-                                >
-                                    Đề nghị trao đổi
-                                </button>
-                                : requestForm.status === 'pending' ?
-
+                    <div className="d-flex justify-content-between mt-3 mb-3">
+                        {
+                            user?.role === 1
+                                ? (bookExchangeDetail?.status === 'pending' ? (
                                     <button
-
-                                        className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                                        onClick={() => handleDeleteRequest()}
-
+                                        className="btn btn-outline-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                        onClick={() => handleApprovePost()}
                                     >
-                                        <i class="fa-solid fa-x me-2"></i>
-                                        Hủy yêu cầu
+                                        <i className="fa-solid fa-check me-2"></i>
+                                        Duyệt bài đăng
                                     </button>
+                                ) : null)
+                                : (
+                                    (user?._id === bookExchangeDetail?.ownerId?._id) ?
+                                        (<button
 
-                                    : requestForm.status === 'accepted' ?
-
-                                        <button
-
-                                            className="btn btn-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                                            onClick={() => handleShowModalConfirm()}
+                                            className="btn btn-outline-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                            onClick={() => handleOpenListRequest()}
 
                                         >
-                                            <i class="fa-solid fa-check me-2"></i>
-                                            Xác nhận trao đổi
-                                        </button>
-
+                                            <h4 className='h4 text-danger me-2'> ({listRequest.length}) </h4>   Danh sách yêu cầu trao đổi <i class=" ms-2 me-2 fa fa-external-link text-light" aria-hidden="true"></i>
+                                        </button>)
                                         :
-                                        <button
-                                            type="button"
-                                            className="btn btn-warning w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                                            onClick={() => handleNavigateToDetail()}
-                                        >
-                                            Thông tin giao dịch
-                                            <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i>
-                                        </button>
-                        )}
+                                        (
+                                            requestForm.bookExchangeMethod === "" ?
+                                                <button
 
-                </div>
+                                                    className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                                    onClick={() => handleSendRequest()}
 
-                {(user?._id === bookExchangeDetail?.ownerId?._id) &&
+                                                >
+                                                    Đề nghị trao đổi
+                                                </button>
+                                                : requestForm.status === 'pending' ?
 
-                    (<div className="d-flex justify-content-between mt-3 mb-3">
-                        <button
+                                                    <button
 
-                            className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap me-2"
-                            onClick={() => handleShowModal()}
-                            disabled={bookExchangeDetail?.status !== 'available'}
+                                                        className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                                        onClick={() => handleDeleteRequest()}
 
-                        >
-                            Chỉnh sửa thông tin
-                        </button>
-                        <button
+                                                    >
+                                                        <i class="fa-solid fa-x me-2"></i>
+                                                        Hủy yêu cầu
+                                                    </button>
 
-                            className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                            onClick={() => handleShowModalDelete()}
-                            disabled={bookExchangeDetail?.status !== 'available'}
+                                                    : requestForm.status === 'accepted' ?
 
-                        >
-                            Xóa bài đăng <i class="fa-solid fa-trash text-light ms-2"></i>
-                        </button>
-                    </div>)}
+                                                        <button
 
+                                                            className="btn btn-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                                            onClick={() => handleShowModalConfirm()}
 
-                {/* Phần chi tiết sản phẩm với cuộn riêng */}
+                                                        >
+                                                            <i class="fa-solid fa-check me-2"></i>
+                                                            Xác nhận trao đổi
+                                                        </button>
 
-                <div className="bg-white p-3 rounded shadow-sm" >
-                    <div className="mb-4">
-                        <h1 className="fs-4 fw-bold text-primary mb-3">{bookExchangeDetail?.title} (<span className="fs-3 text-danger fw-bold">
-                            {bookExchangeDetail?.creditPoints} đ
-                        </span>)</h1>
-
-                        <p className="mb-2">
-                            <i className="bi bi-book-half me-2"></i>
-                            Tình trạng sách: <strong>{getConditionBadge(bookExchangeDetail?.condition)}</strong>
-                        </p>
-
-                        <p className="mb-2">
-                            <i className="bi bi-person-fill me-2"></i>
-                            Tác giả: <strong>{bookExchangeDetail?.author}</strong>
-                        </p>
-                    </div>
-
-                    <div className="d-flex align-items-center mb-2">
-                        <span className="me-2 text-warning">
-                            <i className="bi bi-check-circle"></i>
-                        </span>
-                        <span className="badge bg-success text-white">
-                            {getStatusBadge(bookExchangeDetail?.status)}
-                        </span>
+                                                        :
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-warning w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                                            onClick={() => handleNavigateToDetail()}
+                                                        >
+                                                            Thông tin giao dịch
+                                                            <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i>
+                                                        </button>
+                                        )
+                                )
+                        }
 
                     </div>
 
-                    <div className="d-flex align-items-center mb-3">
+                    {(user?._id === bookExchangeDetail?.ownerId?._id) &&
 
-                        <span className="fs-3 text-danger fw-bold">
-                            {bookExchangeDetail?.point}
-                        </span>
-                    </div>
+                        (<div className="d-flex justify-content-between mt-3 mb-3">
+                            <button
+
+                                className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap me-2"
+                                onClick={() => handleShowModal()}
+                                disabled={bookExchangeDetail?.status !== 'available'}
+
+                            >
+                                Chỉnh sửa thông tin
+                            </button>
+                            <button
+
+                                className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                onClick={() => handleShowModalDelete()}
+                                disabled={bookExchangeDetail?.status !== 'available'}
+
+                            >
+                                Xóa bài đăng <i class="fa-solid fa-trash text-light ms-2"></i>
+                            </button>
+                        </div>)}
+
+
+                    {/* Phần chi tiết sản phẩm với cuộn riêng */}
+
+                    <div className="bg-white p-3 rounded shadow-sm" >
+                        <div className="mb-4">
+                            <h1 className="fs-4 fw-bold text-primary mb-3">{bookExchangeDetail?.title} (<span className="fs-3 text-danger fw-bold">
+                                {bookExchangeDetail?.creditPoints} đ
+                            </span>)</h1>
+
+                            <p className="mb-2">
+                                <i className="bi bi-book-half me-2"></i>
+                                Tình trạng sách: <strong>{getConditionBadge(bookExchangeDetail?.condition)}</strong>
+                            </p>
+
+                            <p className="mb-2">
+                                <i className="bi bi-person-fill me-2"></i>
+                                Tác giả: <strong>{bookExchangeDetail?.author}</strong>
+                            </p>
+                        </div>
+
+                        <div className="d-flex align-items-center mb-2">
+                            <span className="me-2 text-warning">
+                                <i className="bi bi-check-circle"></i>
+                            </span>
+                            <span className="badge bg-success text-white">
+                                {getStatusBadge(bookExchangeDetail?.status)}
+                            </span>
+
+                        </div>
+
+                        <div className="d-flex align-items-center mb-3">
+
+                            <span className="fs-3 text-danger fw-bold">
+                                {bookExchangeDetail?.point}
+                            </span>
+                        </div>
 
 
 
-                    <div className="card p-4 shadow-lg">
-                        <h1 className="card-title fs-3 fw-bold mb-3 text-center">Ghi chú</h1>
-                        <p className="card-text fs-5 fw-bold text-primary bg-light p-2 rounded">
-                            {bookExchangeDetail?.description}
-                        </p>
+                        <div className="card p-4 shadow-lg">
+                            <h1 className="card-title fs-3 fw-bold mb-3 text-center">Ghi chú</h1>
+                            <p className="card-text fs-5 fw-bold text-primary bg-light p-2 rounded">
+                                {bookExchangeDetail?.description}
+                            </p>
 
 
                     </div>
@@ -517,10 +565,11 @@ const PostExchangeDetail = () => {
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={openProgress}
 
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>}
-            <ToastContainer />
+                >
+                    <CircularProgress color="inherit" />
+                </Backdrop>}
+                <ToastContainer />
+            </div>
         </div>
     );
 }

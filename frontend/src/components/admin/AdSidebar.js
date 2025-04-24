@@ -40,7 +40,7 @@ const AdSidebar = () => {
       >
         <div className="p-4 text-center border rounded shadow-sm bg-light">
           <h3 className="h3 text-primary d-flex align-items-center justify-content-center gap-2">
-             BookShop
+            BookShop
           </h3>
           <hr />
           <div className="d-flex flex-column align-items-center">
@@ -76,22 +76,21 @@ const AdSidebar = () => {
                 className={`nav-link d-flex justify-content-between align-items-center text-dark`}
               >
                 <span className="d-flex align-items-center">
-                  <i className="fas fa-shopping-cart me-2"></i>Sản Phẩm
-                </span>
+                  <i className="fas fa-shopping-cart me-2"></i>Sản Phẩm</span>
                 <i className={`fas ${dropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
               </Link>
               {dropdownOpen && (
                 <ul className="nav flex-column ms-3"
-                
+
                 >
                   <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
                     <Link
                       to="/admin/category-book"
                       className={`nav-link ${isActive('/admin/category-book') ? 'bg-primary text-white' : 'text-dark'}`}
-                      onClick={(e) =>{
-                        
+                      onClick={(e) => {
+
                         e.stopPropagation()
-                      } } 
+                      }}
                     >
                       Loại Sách
                     </Link>
@@ -141,8 +140,7 @@ const AdSidebar = () => {
             </li>
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
               <Link
-                to="/admin/users"
-                className={`nav-link ${isActive('/admin/users') ? 'bg-primary text-white' : 'text-dark'} d-flex align-items-center`}
+                to="/admin/users" className={`nav-link ${isActive('/admin/users') ? 'bg-primary text-white' : 'text-dark'} d-flex align-items-center`}
               >
                 <i className="fas fa-user me-2"></i> <span>Người dùng</span>
               </Link>
@@ -157,48 +155,48 @@ const AdSidebar = () => {
               </Link>
             </li>
             <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-  <Link
-    onClick={(e) => {
-      e.preventDefault();
-      toggleExchangeDropdown();
-    }}
-    className="nav-link d-flex justify-content-between align-items-center text-dark"
-  >
-    <span className="d-flex align-items-center">
-      <i className="fas fa-exchange-alt me-2"></i>Trao đổi sách
-    </span>
-    <i className={`fas ${exchangeOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
-  </Link>
+              <Link
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleExchangeDropdown();
+                }}
+                className="nav-link d-flex justify-content-between align-items-center text-dark"
+              >
+                <span className="d-flex align-items-center">
+                  <i className="fas fa-exchange-alt me-2"></i>Trao đổi sách
+                </span>
+                <i className={`fas ${exchangeOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
+              </Link>
 
-  {exchangeOpen && (
-    <ul className="nav flex-column ms-3">
-      <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
-        <Link
-          to="/admin/exchange-books"
-          className={`nav-link ${isActive('/admin/exchange-books') ? 'bg-primary text-white' : 'text-dark'}`}
-        >
-          Danh sách trao đổi
-        </Link>
-      </li>
-      <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
-        <Link
-          to="/admin/exchange-books/create"
-          className={`nav-link ${isActive('/admin/exchange-books/create') ? 'bg-primary text-white' : 'text-dark'}`}
-        >
-          Chi tiết giao dịch
-        </Link>
-      </li>
-      <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
-        <Link
-          to="/admin/exchange-status"
-          className={`nav-link ${isActive('/admin/exchange-status') ? 'bg-primary text-white' : 'text-dark'}`}
-        >
-          Tố cáo
-        </Link>
-      </li>
-    </ul>
-  )}
-</li>
+              {exchangeOpen && (
+                <ul className="nav flex-column ms-3">
+                  <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
+                    <Link
+                      to="/admin/exchange-books"
+                      className={`nav-link ${isActive('/admin/exchange-books') ? 'bg-primary text-white' : 'text-dark'}`}
+                    >
+                      Danh sách trao đổi
+                    </Link>
+                  </li>
+                  <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
+                    <Link
+                      to="/admin/exchange-books/create"
+                      className={`nav-link ${isActive('/admin/exchange-books/create') ? 'bg-primary text-white' : 'text-dark'}`}
+                    >
+                      Chi tiết giao dịch
+                    </Link>
+                  </li>
+                  <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
+                    <Link
+                      to="/admin/exchange-status"
+                      className={`nav-link ${isActive('/admin/exchange-status') ? 'bg-primary text-white' : 'text-dark'}`}
+                    >
+                      Tố cáo
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
 
             <li className="nav-item" onClick={logoutFunc} style={{ borderBottom: '1px solid #e0e0e0' }}>
               <Link
