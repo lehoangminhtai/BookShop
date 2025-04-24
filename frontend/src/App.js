@@ -31,6 +31,7 @@ import AdDiscount from './pages/admin/AdDiscount';
 import AdShipping from './pages/admin/AdShipping';
 import AdUser from './pages/admin/AdUser';
 import AdLog from './pages/admin/AdLog';
+import AdBookExchange from './pages/admin/AdBookExchange';
 
 // Exchange
 import HomeExchange from './pages/exchange/HomeExchange';
@@ -60,6 +61,8 @@ const AdminRoutes = [
   { path: "/admin/shipping", element: <AdShipping /> },
   { path: "/admin/users", element: <AdUser /> },
   { path: "/admin/logs", element: <AdLog /> },
+  { path: "/admin/exchange-books", element: <AdBookExchange /> },
+  { path: "/admin/exchange-books/detail/:bookExchangeId", element: <PostExchangeDetail /> },
 ];
 
 function AppContent() {

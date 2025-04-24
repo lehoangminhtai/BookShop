@@ -8,7 +8,7 @@ const bookExchangeSchema = new mongoose.Schema({
     images: [{ type: String }],
     publisher: { type: String },
     publicationYear: { type: Number },
-    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "CategoryBook", required: true },
     condition: {
         type: String,
         required: true,
