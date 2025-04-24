@@ -5,7 +5,7 @@ import Pagination from "@mui/material/Pagination";
 //service
 import '../../css/user/HomeExchange.scss'
 import { getBookExchanges } from "../../services/exchange/bookExchangeService";
-import { getCategoryBooks } from "../../services/categoryBookService";
+import { getListCategoryBooks } from "../../services/exchange/bookExchangeService";
 
 //userContext
 import { useStateContext } from "../../context/UserContext";
@@ -93,7 +93,7 @@ const HomeExchange = () => {
 
     const fetchCategories = async () => {
         try {
-            const response = await getCategoryBooks();
+            const response = await getListCategoryBooks();
             setCategoryBooks(response.data);  // Store categories in state
         } catch (error) {
             console.log("Error fetching categories:", error);
