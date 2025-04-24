@@ -6,6 +6,9 @@ import { logout } from '../../actions/UserAction';
 
 const AdSidebar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [exchangeOpen, setExchangeOpen] = useState(false);
+
+
   const { user, setUser } = useStateContext();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -20,6 +23,7 @@ const AdSidebar = () => {
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
+  const toggleExchangeDropdown = () => setExchangeOpen(!exchangeOpen);
 
   const isActive = (path) => location.pathname === path;
 
@@ -152,6 +156,50 @@ const AdSidebar = () => {
                 <span>Kiểm tra Log</span>
               </Link>
             </li>
+            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
+  <Link
+    onClick={(e) => {
+      e.preventDefault();
+      toggleExchangeDropdown();
+    }}
+    className="nav-link d-flex justify-content-between align-items-center text-dark"
+  >
+    <span className="d-flex align-items-center">
+      <i className="fas fa-exchange-alt me-2"></i>Trao đổi sách
+    </span>
+    <i className={`fas ${exchangeOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
+  </Link>
+
+  {exchangeOpen && (
+    <ul className="nav flex-column ms-3">
+      <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
+        <Link
+          to="/admin/exchange-books"
+          className={`nav-link ${isActive('/admin/exchange-books') ? 'bg-primary text-white' : 'text-dark'}`}
+        >
+          Danh sách trao đổi
+        </Link>
+      </li>
+      <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
+        <Link
+          to="/admin/exchange-books/create"
+          className={`nav-link ${isActive('/admin/exchange-books/create') ? 'bg-primary text-white' : 'text-dark'}`}
+        >
+          Chi tiết giao dịch
+        </Link>
+      </li>
+      <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
+        <Link
+          to="/admin/exchange-status"
+          className={`nav-link ${isActive('/admin/exchange-status') ? 'bg-primary text-white' : 'text-dark'}`}
+        >
+          Tố cáo
+        </Link>
+      </li>
+    </ul>
+  )}
+</li>
+
             <li className="nav-item" onClick={logoutFunc} style={{ borderBottom: '1px solid #e0e0e0' }}>
               <Link
                 to="/logout"
