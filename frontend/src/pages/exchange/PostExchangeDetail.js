@@ -6,6 +6,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import '../../css/user/ProductDetail.scss'
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
+import React from "react";
+import Slider from "react-slick";
+import '../../css/bootstrap.min.css'
+import '../../css/style.css'
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 import ReviewUser from '../../components/customer/BookExchange/ReviewUser';
 import ListUserRequest from '../../components/customer/BookExchange/ListUserRequest';
@@ -21,6 +27,13 @@ import { useChatStore } from '../../store/useChatStore';
 
 
 const PostExchangeDetail = () => {
+    const settings = {
+        dots: true,
+        infinite: true,
+        speed: 500,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+    };
     const { bookExchangeId } = useParams();
     const { user } = useStateContext();
     const [bookExchangeDetail, setBookExchangeDetail] = useState(null);
@@ -47,7 +60,7 @@ const PostExchangeDetail = () => {
     const [showListRequesterForm, setShowListRequesterForm] = useState(false);
 
     //chat
-    const {setSelectedUser} = useChatStore();
+    const { setSelectedUser } = useChatStore();
 
     const navigate = useNavigate();
     const exchangeButtonRef = useRef(null);
@@ -66,7 +79,7 @@ const PostExchangeDetail = () => {
             console.log(response);
             if (response.data.success) {
                 setBookExchangeDetail(response.data.bookExchange);
-                
+
             }
 
         } catch (error) {
@@ -119,7 +132,7 @@ const PostExchangeDetail = () => {
     }, [bookExchangeId])
 
     useEffect(() => {
-        
+
     }, [user?._id])
 
     const handleSendRequest = () => {
@@ -258,7 +271,7 @@ const PostExchangeDetail = () => {
         setShowModalConfirm(false);
     }
 
-    const handleNavigateToDetail = () =>{
+    const handleNavigateToDetail = () => {
         navigate(`/exchange/exchange-info-detail/${requestForm.requestId}`)
     }
 
@@ -275,7 +288,21 @@ const PostExchangeDetail = () => {
         <div className="container mt-4">
 
             <div className="row">
-
+                {bookExchangeDetail?.images.length > 1 ? 
+                <div className="bg-white p-3 rounded shadow-sm  align-items-center" >
+                    <Slider {...settings}>
+                        {bookExchangeDetail?.images.map((image) => (
+                            <img
+                                alt={`${bookExchangeDetail?.title}`}
+                              
+                                src={image}
+                                style={{  maxHeight: '100px', objectFit: 'cover' }}
+                                className="img-fluid w-90 d-block rounded" 
+                            />
+                        ))}
+                    </Slider>
+                </div>
+                : 
                 <div className="bg-white p-3 rounded shadow-sm d-flex justify-content-center align-items-center">
                     <img
                         alt={`${bookExchangeDetail?.title}`}
@@ -285,6 +312,7 @@ const PostExchangeDetail = () => {
                         ref={exchangeButtonRef}
                     />
                 </div>
+}
                 {requestForm.bookExchangeMethod !== '' && (
                     <div className="card my-3 shadow">
                         <div className="card-header text-dark fw-bold">
@@ -292,7 +320,7 @@ const PostExchangeDetail = () => {
                             {requestForm.status === 'pending' ? <span className="badge bg-warning text-dark ms-2">Chờ xác nhận</span> : requestForm.status === 'accepted'
                                 ? <span className="badge bg-success text-white ms-2">Đã chấp nhận</span> : requestForm.status === 'cancelled'
                                     ? <span className="badge bg-danger text-white ms-2">Đã bị hủy</span> : requestForm.status === 'processing'
-                                    ? <span className="badge bg-primary text-white ms-2">Đang giao dịch</span> : <span className="badge bg-success text-white ms-2">Đã trao đổi</span>}
+                                        ? <span className="badge bg-primary text-white ms-2">Đang giao dịch</span> : <span className="badge bg-success text-white ms-2">Đã trao đổi</span>}
                         </div>
                         <div className="card-body">
                             {requestForm.bookExchangeMethod === "points" ? (

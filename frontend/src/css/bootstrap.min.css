@@ -8620,6 +8620,12 @@ body.no-scroll {
     cursor: pointer !important
 }
 
+.slick-slide img {
+    width: 22% !important;
+    display: block;  /* Đảm bảo ảnh không bị inline */
+    margin: 0 auto; 
+
+}
 .slick-prev, .slick-next {
     z-index: 1010;
    
