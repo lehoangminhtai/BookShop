@@ -13,7 +13,8 @@ const AdBookExchange = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [limit, setLimit] = useState(10);
-    const [totalItems, setTotalItems] = useState(0); // Tổng số sách
+    const [totalItems, setTotalItems] = useState(0);
+    const [status, setStatus] = useState('pending');
 
     const navigate = useNavigate();
 
@@ -22,6 +23,7 @@ const AdBookExchange = () => {
             const params = new URLSearchParams({
                 page: String(currentPage),
                 limit: String(limit),
+                status: String(status),
             });
             const response = await getBookExchanges(params.toString());
             console.log("response", response);
@@ -36,11 +38,30 @@ const AdBookExchange = () => {
     };
     useEffect(() => {
         fetchExchangeBooks();
-    }, [currentPage, limit]);
+    }, [currentPage, limit, status]);
 
     const handleViewDetails = (exchangeId) => {
         navigate(`/admin/exchange-books/detail/${exchangeId}`)
     }
+    const getStatusBadge = (status) => {
+        const config = {
+            pending: { color: "bg-warning", icon: "fa-clock", text: "Chưa duyệt" },
+            available: { color: "bg-success", icon: "fa-check-circle", text: "Đã duyệt" },
+            processing: { color: "bg-info", icon: "fa-sync-alt", text: "Đang trao đổi" },
+            completed: { color: "bg-primary", icon: "fa-star", text: "Hoàn thành" },
+        };
+
+        const { color, icon, text } = config[status] || { color: "bg-secondary", icon: "fa-question-circle", text: "Không xác định" };
+
+        return (
+            <span className={`badge ${color} text-white`}>
+                <i className={`fas me-1 ${icon}`}></i>
+                {text}
+            </span>
+        );
+    };
+
+
 
     return (
         <div className="d-flex">
@@ -49,9 +70,18 @@ const AdBookExchange = () => {
                 {/* Header actions */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <input type="text" placeholder="Search..." className="form-control w-25" />
-                    <button className="btn btn-primary ms-2" >
-                        Thêm mới
-                    </button>
+                    <select className="form-select w-auto rounded-pill shadow-sm border-0 bg-light text-dark"
+                            onChange={(e) => setStatus(e.target.value)}
+                            style={{ minWidth: '180px' }}
+                        >
+                            
+                            <option value="pending">🕒 Chưa duyệt</option>
+                            <option value="available">✅ Đã duyệt</option>
+                            <option value="processing">🔄 Đang trao đổi</option>
+                            <option value="completed">🌟 Hoàn thành</option>
+                            <option value="">Tất cả</option>
+                        </select>
+
                 </div>
 
                 {/* Book Table */}
@@ -68,6 +98,7 @@ const AdBookExchange = () => {
                             <th>Điểm</th>
                             <th>Vị trí</th>
                             <th>Ngày tạo</th>
+                            <th>Trạng thái</th>
 
                             <th></th> {/* Cột hành động: xem, sửa, xóa */}
                         </tr>
@@ -103,6 +134,9 @@ const AdBookExchange = () => {
                                     <td>{book.creditPoints}</td>
                                     <td>{book.location}</td>
                                     <td>{new Date(book.createdAt).toLocaleDateString('vi-VN')}</td>
+                                    <td>
+                                        {getStatusBadge(book.status)}
+                                    </td>
                                     <td>
                                         <button className="btn btn-primary" onClick={() => handleViewDetails(book._id)}>Xem chi tiết</button>
                                     </td>
