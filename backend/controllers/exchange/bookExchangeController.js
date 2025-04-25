@@ -116,6 +116,9 @@ const getBooksExchanges = async (req, res) => {
             };
         }
 
+        if (req.query.status) {
+            query.status = req.query.status;
+        }
 
         const totalBooks = await BookExchange.countDocuments(query); // Tổng số sách
         const books = await BookExchange.find(query)
