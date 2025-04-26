@@ -318,7 +318,6 @@ const PostExchangeDetail = () => {
 
     return (
         <div className="d-flex">
-          {user?.role === 1 && (<AdSidebar />)}
             <div className="container mt-4" style={{ marginLeft: user?.role === 1 ? '11px' : '9px' }}>
 
                 <div className="row">
