@@ -29,6 +29,7 @@ const bookExchangeRoutes = require('./routes/exchange/bookExchangeRoute');
 const exchangeRequestRoutes = require('./routes/exchange/exchangeRequestRoute');
 const exchangeInforRoutes = require('./routes/exchange/exchangeInforRoute');
 const messageRoutes = require('./routes/exchange/messageRoute');
+const userReviewRoutes = require('./routes/exchange/userReviewRoute');
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
@@ -72,6 +73,7 @@ app.use('/api/book-exchange', bookExchangeRoutes);
 app.use('/api/exchange-requests', exchangeRequestRoutes);
 app.use('/api/exchange-infor', exchangeInforRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/user-reviews', userReviewRoutes);
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);

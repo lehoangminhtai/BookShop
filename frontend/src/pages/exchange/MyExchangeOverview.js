@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { useStateContext } from "../../context/UserContext";
 import ExchangeInforForm from '../../pages/exchange/ExchangeInfoForm';
 import ExchangeInfoConfirmForm from '../../components/customer/BookExchange/ExchangeInfoConfirmForm';
-
+import UserReviewForm from '../../components/customer/BookExchange/UserReviewForm';
 //service
 import {
     getExchangeRequestsByUserId, getRequestsByRequesterSer, getExchangeRequestsByOwnerBook, acceptExchangeRequest,
@@ -14,6 +14,7 @@ import {
 import { getUserInfo } from '../../services/userService'
 import { getBookExchangeSer } from '../../services/exchange/bookExchangeService'
 import { getExchangeInforSer } from '../../services/exchange/exchangeInforService';
+import { checkIfRequestIdExists } from '../../services/exchange/userReviewService';
 
 const MyExchangeOverview = () => {
 
@@ -25,6 +26,23 @@ const MyExchangeOverview = () => {
 
     const [startExchangeRequestId, setStartExchangeRequestId] = useState(null);
     const [confirmRequestId, setConfirmRequestId] = useState(null);
+
+    const [showModal, setShowModal] = useState(false);
+    const [reviewExchange, setReviewExchange] = useState(null);
+
+    const handleShowModal = (exchange) => {
+        setReviewExchange(exchange);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setReviewExchange(null);
+    };
+
+    const handleSubmitReview = (reviewData) => {
+        handleCloseModal();
+    };
 
     const handleStartExchange = (requestId) => {
         setStartExchangeRequestId(requestId);
@@ -199,8 +217,19 @@ const MyExchangeOverview = () => {
         fetchData();
     }, [userId, activeTab]);
 
+    const checkReviewExists = async (requestId) => {
+        try {
+            const response = await checkIfRequestIdExists(requestId);
+            return response.data.exist;
+        } catch (error) {
+            console.error("Error checking request ID:", error);
+            return false;
+        }
+    };
+
     const renderActionButtons = (request) => {
 
+        
         if (request.status === "pending" && request.isOwner) {
             return <button
                 className="btn btn-success me-2"
@@ -299,8 +328,21 @@ const MyExchangeOverview = () => {
         }
 
         if (request.status === "completed") {
-            return <button className="btn btn-secondary"
-                onClick={() => handleNavigateToDetail(request.id)}>Xem chi tiết giao dịch</button>;
+            return (
+                <>
+                    <button
+                        className="btn btn-secondary me-2"
+                        onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            handleShowModal(request)
+                        }}
+                    >Đánh giá người dùng</button>
+                    <button className="btn btn-info"
+                        onClick={() => handleNavigateToDetail(request.id)}>Xem chi tiết giao dịch</button>
+
+                </>
+            );
         }
 
         return null;
@@ -479,7 +521,22 @@ const MyExchangeOverview = () => {
                             fetchData();
                         }} requestId={confirmRequestId} />
                     )}
+                    {reviewExchange && (
+                        <div className="modal-overlay" style={{ marginTop: "50px" }}>
+                            <div className="modal-content">
+                                <button className="close-btn" onClick={handleCloseModal}>&times;</button>
+                                <UserReviewForm
 
+                                    onClose={handleCloseModal}
+                                    onSubmit={handleSubmitReview}
+                                    reviewerId={userId} // Truyền danh sách sách của đơn hàng vào ReviewForm
+                                    reviewedUser={reviewExchange.partner}
+                                    requestId={reviewExchange.id}
+                                />
+
+                            </div>
+                        </div>
+                    )}
                 </div>
 
             </div>
