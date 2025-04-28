@@ -4,8 +4,15 @@ import { serverUrl } from "./config"
 
 const API = axios.create({ baseURL: `${serverUrl}/api/payments`})
 
-export const getAllPayments = async (page = 1, limit = 10) => 
-    await API.get(`/?page=${page}&limit=${limit}`);
+export const getAllPayments = async (queryParams = "") => {
+    try {
+        const res = await API.get(`/?${queryParams}`);
+        return res.data;
+    } catch (error) {
+        return { success: false, message: error.message
+        };
+    }
+}
 
 export const getPaymentByTransactionId = async (transactionId) => await API.get(`/${transactionId}`)
 
