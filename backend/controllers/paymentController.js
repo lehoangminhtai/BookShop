@@ -40,8 +40,8 @@ exports.getPaymentByOrderId = async (req, res) => {
     try {
         const { orderId } = req.params;
         const payment = await Payment.findOne({ orderId: orderId })
-        .populate('orderId') 
-        .populate('userId'); 
+            .populate('orderId')
+            .populate('userId');
 
         if (!payment) {
             return res.status(404).json({ message: 'Payment not found' });
@@ -69,11 +69,11 @@ exports.getUserPayments = async (req, res) => {
 exports.updatePaymentStatus = async (req, res) => {
     try {
         const { transactionId } = req.params;
-        const { paymentStatus,finalAmount } = req.body;
+        const { paymentStatus, finalAmount } = req.body;
 
         const payment = await Payment.findOneAndUpdate(
             { transactionId },
-            { paymentStatus: paymentStatus, finalAmount :finalAmount},
+            { paymentStatus: paymentStatus, finalAmount: finalAmount },
             { new: true }
         );
 
@@ -93,23 +93,78 @@ exports.getAllPayments = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10; // Số lượng mục trên mỗi trang, mặc định là 10
         const skip = (page - 1) * limit;
 
-        // Lấy danh sách thanh toán có phân trang
-        const payments = await Payment.find({})
-            .sort({ paymentDate: -1 })
-            .skip(skip)
-            .limit(limit)
-            .populate({
-                path: 'orderId',
-                select: 'address orderStatus finalAmount'
-            })
-            .populate({
-                path: 'userId',
-                select: 'fullName email phone'
-            });
+        const query = [];
 
-        // Tính tổng số đơn hàng
-        const totalPayments = await Payment.countDocuments();
-        const totalPages = Math.max(Math.ceil(totalPayments / limit), 1);
+        // Kiểm tra các query string từ client
+        if (req.query.paymentStatus) {
+            query.push({ $match: { paymentStatus: req.query.paymentStatus } });
+        }
+
+        if (req.query.paymentMethod) {
+            query.push({ $match: { paymentMethod: req.query.paymentMethod } });
+        }
+
+        if (req.query.orderStatus) {
+            query.push({
+                $lookup: {
+                    from: 'orders', // Tên collection của bảng Order
+                    localField: 'orderId', // Trường `orderId` trong Payment
+                    foreignField: '_id', // Trường `_id` trong Order
+                    as: 'orderInfo' // Alias cho kết quả join
+                }
+            });
+            query.push({ $unwind: '$orderInfo' }); // Đảm bảo mỗi payment chỉ có một order liên kết
+            query.push({ $match: { 'orderInfo.orderStatus': req.query.orderStatus } }); // Lọc theo `orderStatus`
+        }
+
+        // Tìm danh sách thanh toán có phân trang
+        const payments = await Payment.aggregate([
+            ...query,
+            { $sort: { paymentDate: -1 } }, // Sắp xếp theo ngày thanh toán giảm dần
+            { $skip: skip }, // Phân trang: bỏ qua các bản ghi trước
+            { $limit: limit }, // Giới hạn số bản ghi
+            {
+                $lookup: {
+                    from: 'users', // Tên collection của bảng User
+                    localField: 'userId', // Trường `userId` trong Payment
+                    foreignField: '_id', // Trường `_id` trong User
+                    as: 'userInfo' // Alias cho kết quả join
+                }
+            },
+            {
+                $lookup: {
+                    from: 'orders', // Tên collection của bảng Order
+                    localField: 'orderId', // Trường `orderId` trong Payment
+                    foreignField: '_id', // Trường `_id` trong Order
+                    as: 'orderInfo' // Alias cho kết quả join
+                }
+            },
+            {
+                $project: {
+                    transactionId: 1,
+                    orderId: { $arrayElemAt: ['$orderInfo', 0] }, // Lấy orderInfo duy nhất
+                    userId: { $arrayElemAt: ['$userInfo', 0] }, // Lấy userInfo duy nhất
+                    paymentMethod: 1,
+                    paymentStatus: 1,
+                    finalAmount: 1,
+                    paymentDate: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    __v: 1
+                }
+            }
+        ]);
+
+        // Tính tổng số thanh toán với các điều kiện tương tự
+        const totalPaymentsResult = await Payment.aggregate([
+            ...query,
+            {
+                $count: 'total' // Đếm số lượng thanh toán thỏa mãn điều kiện
+            }
+        ]);
+
+        const totalPayments = totalPaymentsResult[0]?.total || 0; // Lấy tổng số thanh toán
+        const totalPages = Math.max(Math.ceil(totalPayments / limit), 1); // Tính số trang
 
         res.status(200).json({
             success: true,
@@ -122,4 +177,5 @@ exports.getAllPayments = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
