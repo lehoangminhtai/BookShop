@@ -93,6 +93,15 @@ const getBooksExchanges = async (req, res) => {
 
         const query = {};
 
+        if (req.query.search) {
+            const searchRegex = new RegExp(req.query.search, 'i'); // 'i' = không phân biệt hoa thường
+            query.$or = [
+                { title: { $regex: searchRegex } },
+                { author: { $regex: searchRegex } }
+                // thêm field nào bạn muốn search
+            ];
+        }
+
         if (req.query.location) {
             query.location = req.query.location;
         }
