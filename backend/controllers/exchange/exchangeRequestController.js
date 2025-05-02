@@ -1,6 +1,7 @@
 const ExchangeRequest = require('../../models/exchange/exchangeRequestModel');
 const BookExchange = require('../../models/exchange/bookExchangeModel');
 const User = require('../../models/userModel');
+const ExchangeInfor = require('../../models/exchange/exchangeInforModel');
 
 const createExchangeRequest = async (req, res) => {
     try {
@@ -256,6 +257,11 @@ const cancelExchangeRequest = async (req, res) => {
 
         await bookRequested.save();
         await exchangeRequest.save();
+
+        const exchangeInfor = await ExchangeInfor.findOne({requestId: requestId});
+        if (exchangeInfor) {
+            await ExchangeInfor.findByIdAndDelete(exchangeInfor._id);
+        }
 
         res.status(200).json({ success: true, message: 'Yêu cầu trao đổi đã được hủy' });
     } catch (error) {
