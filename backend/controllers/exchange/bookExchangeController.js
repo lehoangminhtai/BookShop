@@ -3,6 +3,7 @@ const cloudinary = require("../../utils/cloudinary");
 const BookExchange = require("../../models/exchange/bookExchangeModel");
 const ExchangeRequest = require('../../models/exchange/exchangeRequestModel');
 const { logAction } = require("../../middleware/logMiddleware.js");
+const User = require("../../models/userModel");
 
 const calculatePoints = ({ condition, publicationYear, pageCount, description, images }) => {
     let points = 0;
