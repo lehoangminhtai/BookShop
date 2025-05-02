@@ -129,6 +129,9 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
         setSelectedUser(requester);
         navigate(`/exchange/chat`);
     }
+    const handleNavigateToDetail = (requesterId) => {
+        navigate(`/exchange/exchange-info-detail/${requesterId}`)
+    }
 
     return (
         <div className="modal show fade" tabIndex="-1" style={{ display: "block" }}>
@@ -220,6 +223,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                             <button
                                                                 type="button"
                                                                 className="btn btn-outline-success d-flex align-items-center justify-content-center"
+                                                                onClick={() => handleNavigateToDetail(request._id)}
                                                             >
                                                                 Thông tin giao dịch
                                                                 <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i>

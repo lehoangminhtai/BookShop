@@ -78,6 +78,10 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
         setMessage('');
 
         try {
+            if(!exchangeInfor){
+                toast.error('Vui lòng chờ chủ sách xác nhận trước');
+                return;
+            }
             if (!formData.fullName_requester || !formData.contactPhone_requester) {
                 toast.error('Vui lòng nhập thông tin người nhận!');
                 return;
@@ -116,6 +120,7 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
                     <div className="modal-body">
                         <div className="container mt-4">
                             <div className="card shadow-lg p-4">
+                                {exchangeInfor ?(
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-3">
                                         <label className="form-label text-dark">Họ Tên (chủ sách):</label>
@@ -174,6 +179,12 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
                                     )}
 
                                 </form>
+                                ): (<>
+                                <h3 className='h3 text-danger fw-bold'> Vui lòng chờ chủ sách xác nhận trước</h3>
+                                <button className="btn btn-primary w-100 mt-3" onClick={() => onClose()}>
+                                                Đồng ý <i className="ms-1 fas fa-check"></i>
+                                            </button>
+                                </>)}
                             </div>
 
                         </div>

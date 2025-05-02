@@ -172,14 +172,25 @@ const ExchangeInfoDetail = (props) => {
                         <hr className="flex-grow-1 mx-3 text-primary" style={{ height: "1px" }} />
 
                         <div className="text-center">
+                            {request?.exchangeMethod === 'book'?
+                            <>
                             <img
                                 src={request?.exchangeBookId?.images[0]}
                                 style={{ width: "150px", height: "160px" }}
                             ></img>
+                          
                             <p className="mt-2 fw-bold text-dark"
                                 style={{ maxWidth: "150px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
                             >{request?.exchangeBookId?.title}</p>
                             <h5 className='h5  text-danger fw-bold'>{request?.exchangeBookId?.creditPoints} đ</h5>
+                            </> 
+                            :
+                            <h2 className="h2 text-center">
+                            <span className="badge bg-danger text-white px-3 py-2 rounded-pill">
+                                💰 {creditDiff} đ
+                            </span>
+                        </h2> 
+                            }
                             <div className="mt-2">
                                 <span className="badge bg-danger px-3 py-1">
                                     <i className="bi bi-person-lines-fill me-1"></i> Người yêu cầu
@@ -279,10 +290,10 @@ const ExchangeInfoDetail = (props) => {
                     {/* Hiển thị thông tin bù điểm */}
                     {request && (
                         <div className="text-center my-4">
-                            {request.bookRequestedId.creditPoints !== request.exchangeBookId.creditPoints ? (
+                            {request.bookRequestedId?.creditPoints !== request.exchangeBookId?.creditPoints ? (
                                 <div className="alert alert-info d-flex flex-column align-items-center gap-2 p-3 shadow-sm">
                                     <i className="fa-solid fa-scale-balanced text-primary fs-3"></i>
-                                    {request.bookRequestedId.creditPoints > request.exchangeBookId.creditPoints ? (
+                                    {request.bookRequestedId?.creditPoints > request.exchangeBookId?.creditPoints ? (
                                         <p className="mb-0 fw-bold text-dark">
                                             <span className="text-danger">{infoForm?.fullName_requester}</span> sẽ trả thêm
                                             <span className="text-primary fs-4"> {creditDiff} điểm</span> cho
