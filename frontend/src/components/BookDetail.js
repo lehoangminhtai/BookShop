@@ -6,6 +6,7 @@ import { useBookContext } from "../hooks/useBookContext";
 import { useStateContext } from '../context/UserContext'
 //service
 import { addItemToCart } from '../services/cartService';
+import { serverUrl } from "../services/config";
 
 const BookDetail = ({ book }) => {
   const { dispatch } = useBookContext();
@@ -15,7 +16,7 @@ const BookDetail = ({ book }) => {
 
   useEffect(() => {
     const fetchBookSaleDetails = async () => {
-      const response = await fetch(`http://localhost:4000/api/bookSales/${book._id}`);
+      const response = await fetch(`${serverUrl}/api/bookSales/${book._id}`);
       const data = await response.json();
 
       if (response.ok) {

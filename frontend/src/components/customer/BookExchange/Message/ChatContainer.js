@@ -44,7 +44,7 @@ const ChatContainer = () => {
   }
 
   return (
-    <div className="d-flex flex-column  position-relative" style={{ height: "100%" }}>
+    <div className="d-flex flex-column  position-relative" style={{ height: "73vh" }}>
       <ChatHeader />
 
       {/* Khung tin nhắn cuộn được */}
@@ -112,7 +112,7 @@ const ChatContainer = () => {
 
       {/* Message Input cố định ở dưới */}
       <div
-        className="position-absolute bottom-0 start-0 end-0 bg-white shadow-sm"
+        className="position-absolute bottom-0 start-0 end-0 bg-white "
         style={{ zIndex: 100 }}
       >
         <MessageInput />

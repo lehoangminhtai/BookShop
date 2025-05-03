@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 //service
 import { getExchangeInforSer, updateExchangeInforSer } from '../../../services/exchange/exchangeInforService';
 //format
@@ -23,13 +25,20 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const [openProgress, setOpenProgress] = useState(false);
+    const handleCloseProgress = () => {
+        setOpenProgress(false);
+    };
+    const handleOpenProgress = () => {
+        setOpenProgress(true);
+    };
 
     const getExchangeInfor = async () => {
         try {
+            handleOpenProgress();
             const res = await getExchangeInforSer(requestId);
-            console.log(res.exchangeInfor);
             setExchangeInfor(res.exchangeInfor);
-
+            handleCloseProgress();
 
         } catch (error) {
             toast.error('Lỗi khi lấy thông tin giao dịch: ' + error.message);
@@ -69,6 +78,22 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
         setMessage('');
 
         try {
+            if(!exchangeInfor){
+                toast.error('Vui lòng chờ chủ sách xác nhận trước');
+                return;
+            }
+            if (!formData.fullName_requester || !formData.contactPhone_requester) {
+                toast.error('Vui lòng nhập thông tin người nhận!');
+                return;
+            }
+            if (formData.contactPhone_requester.length < 10) {
+                toast.error('Số điện thoại người nhận không hợp lệ!');
+                return;
+            }
+            if (formData.contactPhone_owner.length < 10) {
+                toast.error('Số điện thoại chủ sách không hợp lệ!');
+                return;
+            }
             const dataToSend = { ...formData, requestId };
 
             const res = await updateExchangeInforSer(dataToSend); // Thêm hàm cập nhật
@@ -95,6 +120,7 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
                     <div className="modal-body">
                         <div className="container mt-4">
                             <div className="card shadow-lg p-4">
+                                {exchangeInfor ?(
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-3">
                                         <label className="form-label text-dark">Họ Tên (chủ sách):</label>
@@ -153,6 +179,12 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
                                     )}
 
                                 </form>
+                                ): (<>
+                                <h3 className='h3 text-danger fw-bold'> Vui lòng chờ chủ sách xác nhận trước</h3>
+                                <button className="btn btn-primary w-100 mt-3" onClick={() => onClose()}>
+                                                Đồng ý <i className="ms-1 fas fa-check"></i>
+                                            </button>
+                                </>)}
                             </div>
 
                         </div>
@@ -160,6 +192,13 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
                 </div>
             </div>
             <ToastContainer />
+            {openProgress && <Backdrop
+                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={openProgress}
+
+            >
+                <CircularProgress color="inherit" />
+            </Backdrop>}
         </div>
     );
 };

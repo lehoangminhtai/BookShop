@@ -56,10 +56,10 @@ const AdLog = () => {
                                 <tr key={log._id}>
                                     <td>{new Date(log.createdAt).toLocaleString()}</td>
                                     <td className="fw-bold">{log.action}</td>
-                                    <td className={`${log.user.role === 1 && 'text-danger'}`}>{log.user.role === 0 ? 'Người dùng ' : 'Quản trị: '}{log.user.fullName}
-                                        <p className="small text-dark"><i>{log.user.email}</i></p>
+                                    <td className={`${log.user?.role === 1 && 'text-danger'}`}>{log.user?.role === 0 ? 'Người dùng ' : 'Quản trị: '}{log.user?.fullName}
+                                        <p className="small text-dark"><i>{log.user?.email}</i></p>
                                     </td>
-                                    <td>{log.description}</td>
+                                    <td>{log?.description}</td>
                                 </tr>
                             ))
                         ) : (

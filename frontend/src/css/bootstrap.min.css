@@ -8620,6 +8620,12 @@ body.no-scroll {
     cursor: pointer !important
 }
 
+.slick-slide img {
+    width: 22% !important;
+    display: block;  /* Đảm bảo ảnh không bị inline */
+    margin: 0 auto; 
+
+}
 .slick-prev, .slick-next {
     z-index: 1010;
    
@@ -8692,6 +8698,10 @@ body.no-scroll {
 .slide-in-right {
     animation: slideInFromRight 0.5s ease-out;
 }
+
+.slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
 
 @media(min-width: 576px) {
     .float-sm-start {
@@ -12781,3 +12791,14 @@ body.no-scroll {
         opacity: 1;
     }
 }
+
+@keyframes slideUp {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }

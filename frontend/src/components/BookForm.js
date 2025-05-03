@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useDropzone } from 'react-dropzone'; // Import Dropzone
 
 import { createBook, fetchBooks } from "../services/bookService";
+import { serverUrl } from "../services/config";
 
 const BookForm = ({onClose}) => {
     const { dispatch } = useBookContext();
@@ -50,7 +51,7 @@ const BookForm = ({onClose}) => {
 
     useEffect(() => {
         const fetchCategories = async () => {
-            const response = await fetch('/api/categoryBooks');
+            const response = await fetch(`${serverUrl}/api/categoryBooks`);
             const json = await response.json();
             if (response.ok) {
                 setCategories(json);

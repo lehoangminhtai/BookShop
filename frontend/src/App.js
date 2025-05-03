@@ -111,12 +111,12 @@ function AppContent() {
             <Route
               key={path}
               path={path}
-              element={<AdminRoute>{element}</AdminRoute>}
+              element={element}
             />
           ))}
         </Routes>
       </div>
-      {location.pathname !== '/checkout' && !isAdminRoute && <Footer />} {/* Chỉ hiển thị Footer khi không phải là trang /checkout */}
+      {location.pathname !== '/checkout' && location.pathname !== '/exchange/chat' && !isAdminRoute && <Footer />} {/* Chỉ hiển thị Footer khi không phải là trang /checkout */}
       <Routes>
 
       </Routes>

@@ -5,7 +5,7 @@ import Pagination from "@mui/material/Pagination";
 //service
 import '../../css/user/HomeExchange.scss'
 import { getBookExchanges } from "../../services/exchange/bookExchangeService";
-import { getCategoryBooks } from "../../services/categoryBookService";
+import { getListCategoryBooks } from "../../services/exchange/bookExchangeService";
 
 //userContext
 import { useStateContext } from "../../context/UserContext";
@@ -37,9 +37,12 @@ const HomeExchange = () => {
         categoryId: "",
         condition: "",
         dateFilter: "",
+        search: "",
     });
     const [categoryBooks, setCategoryBooks] = useState([]);
     const [provinces, setProvinces] = useState([]);
+
+    const [keyword, setKeyword] = useState(''); //search
 
     const fetchExchangeBooks = async (page = 1, filters = {}) => {
         try {
@@ -93,7 +96,7 @@ const HomeExchange = () => {
 
     const fetchCategories = async () => {
         try {
-            const response = await getCategoryBooks();
+            const response = await getListCategoryBooks();
             setCategoryBooks(response.data);  // Store categories in state
         } catch (error) {
             console.log("Error fetching categories:", error);
@@ -133,14 +136,7 @@ const HomeExchange = () => {
     }
     const handleCloseModal = () => setShowModal(false);
 
-    const handleChangeInput = (e) => {
-        setSearchQuery(e.target.value)
-    }
-
-    const handleSearch = (e) => {
-        navigate(`/search/${searchQuery.replace(/\s+/g, '-').toLowerCase()}`)
-    }
-
+   
 
     const handleKeyDownClick = (event, nextButtonRef) => {
         if (event.key === "Enter" && nextButtonRef?.current) {
@@ -172,6 +168,9 @@ const HomeExchange = () => {
                                     className="form-control border-2 rounded-start-pill py-3 px-4"
                                     placeholder="Nhập tên sách, tác giả bạn muốn tìm..."
                                     aria-label="Search"
+                                    name="search"
+                                    value={filters.search} 
+                                    onChange={handleFilterChange}
                                 />
                                 <button className="btn btn-primary border-2 rounded-end-pill px-4">
                                     <i className="fa fa-search"></i> Tìm kiếm

@@ -100,7 +100,6 @@ const MyExchangeOverview = () => {
                                 exchangeInfo = exchangeInfoRes.exchangeInfor;
 
                             } catch (err) {
-                                console.error("Lỗi khi lấy exchange info", err);
                             }
                         }
 
@@ -229,11 +228,17 @@ const MyExchangeOverview = () => {
 
     const renderActionButtons = (request) => {
 
-        
-        if (request.status === "pending" && request.isOwner) {
-            return <button
+        if (request.status === "pending"  && request.isOwner) {
+       
+            return(
+            <>
+             <button
                 className="btn btn-success me-2"
-                onClick={() => handleClickRequest(request.id)}>Chấp nhận</button>;
+                onClick={() => handleClickRequest(request.id)}>Chấp nhận</button>
+                <button className=' btn btn-danger'> Hủy </button>
+                </>
+            );
+            
         }
 
         if (request.status === "accepted" && request.exchangeInfo == null) {
@@ -465,13 +470,22 @@ const MyExchangeOverview = () => {
 
                                         <hr className="flex-grow-1 mx-3 text-primary" style={{ height: "1px" }} />
 
+                                        {request.exchangeMethod === "book" ? (
+                                            <div className="d-flex flex-column align-items-center justify-content-center ">
 
-                                        <div className="d-flex flex-column align-items-center justify-content-center ">
-                                            <img src={request.exchangeBook?.images?.[0]} style={{ width: 100, height: 120, objectFit: "cover" }} alt="Sách trao đổi" />
-                                            <p className="mt-2 fw-bold text-dark"
-                                                style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{request.exchangeBook?.title}</p>
-                                            <h5 className='h5  text-danger fw-bold'>{request?.exchangeBook?.creditPoints} đ</h5>
-                                        </div>
+                                                <img src={request.exchangeBook?.images?.[0]} style={{ width: 100, height: 120, objectFit: "cover" }} alt="Sách trao đổi" />
+                                                <p className="mt-2 fw-bold text-dark"
+                                                    style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{request.exchangeBook?.title}</p>
+                                                <h5 className='h5  text-danger fw-bold'>{request?.exchangeBook?.creditPoints} đ</h5>
+                                            </div>
+                                        ) :
+                                            <h2 className="h2 text-center">
+                                                <span className="badge bg-danger text-white px-3 py-2 rounded-pill">
+                                                    💰 {request?.bookRequested?.creditPoints} đ
+                                                </span>
+                                            </h2>
+
+                                        }
                                     </div>
                                 </div>
 

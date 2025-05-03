@@ -1,6 +1,8 @@
 import axios from "axios"
+//service
+import { serverUrl } from "./config"
 
-const API = axios.create({ baseURL: 'http://localhost:4000/api/payments' })
+const API = axios.create({ baseURL: `${serverUrl}/api/payments`})
 
 export const getAllPayments = async (queryParams = "") => {
     try {

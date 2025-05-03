@@ -7,7 +7,8 @@ const Chat = () => {
   const { selectedUser } = useChatStore();
 
   return (
-    <div className="shadow d-flex align-items-center justify-content-center">
+    <div className="d-flex align-items-center justify-content-center " 
+    style={{overflow: "hidden"}}>
       <div className="container py-4">
         <div className=" w-100" >
           <div className="row g-0">

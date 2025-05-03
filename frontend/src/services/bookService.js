@@ -1,7 +1,10 @@
 import axios from "axios"
 import Cookie from 'js-cookie'
+//service
+import { serverUrl } from "./config"
 
-const API = axios.create({ baseURL: 'http://localhost:4000/api/books' })
+const API = axios.create({ baseURL: `${serverUrl}/api/books` })
+const API_GUEST = axios.create({ baseURL: `${serverUrl}/api/books` })
 API.interceptors.request.use((req) => {
     const profile = JSON.parse(Cookie.get('profile'))                           // profile cookie get saved in browser during login
     if (profile) {
@@ -15,7 +18,7 @@ API.interceptors.request.use((req) => {
 })
 
 export const fetchBooks = async () => {
-    const response = await fetch('/api/books');
+    const response = await fetch(`${serverUrl}/api/books`);
     const json = await response.json();
 
     if (!response.ok) {
@@ -26,7 +29,8 @@ export const fetchBooks = async () => {
 }
 
 export const fetchBook = async (id) =>{
-    const response = await fetch(`/api/books/${id}`);
+    const response = await fetch(`${serverUrl}/api/books/${id}`);
+    console.log(response)
     const json = await response.json();
 
     if(!response.ok){

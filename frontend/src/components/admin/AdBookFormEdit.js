@@ -7,6 +7,7 @@ import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDropzone } from 'react-dropzone';
 import { updateBook, fetchBooks } from "../../services/bookService";
+import { serverUrl } from "../../services/config";
 
 const BookFormEdit = ({ book, onClose }) => {
     const [title, setTitle] = useState(book.title || '');
@@ -50,7 +51,7 @@ const BookFormEdit = ({ book, onClose }) => {
 
     useEffect(() => {
         const fetchCategories = async () => {
-            const response = await fetch('/api/categoryBooks');
+            const response = await fetch(`${serverUrl}/api/categoryBooks`);
             const json = await response.json();
             if (response.ok) {
                 setCategories(json);

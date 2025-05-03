@@ -6,8 +6,11 @@ import { addItemToCart } from '../../services/cartService';
 import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
 import '../../css/user/ProductDetail.scss'
+//service
+import { serverUrl } from '../../services/config';
 
 import BookReviews from '../../components/BookReviews';
+import Summarize from '../../components/AI/Summarize';
 
 
 const ProductDetail = () => {
@@ -23,9 +26,11 @@ const ProductDetail = () => {
     const [bookSale, setBookSale] = useState({ price: 0, discount: 0 });
     const priceDiscount = bookSale.price - (bookSale.price * (bookSale.discount / 100));
 
+    const [openModal, setOpenModal] = useState(false);
+
     useEffect(() => {
         const fetchBookSaleDetails = async () => {
-            const response = await fetch(`http://localhost:4000/api/bookSales/${productId}`);
+            const response = await fetch(`${serverUrl}/api/bookSales/${productId}`);
             const data = await response.json();
 
             if (response.ok) {
@@ -242,6 +247,10 @@ const ProductDetail = () => {
         }
     }
 
+    const handleCLick = () => {
+        setOpenModal(!openModal);
+    }
+
     return (
         <div className="container mt-4">
 
@@ -411,6 +420,30 @@ const ProductDetail = () => {
                     <BookReviews bookId={productId} />
                 </div>
             </div>
+            <div className={`chat-box  shadow rounded `} style={{ transition: "transform 0.3s ease, width 0.5s ease", cursor: 'pointer' }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                onClick={() => handleCLick()}
+            >
+                <div className="chat-content"
+                >
+                   <h5
+  className="h5 d-flex align-items-center gap-2"
+  style={{
+    fontWeight: 'bold',
+    color: '#333',
+    textShadow: '1px 1px 2px rgba(0,0,0,0.2)'
+  }}
+>
+  <i className="fas fa-star" style={{ color: '#FFD700' }}></i> {/* Màu vàng kim */}
+  Tóm tắt
+  
+</h5>
+
+                    
+                </div>
+            </div>
+            {openModal && <Summarize onClose={() => handleCLick()} title={bookDetail.title} author = {bookDetail.author} />}
             <ToastContainer />
         </div>
     );

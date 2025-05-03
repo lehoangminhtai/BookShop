@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useStateContext } from '../../../context/UserContext';
 import { toast, ToastContainer } from 'react-toastify';
-import { Link } from 'react-router-dom';
 import ExchangeInforForm from '../../../pages/exchange/ExchangeInfoForm';
+import { useNavigate } from 'react-router-dom';
 //service 
 import { getExchangeRequestByBookRequested, deleteRequestSer, acceptExchangeRequest, cancelExchangeRequest } from '../../../services/exchange/exchangeRequestService';
+//store
+import { useChatStore } from '../../../store/useChatStore';
 
 const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
 
@@ -16,6 +18,9 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
     })
 
     const [startExchangeRequestId, setStartExchangeRequestId] = useState(null);
+
+    const { setSelectedUser } = useChatStore();
+    const navigate = useNavigate();
 
     const handleStartExchange = (requestId) => {
         setStartExchangeRequestId(requestId);
@@ -120,6 +125,13 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
         }
     }
 
+    const handleClickChatButton = (requester) => {
+        setSelectedUser(requester);
+        navigate(`/exchange/chat`);
+    }
+    const handleNavigateToDetail = (requesterId) => {
+        navigate(`/exchange/exchange-info-detail/${requesterId}`)
+    }
 
     return (
         <div className="modal show fade" tabIndex="-1" style={{ display: "block" }}>
@@ -195,6 +207,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                             <button
                                                                 type="button"
                                                                 className="btn btn-primary d-flex align-items-center justify-content-center"
+                                                                onClick={() => handleClickChatButton(request.requesterId)}
                                                             >
                                                                 Nhắn tin
                                                                 <i class="ms-1 fa fa-paper-plane" aria-hidden="true"></i>
@@ -210,6 +223,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                             <button
                                                                 type="button"
                                                                 className="btn btn-outline-success d-flex align-items-center justify-content-center"
+                                                                onClick={() => handleNavigateToDetail(request._id)}
                                                             >
                                                                 Thông tin giao dịch
                                                                 <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i>
@@ -217,6 +231,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                                                             <button
                                                                 type="button"
                                                                 className="btn btn-primary d-flex align-items-center justify-content-center"
+                                                                onClick={() => handleClickChatButton(request.requesterId)}
                                                             >
                                                                 Nhắn tin
                                                                 <i class="ms-1 fa fa-paper-plane" aria-hidden="true"></i>

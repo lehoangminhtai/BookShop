@@ -90,34 +90,52 @@ const AdOrder = () => {
                                 <th className="text-center">STT</th>
                                 <th className="text-center">Người Dùng</th>
                                 <th className="text-center">Thành Tiền</th>
-                                <th className="text-center">
-                                    <select className="text-center" name="paymentMethod" onChange={handleFilterChange} value={filters.paymentMethod}>
-                                        <option value="">Phương thức</option>
-                                        <option value="cash">Tiền mặt</option>
-                                        <option value="momo">Momo</option>
-                                        <option value="zalopay">ZaloPay</option>
-                                    </select>
+                                <th className="text-center"> Phương Thức
+
                                 </th>
                                 <th >
-                                    <select className="text-center" name="paymentStatus" onChange={handleFilterChange} value={filters.paymentStatus}>
-                                        <option value="">Thanh toán</option>
-                                        <option value="pending">Chưa thanh toán</option>
-                                        <option value="success">Đã thanh toán</option>
-                                    </select>
+                                    Thanh toán
                                 </th>
                                 <th>
-                                    
-                                    <select className="text-center" name="orderStatus" onChange={handleFilterChange} value={filters.orderStatus}>
-                                        <option value="" >Trạng thái Đơn</option>
-                                        <option value="pending">Đang chờ</option>
-                                        <option value="confirm">Đã xác nhận</option>
-                                        <option value="shipping">Đang vận chuyển</option>
-                                        <option value="completed">Hoàn thành</option>
-                                        <option value="failed">Thất bại</option>
-                                    </select>
+
+                                    Trạng thái Đơn
                                 </th>
                                 <th className="text-center"></th>
                             </tr>
+                        </thead>
+                        <thead>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th>
+                                <select className="text-center" name="paymentMethod" onChange={handleFilterChange} value={filters.paymentMethod}>
+
+                                    <option value="">Tất cả</option>
+                                    <option value="cash">Tiền mặt</option>
+                                    <option value="momo">Momo</option>
+                                    <option value="zalopay">ZaloPay</option>
+                                </select>
+                            </th>
+                            <th>
+                                <select className="text-center" name="paymentStatus" onChange={handleFilterChange} value={filters.paymentStatus}>
+
+                                    <option value="">Tất cả</option>
+                                    <option value="pending">Chưa thanh toán</option>
+                                    <option value="success">Đã thanh toán</option>
+                                </select>
+                            </th>
+                            <th>
+                                <select className="text-center" name="orderStatus" onChange={handleFilterChange} value={filters.orderStatus}>
+
+                                    <option value="">Tất cả</option>
+                                    <option value="pending">Đang chờ</option>
+                                    <option value="confirm">Đã xác nhận</option>
+                                    <option value="shipping">Đang vận chuyển</option>
+                                    <option value="completed">Hoàn thành</option>
+                                    <option value="failed">Thất bại</option>
+                                </select>
+                            </th>
+                            <th></th>
                         </thead>
                         <tbody>
                             {/* Render danh sách thanh toán từ state payments */}

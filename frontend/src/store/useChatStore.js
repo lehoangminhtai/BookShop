@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { toast } from "react-toastify";
 
 import { io } from 'socket.io-client';
+//service
+import { serverUrl } from "../services/config";
 
 
 //service
@@ -21,7 +23,7 @@ export const useChatStore = create((set, get) => ({
     connectSocket: (user) => {
         if (!user || get().socket?.connected) return;
 
-        const socket = io('http://localhost:4000', {
+        const socket = io(`${serverUrl}`, {
             query: { userId: user._id },
         });
 

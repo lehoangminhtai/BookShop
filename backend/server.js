@@ -29,6 +29,10 @@ const bookExchangeRoutes = require('./routes/exchange/bookExchangeRoute');
 const exchangeRequestRoutes = require('./routes/exchange/exchangeRequestRoute');
 const exchangeInforRoutes = require('./routes/exchange/exchangeInforRoute');
 const messageRoutes = require('./routes/exchange/messageRoute');
+const reportExchangeRoutes = require('./routes/exchange/reportRoute');
+
+//AI
+const summarizeBookRoutes = require('./routes/AI/summarizeBookRoute')
 const userReviewRoutes = require('./routes/exchange/userReviewRoute');
 
 //connect database
@@ -49,7 +53,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
 }));
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin:[ 'http://localhost:3000', 'https://bookshop-vn.onrender.com'] }));
 app.use('/api/books', bookRoutes);
 app.use('/api/categoryBooks', categoryBookRoutes);
 app.use('/api/admin/users', userRoutes);
@@ -73,6 +77,10 @@ app.use('/api/book-exchange', bookExchangeRoutes);
 app.use('/api/exchange-requests', exchangeRequestRoutes);
 app.use('/api/exchange-infor', exchangeInforRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/report_exchange', reportExchangeRoutes);
+
+//AI
+app.use('/api/summarize', summarizeBookRoutes)
 app.use('/api/user-reviews', userReviewRoutes);
 
 app.use((req, res, next) => {
