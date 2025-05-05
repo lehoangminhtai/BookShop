@@ -38,6 +38,8 @@ const MyPosts = () => {
 
     const getStatusBadge = (status) => {
         switch (status) {
+            case "pending":
+                return <span className="status-badge status-pending">⏳ Đang chờ duyệt</span>;
             case "available":
                 return <span className="status-badge status-pending">⏳ Đang đợi trao đổi</span>;
             case "processing":

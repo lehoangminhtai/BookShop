@@ -532,14 +532,13 @@ const PostExchangeDetail = () => {
 
                         </div>
 
-                        <div className="d-flex align-items-center mb-3">
+                        {/* <div className="d-flex align-items-center mb-3">
 
                             <span className="fs-3 text-danger fw-bold">
                                 {bookExchangeDetail?.point}
                             </span>
-                        </div>
-
-
+                        </div> */}
+                        
 
                         <div className="card p-4 shadow-lg">
                             <h1 className="card-title fs-3 fw-bold mb-3 text-center">Ghi chú</h1>
