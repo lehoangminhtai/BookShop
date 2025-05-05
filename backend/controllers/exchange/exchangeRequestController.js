@@ -216,7 +216,7 @@ const getExchangeRequestsByRequester = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        const requests = await ExchangeRequest.find({ requesterId: userId })
+        const requests = await ExchangeRequest.find({ requesterId: userId }).sort({ createdAt: -1 });
 
         res.status(200).json({ success: true, requests });
     } catch (error) {
@@ -297,7 +297,7 @@ const getExchangeRequestsByOwnerBook = async (req, res) => {
         // Lấy tất cả yêu cầu mà cuốn sách được yêu cầu thuộc về user
         const requestsByOwner = await ExchangeRequest.find({
             bookRequestedId: { $in: userBookIds }
-        })
+        }).sort({ createdAt: -1 });
         return res.status(200).json({ success: true, requests: requestsByOwner });
     }
     catch (error) {
@@ -327,6 +327,7 @@ const getExchangeRequestsByUserId = async (req, res) => {
 
         // B4: Gộp 2 danh sách lại
         const allRequests = [...requests, ...requestsByOwner];
+        allRequests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         res.status(200).json({ success: true, requests: allRequests });
     } catch (err) {

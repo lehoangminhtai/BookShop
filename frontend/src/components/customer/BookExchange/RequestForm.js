@@ -148,7 +148,7 @@ const RequestForm = ({ handleCloseModal,checkRequest, bookExchangeId }) => {
                     }
                     if (result.success) {
                         toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
-                            Gửi trao đổi thành công
+                            Gửi yêu cầu trao đổi thành công
                         </div>,
                             {
                                 position: "top-center",
