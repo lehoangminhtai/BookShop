@@ -305,14 +305,19 @@ const deleteBookExchange = async (req, res) => {
 
 const getExchangeBookByUser = async (req, res) => {
     const { userId } = req.params;
-    const { categoryId } = req.query;
-
     try {
-        const filter = { ownerId: userId };
-        if (categoryId) {
-            filter.categoryId = categoryId; 
+        const query = {};
+
+        query.ownerId = userId;
+
+        if (req.query.categoryId) {
+            query.categoryId = req.query.categoryId;
         }
-        const bookExchanges = await BookExchange.find(filter);
+        if (req.query.status) {
+            query.status = req.query.status;
+        }
+
+        const bookExchanges = await BookExchange.find(query);
         if (bookExchanges.length === 0) {
             return res.status(200).json({ success: false, message: "Không tìm thấy sách trao đổi nào" });
         }
