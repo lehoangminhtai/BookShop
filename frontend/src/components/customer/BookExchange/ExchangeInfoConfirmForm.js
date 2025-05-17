@@ -97,9 +97,9 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
             const dataToSend = { ...formData, requestId };
 
             const res = await updateExchangeInforSer(dataToSend); // Thêm hàm cập nhật
-            console.log(res);
+            console.log('response:',res);
             if (res.data.success) {
-                toast.success('Cập nhật giao dịch thành công!');
+                toast.success('Xác nhận giao dịch thành công!');
             }
 
         } catch (error) {

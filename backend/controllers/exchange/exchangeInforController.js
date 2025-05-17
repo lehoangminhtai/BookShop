@@ -2,6 +2,7 @@ const ExchangeInfor = require('../../models/exchange/exchangeInforModel');
 const ExchangeRequest = require('../../models/exchange/exchangeRequestModel');
 const BookExchange = require('../../models/exchange/bookExchangeModel');
 const User = require('../../models/userModel');
+const { updatePoints } = require('../exchange/pointHistoryController');
 
 exports.createExchangeInfor = async (req, res) => {
   try {
@@ -28,7 +29,7 @@ exports.createExchangeInfor = async (req, res) => {
 
     const newExchangeInfor = new ExchangeInfor({
       fullName_owner,
-      fullName_requester:'',
+      fullName_requester: '',
       transactionLocation,
       transactionDate,
       transactionTime,
@@ -51,11 +52,11 @@ exports.createExchangeInfor = async (req, res) => {
 
 exports.getExchangeInfor = async (req, res) => {
   try {
-    const {requestId} = req.params;
+    const { requestId } = req.params;
     if (requestId) {
       const existExchangeInfor = await ExchangeInfor.findOne({ requestId }).populate('requestId')
 
-      if(existExchangeInfor){
+      if (existExchangeInfor) {
         return res.status(200).json({ success: true, message: 'Lấy giao dịch thành công', exchangeInfor: existExchangeInfor });
       }
       return res.status(200).json({ success: false, message: 'Không tìm thấy giao dịch' });
@@ -105,13 +106,8 @@ exports.updateExchangeInfor = async (req, res) => {
     existExchangeInfor.notes = notes || existExchangeInfor.notes;
     existExchangeInfor.status = status || existExchangeInfor.status;
 
-    await existExchangeInfor.save();
 
-    if(status === 'accepted') {
-      exchangeRequest.status = 'processing';
-      await exchangeRequest.save();
-    }
-    
+
     // Save the updated exchange information
 
     // Calculate the points for bookOwner, requester
@@ -123,18 +119,19 @@ exports.updateExchangeInfor = async (req, res) => {
     if (!bookOwner) {
       return res.status(404).json({ success: false, message: 'Người dùng không tồn tại' });
     }
-    
+
     const requester = await User.findById(exchangeRequest.requesterId);
     if (!requester) {
       return res.status(404).json({ success: false, message: 'Người dùng không tồn tại' });
     }
 
-    if (exchangeRequest.exchangeMethod === 'point') {
+    if (exchangeRequest.exchangeMethod === 'points') {
       if (requester.grade < bookRequested.creditPoints) {
         return res.status(400).json({ success: false, message: 'Điểm của người trao đổi không đủ' });
       }
       requester.grade -= bookRequested.creditPoints;
       await requester.save();
+      await updatePoints(requester._id, bookRequested.creditPoints, 'spend', `Điểm đã sử dụng để trao đổi sách ${bookRequested.title}`);
     }
     if (exchangeRequest.exchangeMethod === 'book') {
       const exchangeBook = await BookExchange.findById(exchangeRequest.exchangeBookId);
@@ -150,16 +147,24 @@ exports.updateExchangeInfor = async (req, res) => {
         }
         bookOwner.grade += pointDifference;// cộng số âm
         await bookOwner.save();
+        await updatePoints(bookOwner._id, Math.abs(pointDifference), 'spend', `Điểm đã sử dụng để trao đổi sách ${bookRequested.title}`);
       } else if (pointDifference > 0) {
         if (requester.grade < pointDifference) {
           return res.status(400).json({ success: false, message: 'Bạn không có đủ điểm để bù chênh lệch' });
         }
         requester.grade -= pointDifference;
         await requester.save();
+        await updatePoints(requester._id, pointDifference, 'spend', `Điểm đã sử dụng để trao đổi sách ${bookRequested.title}`);
       }
     }
 
+    await existExchangeInfor.save();
 
+    if (status === 'accepted') {
+      exchangeRequest.status = 'processing';
+      await exchangeRequest.save();
+    }
+    
     res.status(200).json({ success: true, message: 'Cập nhật thông tin giao dịch thành công', exchangeInfor: existExchangeInfor });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Lỗi khi cập nhật thông tin giao dịch', error: error.message });

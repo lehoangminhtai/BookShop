@@ -14,7 +14,6 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 //component
 import AdSidebar from '../../components/admin/AdSidebar';
-import ReviewUser from '../../components/customer/BookExchange/ReviewUser';
 import ListUserRequest from '../../components/customer/BookExchange/ListUserRequest';
 import RequestForm from '../../components/customer/BookExchange/RequestForm';
 import EditPostForm from '../../components/customer/BookExchange/EditPostForm';
@@ -550,7 +549,7 @@ const PostExchangeDetail = () => {
                         </div>
                     </div>
                     <div className="user-section d-flex justify-content-between align-items-center mt-5">
-                        <Link to={user?._id === bookExchangeDetail?.ownerId ? '/my-post-exchange' : `/user-profile/${bookExchangeDetail?.ownerId?._id}`}
+                        <Link to={`/user-profile/${bookExchangeDetail?.ownerId?._id}`}
                             className="user-profile d-flex justify-content-center text-center align-items-center text-decoration-none">
                             <img alt='user-image' className='rounded-circle me-2 border' style={{ width: '50px', height: '50px' }}
                                 src={bookExchangeDetail?.ownerId?.image}

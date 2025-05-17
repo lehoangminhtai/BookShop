@@ -1,6 +1,7 @@
 const UserReview = require("../../models/exchange/userReviewModel");
 const User = require("../../models/userModel");
 const cloudinary = require("../../utils/cloudinary");
+const { updatePoints } = require('../exchange/pointHistoryController');
 
 const createUserReview = async (req, res) => {
     try {
@@ -31,7 +32,8 @@ const createUserReview = async (req, res) => {
         if (imageUrls.length > 0) gradeIncrease += 1;
 
         await User.findByIdAndUpdate(reviewerId, { $inc: { grade: gradeIncrease } });
-
+        await updatePoints(reviewerId, gradeIncrease, 'earn', `Nhận điểm từ đánh giá người dùng`);
+            
 
         res.status(201).json({ success: true, message: "Đánh giá đã được tạo thành công.", review: newReview });
     } catch (error) {
@@ -39,20 +41,63 @@ const createUserReview = async (req, res) => {
         res.status(500).json({ success: false, message: "Đã xảy ra lỗi khi tạo đánh giá." });
     }
 };
-const checkIfRequestIdExists = async (requestId) => {
+const checkIfRequestIdExists = async (req, res) => {
+    const { requestId, userId } = req.params;
     try {
-        const review = await UserReview.findOne({ exchangeId: requestId });
+        const review = await UserReview.findOne({
+            exchangeId: requestId,
+            reviewerId: userId,
+        });
         let exists = false;
         if (review) {
             exists = true;
         }
-        res.status(201).json({ success: true, message: "Đánh giá đã được tạo thành công.", exist : exists });
+        res.status(200).json({
+            success: true,
+            exist: exists,
+            message: exists
+                ? "Người dùng đã đánh giá request này."
+                : "Người dùng chưa đánh giá request này.",
+        });
     } catch (error) {
-        console.error("Lỗi khi kiểm tra requestId:", error);
-        throw new Error("Có lỗi khi kiểm tra requestId.");
+        res.status(500).json({
+            success: false,
+            message: "Có lỗi khi kiểm tra.",
+        });
     }
 };
+const getReviewsByReviewedUser = async (req, res) => {
+    const { reviewedUserId } = req.params;
 
+    try {
+        const reviews = await UserReview.find({ reviewedUserId })
+            .populate('reviewerId', 'fullName image');
+
+        const averageRating = reviews.length > 0
+            ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
+            : 0;
+
+        const ratingCounts = [0, 0, 0, 0, 0]; // [1 sao, 2 sao, ..., 5 sao]
+        reviews.forEach((review) => {
+            ratingCounts[review.rating - 1]++;
+        });
+
+        res.status(200).json({
+            success: true,
+            averageRating,
+            ratingCounts,
+            reviews
+        });
+
+    } catch (error) {
+        console.error('Error fetching user reviews:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Không thể lấy danh sách đánh giá người dùng',
+            error: error.message
+        });
+    }
+};
 module.exports = {
-    createUserReview, checkIfRequestIdExists
+    createUserReview, checkIfRequestIdExists, getReviewsByReviewedUser
 };

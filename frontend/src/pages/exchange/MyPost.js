@@ -9,7 +9,7 @@ import '../../css/user/MyPost.scss'
 import { getBookExchangesByUser } from "../../services/exchange/bookExchangeService";
 
 const MyPosts = () => {
-    
+
     const [posts, setPosts] = useState([]);
 
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ const MyPosts = () => {
     const fetchPosts = async () => {
         try {
             const response = await getBookExchangesByUser(userId);
-            if(response.data.success){
+            if (response.data.success) {
                 setPosts(response.data.bookExchanges);
             }
         } catch (error) {
@@ -63,34 +63,44 @@ const MyPosts = () => {
             </div>
             <h2 className="h2 text-center mt-5 mb-5 text-primary">-- <span className=""> Bài đăng của tôi </span> --</h2>
             <div className="row">
-                {posts.map((post) => (
-                    <div key={post?._id} className="col-md-6 col-lg-4 mb-4">
-                        <div
-                            className="card p-3 shadow-lg card-custom"
-                            onClick={() => handleClickPost(post?._id)}
-                            style={{ cursor: "pointer" }}
-                        >
-                            <div className="d-flex">
-                                <img
-                                    src={post?.images[0]}
-                                    className="img-fluid card-img-custom me-3"
-                                    alt={post?.title}
-                                />
-                                <div className="flex-grow-1">
-                                    <h3 className="h6 text-truncate-2 fw-bold text-dark">
-                                        {post?.title}
-                                    </h3>
-                                    <p className="text-muted mb-1">
-                                        📅 Ngày đăng: {new Date(post?.createdAt).toLocaleDateString('vi-VN')}
-                                    </p>
-                                    
-                                    <div className="mt-2">{getStatusBadge(post?.status)}</div>
-                                   
+                {posts.length === 0 ? (
+                    <div className="col-12 text-center text-muted fs-5">
+                        Bạn chưa có bài đăng nào.
+                    </div>
+                ) : (
+                    posts.map((post) => (
+                        <div key={post?._id} className="col-md-6 col-lg-4 mb-4">
+                            <div
+                                className="card p-3 shadow-lg card-custom"
+                                onClick={() => handleClickPost(post?._id)}
+                                style={{ cursor: "pointer" }}
+                            >
+                                <div className="d-flex">
+                                    <img
+                                        src={post?.images[0]}
+                                        className="img-fluid card-img-custom me-3"
+                                        alt={post?.title}
+                                    />
+                                    <div className="flex-grow-1">
+                                        <h3 className="h6 text-truncate-2 fw-bold text-dark">
+                                            {post?.title}
+                                        </h3>
+                                        <p className="text-muted mb-1">
+                                            📅 Ngày đăng: {new Date(post?.createdAt).toLocaleDateString('vi-VN')}
+                                        </p>
+
+                                        <div className="mt-2 d-flex justify-content-between align-items-center">
+                                            {getStatusBadge(post?.status)}
+                                            <span className="text-warning fw-bold fs-5">
+                                                {post?.creditPoints} điểm
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
         </div>
     );

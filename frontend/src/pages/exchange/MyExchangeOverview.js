@@ -53,7 +53,7 @@ const MyExchangeOverview = () => {
     const fetchData = async () => {
         try {
             let response;
-            if (activeTab === "in-progress" || activeTab === "completed" || activeTab === "canceled" || activeTab === "all") {
+            if (activeTab === "in-progress" || activeTab === "completed" || activeTab === "cancelled" || activeTab === "all") {
                 response = await getExchangeRequestsByUserId(userId);
             } else if (activeTab === "sent") {
                 response = await getRequestsByRequesterSer(userId);
@@ -70,8 +70,8 @@ const MyExchangeOverview = () => {
                     filteredRequests = data.filter(req => req.status === 'accepted' || req.status === 'processing' || req.status === 'owner_confirmed' || req.status === 'requester_confirmed');
                 } else if (activeTab === "completed") {
                     filteredRequests = data.filter(req => req.status === "completed");
-                } else if (activeTab === "canceled") {
-                    filteredRequests = data.filter(req => req.status === "canceled");
+                } else if (activeTab === "cancelled") {
+                    filteredRequests = data.filter(req => req.status === "cancelled");
                 }
                 const requests = await Promise.all(
                     filteredRequests.map(async (request) => {
@@ -100,8 +100,10 @@ const MyExchangeOverview = () => {
                                 exchangeInfo = exchangeInfoRes.exchangeInfor;
 
                             } catch (err) {
+                                console.error("Lỗi khi lấy thông tin trao đổi:", err);
                             }
                         }
+                        const hasReview = await checkReviewExists(request._id, userId);
 
                         return {
                             id: request._id,
@@ -112,6 +114,7 @@ const MyExchangeOverview = () => {
                             partner: partner,
                             exchangeInfo: exchangeInfo ? exchangeInfo : null,
                             isOwner: isOwner,
+                            hasReview: hasReview,
                         }
 
                     })
@@ -214,11 +217,11 @@ const MyExchangeOverview = () => {
 
     useEffect(() => {
         fetchData();
-    }, [userId, activeTab]);
+    }, [userId, activeTab, showModal]);
 
-    const checkReviewExists = async (requestId) => {
+    const checkReviewExists = async (requestId, userId) => {
         try {
-            const response = await checkIfRequestIdExists(requestId);
+            const response = await checkIfRequestIdExists(requestId, userId);
             return response.data.exist;
         } catch (error) {
             console.error("Error checking request ID:", error);
@@ -226,19 +229,20 @@ const MyExchangeOverview = () => {
         }
     };
 
+
     const renderActionButtons = (request) => {
 
-        if (request.status === "pending"  && request.isOwner) {
-       
-            return(
-            <>
-             <button
-                className="btn btn-success me-2"
-                onClick={() => handleClickRequest(request.id)}>Chấp nhận</button>
-                <button className=' btn btn-danger'> Hủy </button>
+        if (request.status === "pending" && request.isOwner) {
+
+            return (
+                <>
+                    <button
+                        className="btn btn-success me-2"
+                        onClick={() => handleClickRequest(request.id)}>Chấp nhận</button>
+                    <button className=' btn btn-danger'> Hủy </button>
                 </>
             );
-            
+
         }
 
         if (request.status === "accepted" && request.exchangeInfo == null) {
@@ -269,7 +273,7 @@ const MyExchangeOverview = () => {
                 return (
                     <>
                         <button className="btn btn-info me-2"
-                            onClick={() => handleConfirmRequest(request.id)}>Xem thông tin</button>
+                            onClick={() => handleStartExchange(request.id)}>Xem thông tin</button>
                         <button className="btn btn-danger">Hủy giao dịch</button>
                     </>
                 );
@@ -335,16 +339,24 @@ const MyExchangeOverview = () => {
         if (request.status === "completed") {
             return (
                 <>
+                    {!request.hasReview && (
+                        <button
+                            className="btn btn-secondary me-2"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                handleShowModal(request);
+                            }}
+                        >
+                            Phản hồi người trao đổi
+                        </button>
+                    )}
                     <button
-                        className="btn btn-secondary me-2"
-                        onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            handleShowModal(request)
-                        }}
-                    >Đánh giá người dùng</button>
-                    <button className="btn btn-info"
-                        onClick={() => handleNavigateToDetail(request.id)}>Xem chi tiết giao dịch</button>
+                        className="btn btn-info"
+                        onClick={() => handleNavigateToDetail(request.id)}
+                    >
+                        Xem chi tiết giao dịch
+                    </button>
 
                 </>
             );
@@ -388,8 +400,8 @@ const MyExchangeOverview = () => {
                     </li>
                     <li className="nav-item">
                         <button
-                            className={`nav-link fw-bold ${activeTab === 'canceled' ? 'active fw-bold text-danger' : ''}`}
-                            onClick={() => setActiveTab("canceled")}
+                            className={`nav-link fw-bold ${activeTab === 'cancelled' ? 'active fw-bold text-danger' : ''}`}
+                            onClick={() => setActiveTab("cancelled")}
                         >
                             Đã hủy
                         </button>
@@ -432,8 +444,8 @@ const MyExchangeOverview = () => {
                                                                 : request.status === "requester_confirmed"
                                                                     ? "Chờ xác nhận hoàn thành từ hai phía"
                                                                     : request.status === "completed"
-                                                                        ? "Hoàn thành trao đổi"
-                                                                        : request.status === "canceled"
+                                                                        ? "Hoàn tất trao đổi"
+                                                                        : request.status === "cancelled"
                                                                             ? "Đã hủy"
                                                                             : "Đang xử lý"
                                         }

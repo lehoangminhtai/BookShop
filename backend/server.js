@@ -30,6 +30,7 @@ const exchangeRequestRoutes = require('./routes/exchange/exchangeRequestRoute');
 const exchangeInforRoutes = require('./routes/exchange/exchangeInforRoute');
 const messageRoutes = require('./routes/exchange/messageRoute');
 const reportExchangeRoutes = require('./routes/exchange/reportRoute');
+const pointHistoryRoutes = require('./routes/exchange/pointHistoryRoute');
 
 //AI
 const summarizeBookRoutes = require('./routes/AI/summarizeBookRoute')
@@ -78,6 +79,7 @@ app.use('/api/exchange-requests', exchangeRequestRoutes);
 app.use('/api/exchange-infor', exchangeInforRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/report_exchange', reportExchangeRoutes);
+app.use('/api/point-history', pointHistoryRoutes);
 
 //AI
 app.use('/api/summarize', summarizeBookRoutes)
