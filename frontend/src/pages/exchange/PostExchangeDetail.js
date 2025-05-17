@@ -558,7 +558,6 @@ const PostExchangeDetail = () => {
                         </Link>
                         <button className='btn btn-primary'
                             onClick={() => handleClickChatButton()}
-                            disabled={bookExchangeDetail?.status !== 'available'}
                         ><span className='me-2'>Trao đổi</span>
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>

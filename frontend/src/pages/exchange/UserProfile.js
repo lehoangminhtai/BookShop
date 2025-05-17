@@ -10,6 +10,9 @@ import { getReviewsByReviewedUser } from '../../services/exchange/userReviewServ
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { useStateContext } from "../../context/UserContext";
+//store
+import { useChatStore } from '../../store/useChatStore';
+
 const UserProfile = () => {
     const { userId } = useParams();
     const [posts, setPosts] = useState([]);
@@ -24,6 +27,8 @@ const UserProfile = () => {
     const navigate = useNavigate();
 
     const { user: currentUser } = useStateContext();
+
+    const { setSelectedUser } = useChatStore();
 
     const [reviewsData, setReviewsData] = useState({
         averageRating: 0,
@@ -95,6 +100,15 @@ const UserProfile = () => {
             setPointHistory(response.data.pointHistory);
         } else {
             console.log("Failed to fetch point history: ", response.data.message);
+        }
+    }
+
+    const handleClickChatButton = () => {
+        if (currentUser) {
+            setSelectedUser(currentUser._id);
+            navigate(`/exchange/chat`);
+        } else {
+            navigate('/auth?redirect=/exchange-post-detail/${bookExchangeId}`, { replace: true });');
         }
     }
 
@@ -195,10 +209,12 @@ const UserProfile = () => {
                         </div>
                     </div>
 
-                    <button className="btn btn-light d-flex align-items-center align-self-center">
-                        <span className='me-2'>Nhắn tin</span>
-                        <i className="fas fa-paper-plane me-2"></i>
-                    </button>
+                    
+                    <button className='btn btn-light d-flex align-items-center align-self-center'
+                            onClick={() => handleClickChatButton()}
+                        ><span className='me-2'>Nhắn tin</span>
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
                 </div>
             </div>
             {currentUser?._id === userId ? (
