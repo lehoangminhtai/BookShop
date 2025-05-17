@@ -344,7 +344,7 @@ const HomeExchange = () => {
                             </div>
                             {isChatBoxExpanded && (
                                 <>
-                                    <Link to='/my-post-exchange'>
+                                    <Link to={`/user-profile/${user?._id}`}>
                                         <div className="option-exchange mb-2">
                                             <i className="fa fa-book me-2"></i>
                                             <span className="fs-6">Bài đăng của tôi</span>

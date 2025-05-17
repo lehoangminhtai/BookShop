@@ -305,9 +305,17 @@ const deleteBookExchange = async (req, res) => {
 
 const getExchangeBookByUser = async (req, res) => {
     const { userId } = req.params;
+    const { categoryId } = req.query;
 
     try {
-        const bookExchanges = await BookExchange.find({ ownerId: userId });
+        const filter = { ownerId: userId };
+        if (categoryId) {
+            filter.categoryId = categoryId; 
+        }
+        const bookExchanges = await BookExchange.find(filter);
+        if (bookExchanges.length === 0) {
+            return res.status(200).json({ success: false, message: "Không tìm thấy sách trao đổi nào" });
+        }
         res.status(200).json({ success: true, bookExchanges });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách sách trao đổi của người dùng' });

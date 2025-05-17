@@ -2,7 +2,7 @@ const ExchangeRequest = require('../../models/exchange/exchangeRequestModel');
 const BookExchange = require('../../models/exchange/bookExchangeModel');
 const User = require('../../models/userModel');
 const ExchangeInfor = require('../../models/exchange/exchangeInforModel');
-
+const { updatePoints } = require('../exchange/pointHistoryController');
 const createExchangeRequest = async (req, res) => {
     try {
         const { bookRequestedId, exchangeMethod, exchangeBookId, requesterId } = req.body;
@@ -161,7 +161,7 @@ const acceptExchangeRequest = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Sách yêu cầu không khả dụng' });
         }
 
-        if (exchangeRequest.exchangeMethod === 'point') {
+        if (exchangeRequest.exchangeMethod === 'points') {
             if (requester.grade < bookRequested.creditPoints) {
                 return res.status(400).json({ success: false, message: 'Điểm của người trao đổi không đủ' });
             }
@@ -382,9 +382,11 @@ const completeExchangeRequest = async (req, res) => {
                 return res.status(404).json({ success: false, message: 'Người dùng không tồn tại' });
             }
 
-            if (exchangeRequest.exchangeMethod === 'point') {
+            if (exchangeRequest.exchangeMethod === 'points') {
                 bookOwner.grade += bookRequested.creditPoints;
+
                 await bookOwner.save();
+                await updatePoints(bookOwner._id, bookRequested.creditPoints, 'earn', `Nhận điểm từ yêu cầu trao đổi sách ${bookRequested.title}`);
             }
             if (exchangeRequest.exchangeMethod === 'book') {
                 const exchangeBook = await BookExchange.findById(exchangeRequest.exchangeBookId);
@@ -397,11 +399,14 @@ const completeExchangeRequest = async (req, res) => {
                 if (pointDifference > 0) {
                     bookOwner.grade += pointDifference;
                     await bookOwner.save();
+                    await updatePoints(bookOwner._id, pointDifference, 'earn', `Nhận điểm bù chênh lệch từ yêu cầu trao đổi sách ${bookRequested.title}`);
                 } else if (pointDifference < 0) {
                     requester.grade -= pointDifference;// trừ số âm
                     await requester.save();
+                    await updatePoints(requester._id, pointDifference, 'earn', `Nhận điểm bù chênh lệch từ yêu cầu trao đổi sách ${bookRequested.title}`);
                 }
             }
+            
 
         }
         res.status(200).json({ success: true, message: 'Hoàn thành trao đổi thành công' });

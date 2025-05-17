@@ -71,7 +71,7 @@ const UserReviewForm = ({ onClose, onSubmit, reviewerId, reviewedUser, requestId
         <div className="container">
             <ToastContainer />
             <h4 className="mb-4 text-center" style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-                Đánh giá người dùng
+                Phản hồi người trao đổi
             </h4>
 
             <form onSubmit={handleSubmit}>
@@ -158,7 +158,7 @@ const UserReviewForm = ({ onClose, onSubmit, reviewerId, reviewedUser, requestId
                 </div>
 
                 <div className="text-center">
-                    <button type="submit" className="btn btn-primary me-2">Gửi đánh giá</button>
+                    <button type="submit" className="btn btn-primary me-2">Gửi phản hồi</button>
                     <button type="button" className="btn btn-secondary" onClick={onClose}>Hủy</button>
                 </div>
             </form>

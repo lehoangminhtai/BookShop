@@ -13,6 +13,7 @@ const BookReviews = ({ bookId }) => {
     const fetchReviews = async () => {
       try {
         const { data } = await axios.get(`${serverUrl}/api/reviews/${bookId}`);
+        console.log('Response fetching reviews:', data);
         setReviewsData(data);
       } catch (error) {
         console.error('Lỗi khi tải đánh giá:', error);
@@ -78,7 +79,13 @@ const BookReviews = ({ bookId }) => {
                 className="rounded-circle me-2"
                 style={{ width: '40px', height: '40px' }}
               />
-              <span className="fw-bold">{review.userId.fullName}</span>
+              
+              <div className="d-flex flex-column">
+                <span className="fw-bold">{review.userId.fullName}</span>
+                <small className="text-muted">
+                  {new Date(review.createdAt).toLocaleDateString('vi-VN')}
+                </small>
+              </div>
             </div>
             <div className="star-rating mb-1">
               {[...Array(5)].map((_, index) => (
