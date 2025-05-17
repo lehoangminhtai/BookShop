@@ -18,7 +18,6 @@ const UserProfile = () => {
     const [posts, setPosts] = useState([]);
     const [user, setUser] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState(null);
     const [completedExchanges, setCompletedExchanges] = useState(0);
     const [totalPosts, setTotalPosts] = useState(0);
     const [selectedPointType, setSelectedPointType] = useState(null);
@@ -36,6 +35,18 @@ const UserProfile = () => {
         reviews: [],
     });
 
+    const [filters, setFilters] = useState({
+        categoryId: "",
+        status: "",
+    });
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
     const fetchReviews = async () => {
         try {
             const response = await getReviewsByReviewedUser(currentUser?._id);
@@ -48,13 +59,16 @@ const UserProfile = () => {
 
     const { averageRating, ratingCounts, reviews } = reviewsData;
 
-    const fetchPosts = async () => {
+    const fetchPosts = async (filters = {}) => {
 
         let response;
         if (currentUser?._id === userId) {
-            response = await getBookExchangesByUser(userId, selectedCategory);
+            const params = new URLSearchParams({
+                ...filters,
+            });
+            response = await getBookExchangesByUser(userId, params.toString());
         } else {
-            response = await getBookExchangesAvailableByUser(userId, selectedCategory);
+            response = await getBookExchangesAvailableByUser(userId, filters.categoryId);
         }
         console.log(response);
         if (response.data.success) {
@@ -113,15 +127,18 @@ const UserProfile = () => {
     }
 
     useEffect(() => {
-        fetchPosts();
+        fetchPosts(filters);
         fetchUser();
         fetchCompletedExchanges();
         fetchReviews();
     }, [userId]);
 
     useEffect(() => {
-        fetchPosts();
-    }, [userId, selectedCategory]);
+        fetchPosts(filters);
+    }, [userId, filters]);
+
+
+
 
     useEffect(() => {
         fetchCategories();
@@ -138,20 +155,18 @@ const UserProfile = () => {
     const getStatusBadge = (status) => {
         switch (status) {
             case "pending":
-                return <span className="status-badge status-pending">⏳ Đang chờ duyệt bởi quản trị viên</span>;
+                return <span className="status-badge status-pending">⏳ Chưa được duyệt</span>;
             case "available":
                 return <span className="status-badge status-pending">⏳ Đang đợi trao đổi</span>;
             case "processing":
-                return <span className="status-badge status-processing">🔄 Đang xử lý</span>;
+                return <span className="status-badge status-processing">🔄 Đang trao đổi</span>;
             case "completed":
                 return <span className="status-badge status-completed">✅ Đã đổi</span>;
             default:
                 return null;
         }
     };
-    const handleChange = async (selectedOption) => {
-        setSelectedCategory(selectedOption ? selectedOption._id : null);
-    };
+
 
     return (
         <div className="container py-5">
@@ -209,12 +224,17 @@ const UserProfile = () => {
                         </div>
                     </div>
 
-                    
-                    <button className='btn btn-light d-flex align-items-center align-self-center'
-                            onClick={() => handleClickChatButton()}
-                        ><span className='me-2'>Nhắn tin</span>
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
+                    {currentUser?._id !== userId ? (
+                        <>
+                            <button className='btn btn-light d-flex align-items-center align-self-center'
+                                onClick={() => handleClickChatButton()}
+                            ><span className='me-2'>Nhắn tin</span>
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </>
+
+
+                    ) : (<></>)}
                 </div>
             </div>
             {currentUser?._id === userId ? (
@@ -249,16 +269,34 @@ const UserProfile = () => {
             {activeTab === "posts" ? (
                 <>
                     <div className="d-flex justify-content-end">
-                        <div className=" bg-white shadow  mb-3 rounded" style={{ width: "300px" }}>
+                        <div className=" bg-white shadow  mb-3 rounded p-2">
+                            <div className="d-flex gap-2">
+                                {currentUser?._id === userId ? (
+                                    <>
+                                        <select className="form-select"
+                                            onChange={handleFilterChange}
+                                            name="status"
+                                            value={filters.status}
+                                            style={{ minWidth: '200px' }}
+                                        >
+                                            <option value="">Trạng thái</option>
+                                            <option value="pending">⏳ Chưa được duyệt</option>
+                                            <option value="available">⏳ Đang đợi trao đổi</option>
+                                            <option value="processing">🔄 Đang trao đổi</option>
+                                            <option value="completed">✅ Đã đổi</option>
 
-                            <Autocomplete
-                                disablePortal
-                                options={categories}
-                                getOptionLabel={(option) => option.nameCategory}
-                                sx={{ width: 300 }}
-                                onChange={(event, value) => handleChange(value)}
-                                renderInput={(params) => <TextField {...params} label="Loại sách" />}
-                            />
+                                        </select>
+                                    </>
+                                ) : (<></>)}
+                                <select className="form-select" style={{ minWidth: '280px' }} name="categoryId" value={filters.categoryId} onChange={handleFilterChange}>
+                                    <option value="">Thể loại</option>
+                                    {categories.map((category) => (
+                                        <option key={category._id} value={category._id}>
+                                            {category.nameCategory}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div className="row">
@@ -429,10 +467,10 @@ const UserProfile = () => {
                                         <i
                                             key={index}
                                             className={`bi ${filled
-                                                    ? 'bi-star-fill'
-                                                    : half
-                                                        ? 'bi-star-half'
-                                                        : 'bi-star'
+                                                ? 'bi-star-fill'
+                                                : half
+                                                    ? 'bi-star-half'
+                                                    : 'bi-star'
                                                 } text-warning`}
                                         ></i>
                                     );
@@ -488,7 +526,7 @@ const UserProfile = () => {
                                                     } text-warning`}
                                             ></i>
                                         ))}
-                                        
+
                                     </div>
                                     <p>{review.comment}</p>
                                     {review.images && review.images.length > 0 && (
