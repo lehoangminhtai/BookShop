@@ -1,48 +1,51 @@
 const Order = require('../models/orderModel');
 const Discount = require('../models/discountModel');
 const Payment = require('../models/paymentModel');
+const User = require('../models/userModel');
+const Book = require('../models/bookModel');
+const Notification = require("../models/notificationModel");
 const discountController = require('../controllers/discountController')
 const moment = require('moment');
 const { logAction } = require('../middleware/logMiddleware.js');
+const { io, getReceiverSocketId } = require("../utils/socket.js");
 // Tạo đơn hàng mới
 
 exports.createOrder = async (req, res) => {
     try {
-        const { userId, address, itemsPayment, discountCode, shippingFee, totalPrice,paymentMethod} = req.body;
+        const { userId, address, itemsPayment, discountCode, shippingFee, totalPrice, paymentMethod } = req.body;
         const idUser = req.userId
         let discountAmount = 0;
         let discountId = null;
 
         if (discountCode) {
-           
+
             const discountResponse = await discountController.applyDiscount({
                 body: { discountCode, userId, totalPrice }
             });
-           
+
             if (discountResponse.success) {
                 discountAmount = discountResponse.discountAmount;
-               
-                discountId = discountResponse.discountCode; 
+
+                discountId = discountResponse.discountCode;
             }
-           
+
 
         }
-       
+
         const finalAmount = totalPrice - discountAmount + shippingFee;
 
         const newOrder = new Order({
             userId,
             address,
             itemsPayment,
-            discountId, 
+            discountId,
             shippingFee,
             totalPrice,
             finalAmount
         });
 
         const response = await newOrder.save();
-        if(response)
-        {
+        if (response) {
 
             const payment = new Payment({
                 transactionId: `${paymentMethod}_${moment().format('YYMMDD')}_${response._id}`,
@@ -51,17 +54,17 @@ exports.createOrder = async (req, res) => {
                 paymentMethod: paymentMethod,
                 finalAmount: finalAmount,
             });
-            if(await payment.save()){
+            if (await payment.save()) {
                 await logAction(
                     'Mua hàng',
                     idUser,
                     `Người dùng ${idUser} đặt hàng: ${newOrder.finalAmount} vnđ`,
-                    {newOrder,payment}
-                  );
+                    { newOrder, payment }
+                );
             }
             res.status(201).json({ success: true, data: newOrder, payment });
         }
-        
+
     } catch (error) {
         console.log(error)
         res.status(500).json({ success: false, message: error.message });
@@ -71,7 +74,7 @@ exports.createOrder = async (req, res) => {
 // Lấy đơn hàng theo ID
 exports.getOrderById = async (req, res) => {
     try {
-        const {orderId} = req.params;
+        const { orderId } = req.params;
         const order = await Order.findById(orderId).populate('userId').populate('itemsPayment.bookId');
 
         if (!order) {
@@ -88,7 +91,7 @@ exports.getOrderById = async (req, res) => {
 exports.getOrdersByUser = async (req, res) => {
     try {
         const userId = req.params.userId;
-        const orders = await Order.find({ userId }).sort({createdAt:-1}).populate('itemsPayment.bookId');
+        const orders = await Order.find({ userId }).sort({ createdAt: -1 }).populate('itemsPayment.bookId');
 
         res.status(200).json({ success: true, data: orders });
     } catch (error) {
@@ -96,20 +99,35 @@ exports.getOrdersByUser = async (req, res) => {
     }
 };
 
+function formatDate(date) {
+    const d = new Date(date);
+    const day = (`0${d.getDate()}`).slice(-2);
+    const month = (`0${d.getMonth() + 1}`).slice(-2);
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
 // Cập nhật trạng thái đơn hàng (admin)
 exports.updateOrderStatus = async (req, res) => {
     try {
-        const {orderId} = req.params;
+        const { orderId } = req.params;
         const { orderStatus, deliveryAt } = req.body;
         const idUser = req.userId
+
+        const user = await User.findById(idUser);
+
+        if (user.role !== 1) {
+            return res.status(403).json({ success: false, message: "Bạn không có quyền truy cập vào chức năng này" });
+        }
+
         // Nếu trạng thái đơn hàng là 'completed' thì thêm thời gian giao hàng
         const updateData = { orderStatus, deliveryAt };
         if (orderStatus === 'completed') {
-            updateData.deliveryAt =  Date.now();
+            updateData.deliveryAt = Date.now();
         }
         else if (deliveryAt) {
-           
-            updateData.deliveryAt = new Date(deliveryAt); 
+
+            updateData.deliveryAt = new Date(deliveryAt);
         }
 
         const updatedOrder = await Order.findByIdAndUpdate(
@@ -121,12 +139,70 @@ exports.updateOrderStatus = async (req, res) => {
         if (!updatedOrder) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
+
+        const book = await Book.findById(updatedOrder.itemsPayment[0].bookId);
+
+        if (updatedOrder.orderStatus === 'confirm') {
+
+            // Gửi thông báo đến người dùng
+            const notification = await Notification.create({
+                receiverId: updatedOrder.userId,
+                content: `Đơn hàng ${updatedOrder._id} đã được xác nhận.`,
+                link: `/account/orders#`,
+                image: book.images[0],
+            });
+
+            const receiverSocketId = getReceiverSocketId(updatedOrder.userId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("getNotification", notification);
+            }
+        } else if (updatedOrder.orderStatus === 'shipping') {
+
+            const deliveryDate = formatDate(updatedOrder.deliveryAt);
+
+            const notification = await Notification.create({
+                receiverId: updatedOrder.userId,
+                content: `Đơn hàng ${updatedOrder._id} đang được giao. Ngày giao hàng dự kiến: ${deliveryDate}. Vui lòng chú ý theo dõi!`,
+                link: `/account/orders#`,
+                image: book.images[0],
+            });
+
+            const receiverSocketId = getReceiverSocketId(updatedOrder.userId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("getNotification", notification);
+            }
+        } else if (updatedOrder.orderStatus === 'completed') {
+            const notification = await Notification.create({
+                receiverId: updatedOrder.userId,
+                content: `Đơn hàng ${updatedOrder._id} đã hoàn tất. Bạn hãy đánh giá sản phẩm để nhận điểm thưởng nhé.`,
+                link: `/account/orders#`,
+                image: book.images[0],
+            });
+
+            const receiverSocketId = getReceiverSocketId(updatedOrder.userId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("getNotification", notification);
+            }
+        } else if (updatedOrder.orderStatus === 'failed') {
+            const notification = await Notification.create({
+                receiverId: updatedOrder.userId,
+                content: `Đơn hàng ${updatedOrder._id} đã bị hủy. Vui lòng kiểm tra lại thông tin đơn hàng.`,
+                link: `/account/orders#`,
+                image: book.images[0],
+            });
+
+            const receiverSocketId = getReceiverSocketId(updatedOrder.userId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("getNotification", notification);
+            }
+        }
+
         await logAction(
             'Cập nhật trạng thái đơn hàng',
             idUser,
             `Quản trị ${idUser} cập nhật trạng thái đơn hàng: ${orderId + " " + updateData.orderStatus} `,
-            {updatedOrder}
-          );
+            { updatedOrder }
+        );
         res.status(200).json({ success: true, data: updatedOrder });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

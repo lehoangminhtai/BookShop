@@ -4,7 +4,8 @@ const BookExchange = require("../../models/exchange/bookExchangeModel");
 const ExchangeRequest = require('../../models/exchange/exchangeRequestModel');
 const { logAction } = require("../../middleware/logMiddleware.js");
 const User = require("../../models/userModel");
-
+const Notification = require("../../models/notificationModel");
+const { io, getReceiverSocketId } = require("../../utils/socket.js");
 const calculatePoints = ({ condition, publicationYear, pageCount, description, images }) => {
     let points = 0;
     const currentYear = new Date().getFullYear();
@@ -405,6 +406,20 @@ const approvePostExchange = async (req, res) => {
             `Người dùng ${userId} đã duyệt sách trao đổi: ${bookExchange.title}`,
             bookExchange
         );
+
+        const notification = await Notification.create({
+            receiverId: bookExchange.ownerId,
+            content: `Sách "${bookExchange.title}" của bạn đã được duyệt.`,
+            link: `/exchange-post-detail/${bookExchange._id}`,
+            type: "book-approved",
+            image: bookExchange.images[0],
+        });
+
+        const receiverSocketId = getReceiverSocketId(bookExchange.ownerId._id);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("getNotification", notification);
+        }
+        
         res.status(200).json({ success: true, message: 'Duyệt sách trao đổi thành công', bookExchange, });
     } catch (error) {
         return res.status(400).json({ success: false, message: 'Duyệt sách trao đổi thất bại: ' + error.message, });
