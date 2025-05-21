@@ -3,6 +3,10 @@ const User = require("../../models/userModel");
 const cloudinary = require("../../utils/cloudinary");
 const { updatePoints } = require('../exchange/pointHistoryController');
 
+const Notification = require("../../models/notificationModel");
+const { io, getReceiverSocketId } = require("../../utils/socket.js");
+
+
 const createUserReview = async (req, res) => {
     try {
         const { reviewerId, reviewedUserId, exchangeId, rating, comment, images } = req.body;
@@ -34,6 +38,17 @@ const createUserReview = async (req, res) => {
         await User.findByIdAndUpdate(reviewerId, { $inc: { grade: gradeIncrease } });
         await updatePoints(reviewerId, gradeIncrease, 'earn', `Nhận điểm từ đánh giá người dùng`);
             
+        const notification = await Notification.create({
+            receiverId: reviewerId,
+            type: "point",
+            content: `Bạn đã nhận ${gradeIncrease} điểm từ đánh giá của người dùng.`,
+            link: `/user-profile/${reviewerId}`,
+        });
+        
+        const receiverSocketId = getReceiverSocketId(reviewerId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("getNotification", notification);
+        }
 
         res.status(201).json({ success: true, message: "Đánh giá đã được tạo thành công.", review: newReview });
     } catch (error) {

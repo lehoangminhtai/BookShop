@@ -74,13 +74,13 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
             if (isUpdate) {
                 // Gọi API cập nhật giao dịch
                 const res = await updateExchangeInforSer(dataToSend); // Thêm hàm cập nhật
-                if (res.data.succes) {
+                if (res.data.success) {
                     toast.success('Cập nhật giao dịch thành công!');
                 }
             } else {
                 // Gọi API tạo giao dịch
                 const res = await createExchangeInforSer(dataToSend);
-                if (res.data.succes) {
+                if (res.data.success) {
                     toast.success('Tạo giao dịch thành công!');
                 }
             }

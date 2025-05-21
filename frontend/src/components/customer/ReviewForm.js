@@ -7,7 +7,7 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
     const [reviews, setReviews] = useState(
         orderBooks.map((book) => ({
             bookId: book.bookId._id,
-            rating: 0,
+            rating: 5,
             comment: "",
         }))
     );
@@ -121,7 +121,7 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
                             </div>
                         </div>
                         <div className="form-group mt-3">
-                            <label>Bình luận:</label>
+                            <label>Bình luận để nhận được 1 điểm:</label>
                             <textarea
                                 className="form-control"
                                 rows="4"
