@@ -17,4 +17,14 @@ export const getExchangeInforSer = async (requestId) =>{
 }
 
 export const updateExchangeInforSer = async (data) => await API.put(`/update/${data.requestId}`,data)
+
+export const getAllExchangeInforSer = async (page, limit) => {
+    try {
+        const res = await API.get(`/?page=${page}&limit=${limit}`);
+        return res.data;
+    } catch (error) {
+        console.error('Error fetching exchange information:', error);
+        throw error;
+    }
+}
      
