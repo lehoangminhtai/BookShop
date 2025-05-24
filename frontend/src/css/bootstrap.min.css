@@ -8621,7 +8621,7 @@ body.no-scroll {
 }
 
 .slick-slide img {
-    width: 22% !important;
+    width: auto !important;
     display: block;  /* Đảm bảo ảnh không bị inline */
     margin: 0 auto; 
 

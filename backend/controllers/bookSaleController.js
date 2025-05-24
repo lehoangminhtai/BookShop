@@ -125,6 +125,20 @@ const getBookSale = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+const getBookSaleById = async (req, res) => {
+    const { bookSaleId } = req.params;
+
+    try {
+        const bookSale = await BookSale.findById(bookSaleId).populate('bookId', 'title author images');
+        if (!bookSale) {
+            return res.status(404).json({ error: 'No such book sale record' });
+        }
+
+        res.status(200).json({data:bookSale});
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 
 
@@ -436,5 +450,6 @@ module.exports = {
     getBookSalesNotAvailable,
     searchBookSalesByTitle,
     searchBookSales,
-    getBookSalesByCategory
+    getBookSalesByCategory,
+    getBookSaleById
 };

@@ -7,6 +7,8 @@ import { useStateContext } from '../context/UserContext'
 //service
 import { addItemToCart } from '../services/cartService';
 import { serverUrl } from "../services/config";
+import { clickInteractionSer } from "../services/suggestion/suggestionService";
+import { use } from "react";
 
 const BookDetail = ({ book }) => {
   const { dispatch } = useBookContext();
@@ -33,7 +35,11 @@ const BookDetail = ({ book }) => {
 
   const priceDiscount = bookSale.price * (1 - bookSale.discount / 100);
 
-  const handleProductClick = (id) => {
+  const handleProductClick = async (id) => {
+    if (user) {
+      const response = await clickInteractionSer(user._id, bookSale._id)
+      console.log("response click interaction", response)
+    } 
     navigate(`/chi-tiet/${id}`);
   };
 
