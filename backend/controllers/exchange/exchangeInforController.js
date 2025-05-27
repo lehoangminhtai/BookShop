@@ -85,10 +85,7 @@ exports.getExchangeInfor = async (req, res) => {
     if (requestId) {
       const existExchangeInfor = await ExchangeInfor.findOne({ requestId }).populate('requestId')
 
-      if (existExchangeInfor) {
         return res.status(200).json({ success: true, message: 'Lấy giao dịch thành công', exchangeInfor: existExchangeInfor });
-      }
-      return res.status(200).json({ success: false, message: 'Không tìm thấy giao dịch' });
     }
 
   } catch (error) {

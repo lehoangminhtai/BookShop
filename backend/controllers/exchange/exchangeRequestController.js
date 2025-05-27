@@ -344,10 +344,12 @@ const getExchangeRequestById = async (req, res) => {
         const { requestId } = req.params;
 
         const request = await ExchangeRequest.findById(requestId).populate('bookRequestedId').populate('exchangeBookId')
+        const requester = await User.findById(request.requesterId);
+        const owner = await User.findById(request.bookRequestedId.ownerId); 
         if (!request) {
             return res.status(200).json({ success: false });
         }
-        return res.status(200).json({ success: true, data: request });
+        return res.status(200).json({ success: true, data: request, requester, owner });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Lỗi khi lấy yêu cầu trao đổi' });

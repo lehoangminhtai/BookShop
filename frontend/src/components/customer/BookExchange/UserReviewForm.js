@@ -5,11 +5,12 @@ import { useDropzone } from 'react-dropzone';
 import { createUserReview } from "../../../services/exchange/userReviewService";
 import 'react-toastify/dist/ReactToastify.css';
 
-const UserReviewForm = ({ onClose, onSubmit, reviewerId, reviewedUser, requestId }) => {
+const UserReviewForm = ({ onClose, reviewerId, reviewedUser, requestId }) => {
     const [rating, setRating] = useState(5);
     const [hover, setHover] = useState(0);
     const [comment, setComment] = useState("");
     const [images, setImages] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     const reviewedUserId = reviewedUser?._id || null;
 
@@ -30,14 +31,7 @@ const UserReviewForm = ({ onClose, onSubmit, reviewerId, reviewedUser, requestId
         accept: 'image/*',
         multiple: true,
     });
-    const handleStarClick = (value) => {
-        setRating((rating)
 
-        );
-    };
-    const handleCommentChange = (comment) => {
-        setComment(comment);
-    };
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -45,8 +39,7 @@ const UserReviewForm = ({ onClose, onSubmit, reviewerId, reviewedUser, requestId
             toast.warning("Vui lòng chọn số sao.");
             return;
         }
-
-
+        setLoading(true);
         try {
             const res = await createUserReview({
                 reviewerId,
@@ -58,8 +51,8 @@ const UserReviewForm = ({ onClose, onSubmit, reviewerId, reviewedUser, requestId
             });
 
             toast.success("Đánh giá thành công!");
-            onSubmit?.();
-            onClose?.();
+
+            onClose();
         } catch (err) {
             toast.error(err?.response?.data?.message || "Lỗi khi gửi đánh giá");
         }
@@ -69,7 +62,6 @@ const UserReviewForm = ({ onClose, onSubmit, reviewerId, reviewedUser, requestId
 
     return (
         <div className="container">
-            <ToastContainer />
             <h4 className="mb-4 text-center" style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
                 Phản hồi người trao đổi
             </h4>
@@ -147,7 +139,7 @@ const UserReviewForm = ({ onClose, onSubmit, reviewerId, reviewedUser, requestId
                                             right: "0.1rem",
                                             backgroundColor: "white",
                                             padding: "0.5px"
-                                            
+
                                         }}
                                     />
 
@@ -158,7 +150,9 @@ const UserReviewForm = ({ onClose, onSubmit, reviewerId, reviewedUser, requestId
                 </div>
 
                 <div className="text-center">
-                    <button type="submit" className="btn btn-primary me-2">Gửi phản hồi</button>
+                    <button type="submit" className="btn btn-primary me-2">
+                        {loading ? "Đang gửi..." : "Gửi phản hồi"}
+                    </button>
                     <button type="button" className="btn btn-secondary" onClick={onClose}>Hủy</button>
                 </div>
             </form>

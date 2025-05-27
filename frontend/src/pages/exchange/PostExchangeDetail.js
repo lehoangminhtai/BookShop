@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { toast, ToastContainer } from "react-toastify";
+import { toast} from "react-toastify";
 import { useEffect, useState, useRef } from 'react';
 import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
@@ -590,7 +590,6 @@ const PostExchangeDetail = () => {
                 >
                     <CircularProgress color="inherit" />
                 </Backdrop>}
-                <ToastContainer />
             </div>
         </div>
     );
