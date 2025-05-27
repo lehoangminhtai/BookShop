@@ -24,7 +24,6 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
     });
 
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
     const [openProgress, setOpenProgress] = useState(false);
     const handleCloseProgress = () => {
         setOpenProgress(false);
@@ -75,7 +74,6 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage('');
 
         try {
             if(!exchangeInfor){
@@ -100,10 +98,11 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
             console.log('response:',res);
             if (res.data.success) {
                 toast.success('Xác nhận giao dịch thành công!');
+                onClose();
             }
 
         } catch (error) {
-            setMessage('Lỗi khi xử lý giao dịch: ' + error.message);
+            toast.error('Lỗi khi xử lý giao dịch.');
         } finally {
             setLoading(false);
         }
@@ -191,7 +190,6 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
                     </div>
                 </div>
             </div>
-            <ToastContainer />
             {openProgress && <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={openProgress}

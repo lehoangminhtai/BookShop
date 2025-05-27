@@ -20,13 +20,12 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
     });
 
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
     const [isUpdate, setIsUpdate] = useState(false); // Thêm state để kiểm tra chế độ cập nhật
 
     const getExchangeInfor = async () => {
         try {
             const res = await getExchangeInforSer(requestId);
-            console.log(res.exchangeInfor);
+            console.log('Exchange Info:', res.exchangeInfor);
             setExchangeInfor(res.exchangeInfor);
 
             // Kiểm tra nếu trạng thái là "pending", chuyển sang chế độ cập nhật
@@ -34,7 +33,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                 setIsUpdate(true);
             }
         } catch (error) {
-            toast.error('Lỗi khi lấy thông tin giao dịch: ' + error.message);
+            toast.error('Lỗi khi lấy thông tin giao dịch.');
         }
     };
 
@@ -66,7 +65,16 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage('');
+
+        const selectedDate = new Date(formData.transactionDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (selectedDate <= today) {
+            toast.error('Ngày giao dịch phải là ngày trong tương lai!');
+            setLoading(false);
+            return;
+        }
 
         try {
             const dataToSend = { ...formData, requestId };
@@ -74,19 +82,22 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
             if (isUpdate) {
                 // Gọi API cập nhật giao dịch
                 const res = await updateExchangeInforSer(dataToSend); // Thêm hàm cập nhật
+                console.log('Update Response:', res);
                 if (res.data.success) {
                     toast.success('Cập nhật giao dịch thành công!');
+                    onClose();
                 }
             } else {
                 // Gọi API tạo giao dịch
                 const res = await createExchangeInforSer(dataToSend);
                 if (res.data.success) {
                     toast.success('Tạo giao dịch thành công!');
+                    onClose();
                 }
             }
 
         } catch (error) {
-            setMessage('Lỗi khi xử lý giao dịch: ' + error.message);
+            toast.error('Lỗi khi xử lý giao dịch: ' + error.message);
         } finally {
             setLoading(false);
         }
@@ -100,7 +111,6 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                         <h5 className="text-center text-primary">Điền thông tin trao đổi</h5>
                         <button type="button" className="btn-close" onClick={onClose}></button>
                     </div>
-                    {message && <div className="alert alert-info text-center">{message}</div>}
                     <div className="modal-body">
                         <div className="container mt-4">
                             <div className="card shadow-lg p-4">
@@ -156,7 +166,6 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                     </div>
                 </div>
             </div>
-            <ToastContainer />
         </div>
     );
 };

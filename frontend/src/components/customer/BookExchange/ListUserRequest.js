@@ -43,7 +43,7 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
 
     useEffect(() => {
         fetchListRequest();
-    }, [])
+    }, [startExchangeRequestId])
 
     const handleDeleteRequest = async (requestId) => {
         try {
@@ -95,7 +95,15 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                 );
             }
         } catch (error) {
-
+            toast.error(error.response.data.message || "Đã xảy ra lỗi, vui lòng thử lại!", {
+                position: "top-center",
+                autoClose: 1500,
+                hideProgressBar: true,
+                closeButton: false,
+                className: "custom-toast",
+                draggable: false,
+                rtl: false,
+            });
         }
     }
 

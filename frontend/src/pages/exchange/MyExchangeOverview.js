@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useStateContext } from "../../context/UserContext";
+import { ToastContainer } from "react-toastify";
 import ExchangeInforForm from '../../pages/exchange/ExchangeInfoForm';
 import ExchangeInfoConfirmForm from '../../components/customer/BookExchange/ExchangeInfoConfirmForm';
 import UserReviewForm from '../../components/customer/BookExchange/UserReviewForm';
@@ -166,6 +167,15 @@ const MyExchangeOverview = () => {
                 }
             } catch (error) {
                 console.error("Lỗi khi chấp nhận yêu cầu:", error);
+                toast.error(error.response.data.message || "Đã xảy ra lỗi, vui lòng thử lại!", {
+                    position: "top-center",
+                    autoClose: 1500,
+                    hideProgressBar: true,
+                    closeButton: false,
+                    className: "custom-toast",
+                    draggable: false,
+                    rtl: false,
+                });
             }
         }
     }
@@ -217,7 +227,7 @@ const MyExchangeOverview = () => {
 
     useEffect(() => {
         fetchData();
-    }, [userId, activeTab, showModal]);
+    }, [userId, activeTab, showModal, startExchangeRequestId, confirmRequestId]);
 
     const checkReviewExists = async (requestId, userId) => {
         try {
@@ -266,7 +276,6 @@ const MyExchangeOverview = () => {
                     <>
                         <button className="btn btn-warning me-2"
                             onClick={() => handleConfirmRequest(request.id)}>Xác nhận thông tin</button>
-                        <button className="btn btn-danger">Hủy giao dịch</button>
                     </>
                 );
             } else {
@@ -274,7 +283,6 @@ const MyExchangeOverview = () => {
                     <>
                         <button className="btn btn-info me-2"
                             onClick={() => handleStartExchange(request.id)}>Xem thông tin</button>
-                        <button className="btn btn-danger">Hủy giao dịch</button>
                     </>
                 );
             }
@@ -333,6 +341,8 @@ const MyExchangeOverview = () => {
                     </>
                 );
             }
+
+
 
         }
 
