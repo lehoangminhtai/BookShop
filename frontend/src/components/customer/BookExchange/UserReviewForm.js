@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { useDropzone } from 'react-dropzone';
 //service
 import { createUserReview } from "../../../services/exchange/userReviewService";

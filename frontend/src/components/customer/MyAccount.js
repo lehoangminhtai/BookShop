@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import CustomerSidebar from './CustomerSidebar'
 import { useStateContext } from '../../context/UserContext'
 import { useDropzone } from 'react-dropzone'
@@ -172,7 +172,6 @@ const MyAccount = () => {
                     </div>
                 </div>
             </div>
-            <ToastContainer/>
         </div>
     );
 };

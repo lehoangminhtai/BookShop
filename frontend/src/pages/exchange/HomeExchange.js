@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import { ToastContainer } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import Pagination from "@mui/material/Pagination";
 //service
@@ -374,8 +373,6 @@ const HomeExchange = () => {
                     </div>
                 )}
             </div>
-
-            <ToastContainer />
 
             {showModal && (
                 <PostForm handleCloseModal={handleCloseModal} />

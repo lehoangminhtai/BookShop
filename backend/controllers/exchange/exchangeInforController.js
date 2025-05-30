@@ -22,8 +22,25 @@ exports.createExchangeInfor = async (req, res) => {
     // Kiểm tra xem requestId có tồn tại trong ExchangeRequest không
     const exchangeRequest = await ExchangeRequest.findById(requestId);
 
+    const bookRequested = await BookExchange.findById(exchangeRequest.bookRequestedId);
+    if (!bookRequested) {
+      return res.status(404).json({ success: false, message: 'Sách yêu cầu trao đổi không tồn tại' });  
+    }
+    const bookOwner = await User.findById(bookRequested.ownerId);
+
+    const bookExchange = await BookExchange.findById(exchangeRequest.exchangeBookId);
+    if (!bookExchange) {
+      return res.status(404).json({ success: false, message: 'Sách trao đổi không tồn tại' });
+    }
+
+    if (bookRequested.creditPoints + bookOwner.grade < bookExchange.creditPoints) {
+      return res.status(400).json({ success: false, message: 'Điểm của bạn không đủ để bù chênh lệch điểm trao đổi sách' });
+    }
+
+
+
     if (!exchangeRequest) {
-      return res.status(404).json({ succes: false, message: 'Yêu cầu trao đổi không tồn tại' });
+      return res.status(404).json({ success: false, message: 'Yêu cầu trao đổi không tồn tại' });
     }
 
     if (exchangeRequest.status !== 'accepted') {
@@ -47,7 +64,7 @@ exports.createExchangeInfor = async (req, res) => {
     await newExchangeInfor.save();
 
 
-    const bookRequested = await BookExchange.findById(exchangeRequest.bookRequestedId);
+    
 
     const notification_owner = await Notification.create({
       receiverId: bookRequested.ownerId,

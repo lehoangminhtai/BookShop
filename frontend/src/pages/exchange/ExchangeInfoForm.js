@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 //service
 import { createExchangeInforSer, getExchangeInforSer, updateExchangeInforSer } from '../../services/exchange/exchangeInforService';
 //format
@@ -19,8 +19,11 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
         status: 'pending',
     });
 
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [isUpdate, setIsUpdate] = useState(false); // Thêm state để kiểm tra chế độ cập nhật
+
+    const [isConfirmed, setIsConfirmed] = useState(false);
 
     const getExchangeInfor = async () => {
         try {
@@ -33,7 +36,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                 setIsUpdate(true);
             }
         } catch (error) {
-            toast.error('Lỗi khi lấy thông tin giao dịch.');
+            toast.error(error.response?.data?.message || 'Lỗi khi lấy thông tin giao dịch.');
         }
     };
 
@@ -60,21 +63,48 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+        setErrors((prev) => ({ ...prev, [name]: '' }));
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.fullName_owner.trim()) {
+            newErrors.fullName_owner = 'Họ và tên không được để trống';
+        }
+        if (!formData.transactionLocation.trim()) {
+            newErrors.transactionLocation = 'Địa điểm giao dịch không được để trống';
+        }
+
+        if (!formData.transactionDate) {
+            newErrors.transactionDate = 'Vui lòng chọn ngày giao dịch';
+        } else {
+            const selectedDate = new Date(formData.transactionDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate <= today) {
+                newErrors.transactionDate = 'Ngày giao dịch phải là ngày trong tương lai';
+            }
+        }
+
+        if (!formData.transactionTime) {
+            newErrors.transactionTime = 'Vui lòng chọn thời gian giao dịch';
+        }
+
+        if (!/^\d{10}$/.test(formData.contactPhone_owner)) {
+            newErrors.contactPhone_owner = 'Số điện thoại phải gồm đúng 10 chữ số';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!validateForm()) return;
+
         setLoading(true);
-
-        const selectedDate = new Date(formData.transactionDate);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (selectedDate <= today) {
-            toast.error('Ngày giao dịch phải là ngày trong tương lai!');
-            setLoading(false);
-            return;
-        }
 
         try {
             const dataToSend = { ...formData, requestId };
@@ -90,6 +120,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
             } else {
                 // Gọi API tạo giao dịch
                 const res = await createExchangeInforSer(dataToSend);
+                console.log('Create Response:', res);
                 if (res.data.success) {
                     toast.success('Tạo giao dịch thành công!');
                     onClose();
@@ -97,14 +128,20 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
             }
 
         } catch (error) {
-            toast.error('Lỗi khi xử lý giao dịch: ' + error.message);
+            let errorMsg = 'Lỗi khi xử lý giao dịch';
+            if (error.response?.data?.message) {
+                errorMsg = error.response.data.message;
+            } else if (error.message) {
+                errorMsg = error.message;
+            }
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="modal show fade" tabIndex="-1" style={{ display: "block" }}>
+        <div className="modal show fade" tabIndex="-1" style={{ display: 'block' }}>
             <div className="modal-dialog modal-lg">
                 <div className="modal-content">
                     <div className="modal-header">
@@ -117,28 +154,67 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-3">
                                         <label className="form-label text-dark">Họ và Tên:</label>
-                                        <input type="text" className="form-control" name="fullName_owner" value={formData.fullName_owner} onChange={handleChange} required />
+                                        <input
+                                            type="text"
+                                            className={`form-control ${errors.fullName_owner ? 'is-invalid' : ''}`}
+                                            name="fullName_owner"
+                                            value={formData.fullName_owner}
+                                            onChange={handleChange}
+                                        />
+                                        {errors.fullName_owner && <div className="invalid-feedback">{errors.fullName_owner}</div>}
                                     </div>
 
                                     <div className="mb-3">
                                         <label className="form-label text-dark">Địa điểm giao dịch:</label>
-                                        <input type="text" className="form-control" name="transactionLocation" value={formData.transactionLocation} onChange={handleChange} required />
+                                        <input
+                                            type="text"
+                                            className={`form-control ${errors.transactionLocation ? 'is-invalid' : ''}`}
+                                            name="transactionLocation"
+                                            value={formData.transactionLocation}
+                                            onChange={handleChange}
+                                        />
+                                        {errors.transactionLocation && (
+                                            <div className="invalid-feedback">{errors.transactionLocation}</div>
+                                        )}
                                     </div>
 
                                     <div className="row">
                                         <div className="col-md-6 mb-3">
                                             <label className="form-label text-dark">Ngày giao dịch:</label>
-                                            <input type="date" className="form-control" name="transactionDate" value={formData.transactionDate} onChange={handleChange} required />
+                                            <input
+                                                type="date"
+                                                className={`form-control ${errors.transactionDate ? 'is-invalid' : ''}`}
+                                                name="transactionDate"
+                                                value={formData.transactionDate}
+                                                onChange={handleChange}
+                                            />
+                                            {errors.transactionDate && (
+                                                <div className="invalid-feedback">{errors.transactionDate}</div>
+                                            )}
                                         </div>
                                         <div className="col-md-6 mb-3">
                                             <label className="form-label text-dark">Thời gian giao dịch:</label>
-                                            <input type="time" className="form-control" name="transactionTime" value={formData.transactionTime} onChange={handleChange} required />
+                                            <input
+                                                type="time"
+                                                className={`form-control ${errors.transactionTime ? 'is-invalid' : ''}`}
+                                                name="transactionTime"
+                                                value={formData.transactionTime}
+                                                onChange={handleChange}
+                                            />
+                                            {errors.transactionTime && (
+                                                <div className="invalid-feedback">{errors.transactionTime}</div>
+                                            )}
                                         </div>
                                     </div>
 
                                     <div className="mb-3">
                                         <label className="form-label text-dark">Phương thức giao nhận:</label>
-                                        <select className="form-select" name="deliveryMethod" value={formData.deliveryMethod} onChange={handleChange} required>
+                                        <select
+                                            className="form-select"
+                                            name="deliveryMethod"
+                                            value={formData.deliveryMethod}
+                                            onChange={handleChange}
+                                        >
                                             <option value="direct">Giao trực tiếp</option>
                                             <option value="post-office">Qua bưu điện</option>
                                             <option value="shipping">Qua shipper</option>
@@ -147,16 +223,44 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
 
                                     <div className="mb-3">
                                         <label className="form-label text-dark">Số điện thoại liên hệ:</label>
-                                        <input type="text" className="form-control" name="contactPhone_owner" value={formData.contactPhone_owner} onChange={handleChange} required />
+                                        <input
+                                            type="text"
+                                            className={`form-control ${errors.contactPhone_owner ? 'is-invalid' : ''}`}
+                                            name="contactPhone_owner"
+                                            value={formData.contactPhone_owner}
+                                            onChange={handleChange}
+                                        />
+                                        {errors.contactPhone_owner && (
+                                            <div className="invalid-feedback">{errors.contactPhone_owner}</div>
+                                        )}
                                     </div>
 
                                     <div className="mb-3">
                                         <label className="form-label text-dark">Ghi chú:</label>
-                                        <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange}></textarea>
+                                        <textarea
+                                            className="form-control"
+                                            name="notes"
+                                            value={formData.notes}
+                                            onChange={handleChange}
+                                        ></textarea>
                                     </div>
 
+                                    <div className="form-check mb-3 " style={{ fontSize: '0.90rem'}}>
+                                        <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            id="confirmationCheckbox"
+                                            checked={isConfirmed}
+                                            onChange={(e) => setIsConfirmed(e.target.checked)}
+                                        />
+                                        <label className="form-check-label text-dark" htmlFor="confirmationCheckbox">
+                                            Lưu ý: Sau khi người gửi xác nhận thông tin giao dịch, điểm tích lũy của bạn sẽ bị trừ tương ứng với số điểm chênh lệch (nếu sách của bạn có giá trị thấp hơn) và bạn không thể hủy giao dịch sau khi điền thông tin.
+                                        </label>
+                                    </div>
+
+
                                     <div className="text-center">
-                                        <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                                        <button type="submit" className="btn btn-primary w-100" disabled={loading || !isConfirmed}>
                                             {loading ? 'Đang xử lý...' : isUpdate ? 'Cập nhật giao dịch' : 'Tạo giao dịch'}
                                         </button>
                                     </div>

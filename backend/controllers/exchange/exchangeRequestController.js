@@ -16,6 +16,13 @@ const createExchangeRequest = async (req, res) => {
         if (!bookRequested || !user) {
             return res.status(200).json({ success: false, message: 'Sách hoặc người dùng không tồn tại' });
         }
+        if (bookRequested.status !== 'available') {
+            return res.status(200).json({ success: false, message: 'Sách không khả dụng để trao đổi' });
+        }
+
+        if (bookRequested.ownerId.toString() === requesterId) {
+            return res.status(200).json({ success: false, message: 'Bạn không thể trao đổi sách của chính mình' });
+        }
 
         if (exchangeMethod === 'points') {
             if (user.grade < bookRequested.creditPoints) {
@@ -345,7 +352,7 @@ const getExchangeRequestById = async (req, res) => {
 
         const request = await ExchangeRequest.findById(requestId).populate('bookRequestedId').populate('exchangeBookId')
         const requester = await User.findById(request.requesterId);
-        const owner = await User.findById(request.bookRequestedId.ownerId); 
+        const owner = await User.findById(request.bookRequestedId.ownerId);
         if (!request) {
             return res.status(200).json({ success: false });
         }
@@ -500,7 +507,7 @@ const completeExchangeRequest = async (req, res) => {
 
             const notification_requester = await Notification.create({
                 receiverId: exchangeRequest.requesterId,
-                content: `Giao dịch trao đổi cuốn sách "${bookRequested.title} đã hoàn tất.`,
+                content: `Giao dịch trao đổi cuốn sách "${bookRequested.title}" đã hoàn tất. Đánh giá người trao đổi để nhận điểm thưởng.`,
                 link: `/exchange/exchange-info-detail/${requestId}`,
                 image: bookRequested.images[0],
             });
@@ -511,7 +518,7 @@ const completeExchangeRequest = async (req, res) => {
 
             const notification_owner = await Notification.create({
                 receiverId: bookRequested.ownerId,
-                content: `Giao dịch trao đổi cuốn sách "${bookRequested.title} đã hoàn tất.`,
+                content: `Giao dịch trao đổi cuốn sách "${bookRequested.title}" đã hoàn tất. Đánh giá người trao đổi để nhận điểm thưởng.`,
                 link: `/exchange/exchange-info-detail/${requestId}`,
                 image: bookRequested.images[0],
             });
@@ -528,7 +535,7 @@ const completeExchangeRequest = async (req, res) => {
 
                 const notificaiton_owner = await Notification.create({
                     receiverId: bookOwner._id,
-                    content: `Bạn đã nhận ${bookRequested.creditPoints} điểm từ giao dịch trao đổi sách "${bookRequested.title}". Đánh giá người trao đổi để nhận thêm điểm.`,
+                    content: `Bạn đã nhận ${bookRequested.creditPoints} điểm từ giao dịch trao đổi sách "${bookRequested.title}".`,
                     link: `/user-profile/${bookOwner._id}`,
                     type: 'point',
                 });
@@ -536,19 +543,6 @@ const completeExchangeRequest = async (req, res) => {
                 if (receiverSocketId_owner) {
                     io.to(receiverSocketId_owner).emit("getNotification", notificaiton_owner);
                 }
-
-                const notification_requester = await Notification.create({
-                    receiverId: requester._id,
-                    content: `Giao dịch trao đổi sách "${bookRequested.title}" đã hoàn tất. Đánh giá người trao đổi để nhận thêm điểm.`,
-                    link: `/exchange/exchange-info-detail/${requestId}`,
-                    image: bookRequested.images[0],
-
-                });
-                const receiverSocketId_requester = getReceiverSocketId(requester._id);
-                if (receiverSocketId_requester) {
-                    io.to(receiverSocketId_requester).emit("getNotification", notification_requester);
-                }
-
             }
             if (exchangeRequest.exchangeMethod === 'book') {
                 const exchangeBook = await BookExchange.findById(exchangeRequest.exchangeBookId);
@@ -569,7 +563,7 @@ const completeExchangeRequest = async (req, res) => {
 
                     const notification_owner = await Notification.create({
                         receiverId: bookOwner._id,
-                        content: `Bạn đã nhận ${pointDifference} điểm bù chênh lệch từ giao dịch trao đổi sách "${bookRequested.title}". Đánh giá người trao đổi để nhận thêm điểm.`,
+                        content: `Bạn đã nhận ${pointDifference} điểm bù chênh lệch từ giao dịch trao đổi sách "${bookRequested.title}". `,
                         link: `/user-profile/${bookOwner._id}`,
                         type: 'point',
                     });
@@ -577,18 +571,6 @@ const completeExchangeRequest = async (req, res) => {
                     if (receiverSocketId_owner) {
                         io.to(receiverSocketId_owner).emit("getNotification", notification_owner);
                     }
-
-                    const notification_requester = await Notification.create({
-                        receiverId: requester._id,
-                        content: `Giao dịch trao đổi sách "${bookRequested.title}" đã hoàn tất. Đánh giá người trao đổi để nhận thêm điểm.`,
-                        link: `/exchange/exchange-info-detail/${requestId}`,
-                        image: bookRequested.images[0],
-                    });
-                    const receiverSocketId_requester = getReceiverSocketId(requester._id);  
-                    if (receiverSocketId_requester) {
-                        io.to(receiverSocketId_requester).emit("getNotification", notification_requester);
-                    }
-
                 } else if (pointDifference < 0) {
                     requester.grade -= pointDifference;// trừ số âm
                     await requester.save();
@@ -596,7 +578,7 @@ const completeExchangeRequest = async (req, res) => {
 
                     const notification_requester = await Notification.create({
                         receiverId: requester._id,
-                        content: `Bạn đã nhận ${Math.abs(pointDifference)} điểm bù chênh lệch từ giao dịch trao đổi sách "${bookRequested.title}". Đánh giá người trao đổi để nhận thêm điểm.`,
+                        content: `Bạn đã nhận ${Math.abs(pointDifference)} điểm bù chênh lệch từ giao dịch trao đổi sách "${bookRequested.title}".`,
                         link: `/user-profile/${requester._id}`,
                         type: 'point',
                     });
@@ -604,18 +586,86 @@ const completeExchangeRequest = async (req, res) => {
                     if (receiverSocketId_requester) {
                         io.to(receiverSocketId_requester).emit("getNotification", notification_requester);
                     }
-
-                    const notification_owner = await Notification.create({
-                        receiverId: bookOwner._id,
-                        content: `Giao dịch trao đổi sách "${bookRequested.title}" đã hoàn tất. Đánh giá người trao đổi để nhận thêm điểm.`,
-                        link: `/exchange/exchange-info-detail/${requestId}`,
-                        image: bookRequested.images[0],
-                    });
-                    const receiverSocketId_owner = getReceiverSocketId(bookOwner._id);
-                    if (receiverSocketId_owner) {
-                        io.to(receiverSocketId_owner).emit("getNotification", notification_owner);
-                    }
                 }
+
+                const otherRequested_bookRequested = await ExchangeRequest.find({
+                    exchangeBookId: exchangeRequest.bookRequestedId,
+                    _id: { $ne: exchangeRequest._id }, // loại trừ yêu cầu hiện tại
+                });
+
+                for (const req of otherRequested_bookRequested) {
+                    //xoa thong tin giao dich neu co
+                    await ExchangeInfor.findOneAndDelete({ requestId: req._id });
+                    await ExchangeRequest.findByIdAndDelete(req._id);
+                }
+                const notificationForOtherBookRequested = await Notification.create({
+                    receiverId: bookRequested.ownerId,
+                    content: `Bạn đã hoàn tất trao đổi cuốn sách "${bookRequested.title}". Các yêu cầu sử dụng cuốn sách này sẽ bị hủy.`,
+                    link: `/post-request`,
+                    image: bookRequested.images[0],
+                });
+                const receiverSocketIdForOtherBookRequested = getReceiverSocketId(bookRequested.ownerId);
+                if (receiverSocketIdForOtherBookRequested) {
+                    io.to(receiverSocketIdForOtherBookRequested).emit("getNotification", notificationForOtherBookRequested);
+                }
+
+                const otherRequested_exchangeBook = await ExchangeRequest.find({
+                    exchangeBookId: exchangeRequest.exchangeBookId,
+                    _id: { $ne: exchangeRequest._id }, // loại trừ yêu cầu hiện tại
+                });
+
+                for (const req of otherRequested_exchangeBook) {
+                    await ExchangeInfor.findOneAndDelete({ requestId: req._id });
+                    await ExchangeRequest.findByIdAndDelete(req._id);
+                }
+
+                const notificationForOtherExchangeBook = await Notification.create({
+                    receiverId: exchangeBook.ownerId,
+                    content: `Bạn đã hoàn tất trao đổi cuốn sách "${exchangeBook.title}". Các yêu cầu sử dụng cuốn sách này sẽ bị hủy.`,
+                    link: `/post-request`,
+                    image: exchangeBook.images[0],
+                });
+                const receiverSocketIdForOtherExchangeBook = getReceiverSocketId(exchangeBook.ownerId);
+                if (receiverSocketIdForOtherExchangeBook) {
+                    io.to(receiverSocketIdForOtherExchangeBook).emit("getNotification", notificationForOtherExchangeBook);
+                }
+            }
+
+            //xoa các request mà 2 cuốn sách trong giao dịch được gửi 
+            const otherRequests_requested = await ExchangeRequest.find({
+                bookRequestedId: exchangeRequest.bookRequestedId,
+                _id: { $ne: exchangeRequest._id }, // loại trừ yêu cầu hiện tại
+            });
+            let otherRequests_exchangeBook = null;
+            if (exchangeRequest.exchangeMethod === 'book') {
+                otherRequests_exchangeBook = await ExchangeRequest.find({
+                    bookRequestedId: exchangeRequest.exchangeBookId,
+                    _id: { $ne: exchangeRequest._id }, // loại trừ yêu cầu hiện tại
+                });
+            }
+            const otherRequests = [...otherRequests_requested, ...otherRequests_exchangeBook];
+            for (const req of otherRequests) {
+                // Tạo thông báo cho requester của các yêu cầu bị xoá
+                const notification = await Notification.create({
+                    receiverId: req.requesterId,
+                    content: `Cuốn sách bạn gửi yêu cầu trao đổi "${bookRequested.title}" đã được trao đổi. Yêu cầu của bạn đã bị hủy.`,
+                    link: `/post-request`,
+                    image: bookRequested.images[0],
+                });
+
+                const socketId = getReceiverSocketId(req.requesterId);
+                if (socketId) {
+                    io.to(socketId).emit("getNotification", notification);
+                }
+                //xoa thong tin giao dich neu co
+                await ExchangeInfor.findOneAndDelete({ requestId: req._id });
+
+                await ExchangeRequest.findByIdAndDelete(req._id);
+            }
+
+            //xóa các yêu cầu mà 2 cuốn sách này là exchangeBook
+            if (exchangeRequest.exchangeMethod === 'book') {
+                
             }
         }
         res.status(200).json({ success: true, message: 'Hoàn thành trao đổi thành công' });
