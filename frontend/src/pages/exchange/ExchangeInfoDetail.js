@@ -269,7 +269,7 @@ const ExchangeInfoDetail = (props) => {
     useEffect(() => {
         getRequestById();
         getExchangeInfoByRequestId();
-    }, [requestId, showModalReview, startExchangeRequestId, confirmRequestId]);
+    }, [requestId, showModalReview, startExchangeRequestId, confirmRequestId, openConfirm]);
 
     const renderActionButtons = () => {
         if (request?.status === 'pending' && request?.requesterId !== userId) {

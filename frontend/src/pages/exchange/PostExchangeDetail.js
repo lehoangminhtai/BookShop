@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { toast} from "react-toastify";
+import { toast } from "react-toastify";
 import { useEffect, useState, useRef } from 'react';
 import { useStateContext } from '../../context/UserContext'
 import { Link, useNavigate } from 'react-router-dom';
@@ -411,25 +411,26 @@ const PostExchangeDetail = () => {
                                 :
 
                                 (user?._id === bookExchangeDetail?.ownerId?._id) ?
-                                    (<button
+                                    ( bookExchangeDetail?.status !== "completed" ? 
+                                    <button
 
                                         className="btn btn-outline-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
                                         onClick={() => handleOpenListRequest()}
 
                                     >
                                         <h4 className='h4 text-danger me-2'> ({listRequest.length}) </h4>   Danh sách yêu cầu trao đổi <i class=" ms-2 me-2 fa fa-external-link text-light" aria-hidden="true"></i>
-                                    </button>)
+                                    </button> : <></>)
                                     :
                                     (
                                         requestForm.bookExchangeMethod === "" ?
-                                            <button
+                                            (( bookExchangeDetail?.status !== "completed" ? <button
 
                                                 className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
                                                 onClick={() => handleSendRequest()}
 
                                             >
                                                 Đề nghị trao đổi
-                                            </button>
+                                            </button> : <></>))
                                             : requestForm.status === 'pending' ?
 
                                                 <button
@@ -465,14 +466,15 @@ const PostExchangeDetail = () => {
                                                     </>
 
                                                     : requestForm.status === 'cancelled' ? <></> :
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-warning w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                                                        onClick={() => handleNavigateToDetail()}
-                                                    >
-                                                        Thông tin giao dịch
-                                                        <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i>
-                                                    </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-warning w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                                            onClick={() => handleNavigateToDetail()}
+                                                        >
+                                                            Thông tin giao dịch
+                                                            <i class=" ms-2 me-2 fa fa-external-link" aria-hidden="true"></i>
+                                                        </button>
+
                                     )
 
                         }
@@ -538,7 +540,7 @@ const PostExchangeDetail = () => {
                                 {bookExchangeDetail?.point}
                             </span>
                         </div> */}
-                        
+
 
                         <div className="card p-4 shadow-lg">
                             <h1 className="card-title fs-3 fw-bold mb-3 text-center">Ghi chú</h1>
