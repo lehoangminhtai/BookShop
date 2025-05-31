@@ -5931,7 +5931,8 @@ fieldset:disabled .btn {
     background-clip: padding-box;
     border: 1px solid rgba(0, 0, 0, .1);
     box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
-    border-radius: 10px
+    border-radius: 10px;
+    z-index: 1050;
 }
 
 .toast:not(.showing):not(.show) {
@@ -8682,6 +8683,32 @@ body.no-scroll {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  .book-hover {
+  position: relative;
+
+}
+
+.hover-overlay {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+
+.heart-icon {
+  width: 36px;
+  height: 36px;
+  transition: transform 0.3s ease;
+}
+
+.heart-icon:hover {
+  transform: scale(1.2);
+}
+
   
 
 @keyframes slideInFromRight {

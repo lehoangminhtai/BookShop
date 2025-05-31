@@ -44,6 +44,10 @@ import Chat from './pages/exchange/Message/Chat';
 import ExchangeInfoDetail from './pages/exchange/ExchangeInfoDetail';
 import MyExchangeOverview from './pages/exchange/MyExchangeOverview';
 
+import React, { useEffect } from 'react';
+import { useStateContext } from './context/UserContext';
+import useWishlistStore from './store/useWishListStore';
+
 import AdminRoute from './components/ProtectedRoute';
 
 const AdminRoutes = [
@@ -64,8 +68,20 @@ const AdminRoutes = [
 
 function AppContent() {
   const location = useLocation(); // Lấy thông tin về đường dẫn hiện tại
-
+   const { user } = useStateContext();
+  const fetchWishlist = useWishlistStore(state => state.fetchWishlist);
   const isAdminRoute = location.pathname.startsWith('/admin');
+
+
+  useEffect(() => {
+    if (user?._id) {
+      fetchWishlist(user._id); // Gọi khi app khởi động hoặc user thay đổi
+    }
+    else {
+      fetchWishlist(null); // Gọi với null nếu không có user
+    }
+  }, []);
+  
   return (
     <>
       <ScrollToTop />

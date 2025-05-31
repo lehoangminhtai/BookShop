@@ -14,7 +14,7 @@ const Navbar = () => {
 
     // Hàm kiểm tra xem đường dẫn hiện tại có trùng với đường dẫn của Link không
     const isActive = (path) => location.pathname === path ? "active text-primary" : "text-dark";
-
+    const isInWishlist = (path) => location.pathname === path ? "text-danger" : "";
 
     const [notifications, setNotifications] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -134,7 +134,7 @@ const Navbar = () => {
                                 {user && (
                                     <div className="position-relative me-4" ref={bellRef}>
                                         <i
-                                            className="fa fa-bell fa-2x cart-nav"
+                                            className={`fa fa-bell fa-2x ${showDropdown ? 'cart-nav': ''}`}
                                             style={{ cursor: "pointer" }}
                                             onClick={() => setShowDropdown(!showDropdown)}
                                         ></i>
@@ -212,8 +212,11 @@ const Navbar = () => {
                                         )}
                                     </div>
                                 )}
+                                <Link to="/wishlist" className="position-relative me-4 my-auto">
+                                    <i className={`fa fa-heart fa-2x ${isInWishlist('/not-found')}`}></i>
+                                </Link>
                                 <Link to="/cart" className="position-relative me-4 my-auto">
-                                    <i className="fa fa-shopping-cart fa-2x cart-nav"></i>
+                                    <i className={`fa fa-shopping-cart fa-2x ${isActive('/cart')}`}></i>
                                 </Link>
 
                                 {user ? (

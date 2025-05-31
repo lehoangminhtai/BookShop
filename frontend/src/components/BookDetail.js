@@ -3,18 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
 
 import { useBookContext } from "../hooks/useBookContext";
-import { useStateContext } from '../context/UserContext'
+import { useStateContext } from '../context/UserContext';
+import useWishlistStore from "../store/useWishListStore";
 //service
 import { addItemToCart } from '../services/cartService';
 import { serverUrl } from "../services/config";
 import { clickInteractionSer } from "../services/suggestion/suggestionService";
-import { use } from "react";
+import { addToWishlistSer, removeFromWishlistSer } from "../services/wishListService";
 
 const BookDetail = ({ book }) => {
+  const wishlist = useWishlistStore(state => state.wishlist);
+  
+  const toggleWishlist = useWishlistStore(state => state.toggleWishlist);
+
   const { dispatch } = useBookContext();
   const navigate = useNavigate();
   const [bookSale, setBookSale] = useState({ price: 0, discount: 0, status: 'available' });
   const { user } = useStateContext();
+  const [isWishlist, setIsWishlist] = useState();
+  const [animationClass, setAnimationClass] = useState(`${isWishlist ? 'text-danger' : ''}`); // Khởi tạo với class dựa trên isWishListed
+
 
   useEffect(() => {
     const fetchBookSaleDetails = async () => {
@@ -27,7 +35,17 @@ const BookDetail = ({ book }) => {
     };
 
     fetchBookSaleDetails();
+   
   }, [book._id]);
+
+  useEffect(() => {
+  if (!bookSale?._id) return;
+
+  const isWishListed = wishlist.some(item => item === bookSale._id); 
+  setIsWishlist(isWishListed);
+  setAnimationClass(isWishListed ? 'text-danger' : '');
+}, [bookSale, wishlist]);
+
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
@@ -39,7 +57,7 @@ const BookDetail = ({ book }) => {
     if (user) {
       const response = await clickInteractionSer(user._id, bookSale._id)
       console.log("response click interaction", response)
-    } 
+    }
     navigate(`/chi-tiet/${id}`);
   };
 
@@ -98,6 +116,22 @@ const BookDetail = ({ book }) => {
     );
   };
 
+  const addToWishlist = () => {
+    if (user) {
+      toggleWishlist(user._id, bookSale._id)
+      setIsWishlist(prev => !prev); // Chuyển đổi trạng thái wishlist
+    }
+   else{
+     toggleWishlist(null, bookSale._id)
+      setIsWishlist(prev => !prev);
+   }
+  }
+
+  const handleAddToWishlist = () => {
+    addToWishlist()
+
+
+  }
 
   return (
     <div
@@ -106,15 +140,32 @@ const BookDetail = ({ book }) => {
       onClick={() => handleProductClick(book?._id)}
     >
       {/* Hình ảnh */}
-      <div className="d-flex justify-content-center tw-px-2 tw-pt-2">
+      <div className="book-hover position-relative d-flex justify-content-center tw-px-2 tw-pt-2">
         <img
           src={book?.images}
           alt={`Book image`}
           className="card-img-top tw-rounded-t-lg tw-object-cover"
           style={{ height: "190px", width: "140px" }}
         />
+
+        {/* Overlay mờ khi hover */}
+        <div className="hover-overlay d-flex justify-content-end align-items-start p-2">
+          <div className="heart-icon bg-white rounded-circle d-flex justify-content-center align-items-center shadow">
+            <button
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                handleAddToWishlist();
+              }}
+              className="border-0 bg-transparent"
+            >
+              <i className={`fas fa-heart ${animationClass}`} ></i>
+            </button>
+          </div>
+        </div>
       </div>
-  
+
+
       {/* Nội dung */}
       <div className="card-body tw-px-2 tw-py-2">
         {/* Tên sách */}
@@ -128,7 +179,7 @@ const BookDetail = ({ book }) => {
         >
           {book?.title}
         </h5>
-  
+
         {/* Tác giả */}
         <p
           className="card-text tw-text-xs"
@@ -140,7 +191,7 @@ const BookDetail = ({ book }) => {
         >
           <strong>Tác giả:</strong> {book?.author}
         </p>
-  
+
         {/* Giá bán và nút */}
         <div className="d-flex justify-content-between align-items-center tw-mt-2">
           <div>
@@ -159,7 +210,7 @@ const BookDetail = ({ book }) => {
               </span>
             )}
           </div>
-  
+
           {/* Nút thêm vào giỏ hàng */}
           <button
             className="btn btn-primary tw-flex tw-items-center tw-px-4 tw-py-2 tw-rounded-lg tw-shadow-sm tw-bg-blue-600 tw-hover:bg-blue-700 tw-focus:ring-2 tw-focus:ring-blue-300"
@@ -175,7 +226,7 @@ const BookDetail = ({ book }) => {
       </div>
     </div>
   );
-  
+
 };
 
 export default BookDetail;

@@ -24,6 +24,7 @@ const addressRoutes = require('./routes/addressRoute');
 const reportRoutes = require('./routes/reportRoute');
 const logRoutes = require('./routes/logRoute');
 const notificationRoutes = require('./routes/notificationRoute');
+const wishlistRoutes = require('./routes/wishListRoute');
 
 //exchange
 const bookExchangeRoutes = require('./routes/exchange/bookExchangeRoute');
@@ -74,6 +75,7 @@ app.use('/api/user/addresses', addressRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 //exchange
 app.use('/api/book-exchange', bookExchangeRoutes);
