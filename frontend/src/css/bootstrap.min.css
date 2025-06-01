@@ -8709,7 +8709,14 @@ body.no-scroll {
   transform: scale(1.2);
 }
 
-  
+  .dropdown-menu {
+  background: white;
+  border: 1px solid #ccc;
+  z-index: 1000;
+}
+
+
+
 
 @keyframes slideInFromRight {
     0% {

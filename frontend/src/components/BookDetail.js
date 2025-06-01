@@ -148,7 +148,7 @@ const BookDetail = ({ book }) => {
           style={{ height: "190px", width: "140px" }}
         />
 
-        {/* Overlay mờ khi hover */}
+        {bookSale?._id && (
         <div className="hover-overlay d-flex justify-content-end align-items-start p-2">
           <div className="heart-icon bg-white rounded-circle d-flex justify-content-center align-items-center shadow">
             <button
@@ -163,6 +163,7 @@ const BookDetail = ({ book }) => {
             </button>
           </div>
         </div>
+        )}
       </div>
 
 
@@ -212,6 +213,7 @@ const BookDetail = ({ book }) => {
           </div>
 
           {/* Nút thêm vào giỏ hàng */}
+          {bookSale._id && (
           <button
             className="btn btn-primary tw-flex tw-items-center tw-px-4 tw-py-2 tw-rounded-lg tw-shadow-sm tw-bg-blue-600 tw-hover:bg-blue-700 tw-focus:ring-2 tw-focus:ring-blue-300"
             onClick={(event) => {
@@ -222,6 +224,7 @@ const BookDetail = ({ book }) => {
           >
             <i className="fas fa-cart-plus"></i>
           </button>
+          )}
         </div>
       </div>
     </div>

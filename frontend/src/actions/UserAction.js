@@ -156,6 +156,8 @@ export const logout = () => async (dispatch) => {
         dispatch({ type: LOGOUT })
 
         dispatch({ type: END_LOADING })
+        window.location.href = '/'; // hoặc '/'
+
     } catch (error) {
         console.log("error in logout - user.js actions", error.response.data.message)
         dispatch({ type: END_LOADING })
