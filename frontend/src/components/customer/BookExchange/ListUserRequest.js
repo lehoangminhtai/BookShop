@@ -126,10 +126,15 @@ const ListUserRequest = ({ handleCloseListRequest, bookRequestedId }) => {
                 const response = await cancelExchangeRequest(requestId);
                 if (response.data.success) {
                     fetchListRequest();
+                    toast.success("Yêu cầu đã được hủy!");
                 }
+                if (!response.data.success) {
+                    toast.error(response.data.message || "Đã xảy ra lỗi khi hủy yêu cầu, vui lòng thử lại!");
+                }
+
             }
         } catch (error) {
-
+            toast.error("Đã xảy ra lỗi khi hủy yêu cầu, vui lòng thử lại!");
         }
     }
 
