@@ -190,27 +190,33 @@ const UserProfile = () => {
                         <div className="d-flex align-items-center">
                             <div className="d-flex align-items-center me-4">
                                 <div className="d-flex align-items-center">
-                                    <div className="me-2">
-                                        <span className="fw-bold text-light">{averageRating}</span>
-                                    </div>
-                                    <div className="star-rating" style={{ fontSize: '1rem' }}>
-                                        {[...Array(5)].map((_, index) => {
-                                            const filled = index + 1 <= Math.floor(averageRating);
-                                            const half = index + 0.5 === Math.round(averageRating * 2) / 2;
+                                    {averageRating === 0 ? (
+                                        <span className="text-warning">Chưa có đánh giá</span>
+                                    ) : (
+                                        <>
+                                            <div className="me-2">
+                                                <span className="fw-bold text-light">{averageRating}</span>
+                                            </div>
+                                            <div className="star-rating" style={{ fontSize: '1rem' }}>
+                                                {[...Array(5)].map((_, index) => {
+                                                    const currentStar = index + 1;
 
-                                            return (
-                                                <i
-                                                    key={index}
-                                                    className={`bi ${filled
-                                                        ? 'bi-star-fill'
-                                                        : half
-                                                            ? 'bi-star-half'
-                                                            : 'bi-star'
-                                                        } text-warning`}
-                                                ></i>
-                                            );
-                                        })}
-                                    </div>
+                                                    return (
+                                                        <i
+                                                            key={index}
+                                                            className={`bi ${averageRating >= currentStar
+                                                                    ? 'bi-star-fill'
+                                                                    : averageRating >= currentStar - 0.5
+                                                                        ? 'bi-star-half'
+                                                                        : 'bi-star'
+                                                                } text-warning`}
+                                                        ></i>
+                                                    );
+                                                })}
+                                            </div>
+
+                                        </>
+                                    )}
                                 </div>
                             </div>
                             <div className="d-flex align-items-center me-4">
@@ -305,41 +311,41 @@ const UserProfile = () => {
                                 <p className="text-center text-muted">Bạn chưa có bài đăng nào.</p>
                             </div>
                         ) : (
-                            
-                                posts.map((post) => (
-                                    <div key={post?._id} className="col-md-6 col-lg-4 mb-4">
-                                        <div
-                                            className="card p-3 shadow-lg card-custom"
-                                            onClick={() => handleClickPost(post?._id)}
-                                            style={{ cursor: "pointer" }}
-                                        >
-                                            <div className="d-flex">
-                                                <img
-                                                    src={post?.images[0]}
-                                                    className="img-fluid card-img-custom me-3"
-                                                    alt={post?.title}
-                                                />
-                                                <div className="flex-grow-1">
-                                                    <h3 className="h6 text-truncate-2 fw-bold text-dark">
-                                                        {post?.title}
-                                                    </h3>
-                                                    <p className="text-muted mb-1">
-                                                        📅 Ngày đăng: {new Date(post?.createdAt).toLocaleDateString('vi-VN')}
-                                                    </p>
 
-                                                    <div className="mt-2 d-flex justify-content-between align-items-center">
-                                                        {getStatusBadge(post?.status)}
-                                                        <span className="text-warning fw-bold fs-5">
-                                                            {post?.creditPoints} điểm
-                                                        </span>
-                                                    </div>
+                            posts.map((post) => (
+                                <div key={post?._id} className="col-md-6 col-lg-4 mb-4">
+                                    <div
+                                        className="card p-3 shadow-lg card-custom"
+                                        onClick={() => handleClickPost(post?._id)}
+                                        style={{ cursor: "pointer" }}
+                                    >
+                                        <div className="d-flex">
+                                            <img
+                                                src={post?.images[0]}
+                                                className="img-fluid card-img-custom me-3"
+                                                alt={post?.title}
+                                            />
+                                            <div className="flex-grow-1">
+                                                <h3 className="h6 text-truncate-2 fw-bold text-dark">
+                                                    {post?.title}
+                                                </h3>
+                                                <p className="text-muted mb-1">
+                                                    📅 Ngày đăng: {new Date(post?.createdAt).toLocaleDateString('vi-VN')}
+                                                </p>
+
+                                                <div className="mt-2 d-flex justify-content-between align-items-center">
+                                                    {getStatusBadge(post?.status)}
+                                                    <span className="text-warning fw-bold fs-5">
+                                                        {post?.creditPoints} điểm
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                ))
-                            )}
-                        
+                                </div>
+                            ))
+                        )}
+
                     </div>
                 </>
             ) : (
@@ -459,100 +465,109 @@ const UserProfile = () => {
             <div className="container-fluid d-flex justify-content-center align-items-center mt-5">
                 <div className="bg-white p-5 rounded shadow w-100" >
                     <div>
-                        <h3>Đánh giá</h3>
+                        <h3 className="fs-5">Đánh giá</h3>
 
-                        {/* Hiển thị số sao trung bình */}
-                        <div className="d-flex align-items-center mb-3 mt-3">
-                            <div className="me-2">
-                                <span className="fw-bold fs-4">{averageRating}</span>
+                        {averageRating === 0 ? (
+                            <div className="mt-3">
+                                <p className="text-muted">Chưa có đánh giá nào.</p>
                             </div>
-                            <div className="star-rating" style={{ fontSize: '1.5rem' }}>
-                                {[...Array(5)].map((_, index) => {
-                                    const filled = index + 1 <= Math.floor(averageRating);
-                                    const half = index + 0.5 === Math.round(averageRating * 2) / 2;
 
-                                    return (
-                                        <i
-                                            key={index}
-                                            className={`bi ${filled
-                                                ? 'bi-star-fill'
-                                                : half
-                                                    ? 'bi-star-half'
-                                                    : 'bi-star'
-                                                } text-warning`}
-                                        ></i>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Thống kê số lượng sao */}
-                        <div className="mb-4">
-                            {[5, 4, 3, 2, 1].map((star, index) => (
-                                <div key={star} className="d-flex align-items-center">
-                                    <span className="me-2">{star} sao:</span>
-                                    <div
-                                        className="progress flex-grow-1"
-                                        style={{ height: '1rem', marginRight: '1rem' }}
-                                    >
-                                        <div
-                                            className="progress-bar bg-warning"
-                                            role="progressbar"
-                                            style={{
-                                                width: `${(ratingCounts[star - 1] / reviews.length) * 100 || 0}%`
-                                            }}
-                                        ></div>
+                        ) : (
+                            <>
+                                {/* Hiển thị số sao trung bình */}
+                                <div className="d-flex align-items-center mb-3 mt-3">
+                                    <div className="me-2">
+                                        <span className="fw-bold fs-4">{averageRating}</span>
                                     </div>
-                                    <span>{ratingCounts[star - 1]}</span>
-                                </div>
-                            ))}
-                        </div>
+                                    <div className="star-rating" style={{ fontSize: '1.5rem' }}>
+                                        {[...Array(5)].map((_, index) => {
+                                            const currentStar = index + 1;
 
-                        {/* Hiển thị danh sách đánh giá */}
-                        <div>
-                            {reviews.map((review) => (
-                                <div key={review._id} className="mb-4 border-bottom pb-2">
-                                    <div className="d-flex align-items-center mb-2">
-                                        <img
-                                            src={review.reviewerId.image}
-                                            alt="avatar"
-                                            className="rounded-circle me-2"
-                                            style={{ width: '40px', height: '40px' }}
-                                        />
-                                        <div className="d-flex flex-column">
-                                            <span className="fw-bold">{review.reviewerId.fullName}</span>
-                                            <small className="text-muted">
-                                                {new Date(review.createdAt).toLocaleDateString('vi-VN')}
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <div className="star-rating mb-1">
-                                        {[...Array(5)].map((_, index) => (
-                                            <i
-                                                key={index}
-                                                className={`bi ${index < review.rating ? 'bi-star-fill' : 'bi-star'
-                                                    } text-warning`}
-                                            ></i>
-                                        ))}
-
-                                    </div>
-                                    <p>{review.comment}</p>
-                                    {review.images && review.images.length > 0 && (
-                                        <div className="d-flex flex-wrap gap-2 mb-2">
-                                            {review.images.map((imgUrl, index) => (
-                                                <img
+                                            return (
+                                                <i
                                                     key={index}
-                                                    src={imgUrl}
-                                                    alt={`review-img-${index}`}
-                                                    className="rounded"
-                                                    style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
+                                                    className={`bi ${averageRating >= currentStar
+                                                        ? 'bi-star-fill'
+                                                        : averageRating >= currentStar - 0.5
+                                                            ? 'bi-star-half'
+                                                            : 'bi-star'
+                                                        } text-warning`}
+                                                ></i>
+                                            );
+                                        })}
+                                    </div>
+
                                 </div>
-                            ))}
-                        </div>
+
+                                {/* Thống kê số lượng sao */}
+                                <div className="mb-4">
+                                    {[5, 4, 3, 2, 1].map((star, index) => (
+                                        <div key={star} className="d-flex align-items-center">
+                                            <span className="me-2">{star} sao:</span>
+                                            <div
+                                                className="progress flex-grow-1"
+                                                style={{ height: '1rem', marginRight: '1rem' }}
+                                            >
+                                                <div
+                                                    className="progress-bar bg-warning"
+                                                    role="progressbar"
+                                                    style={{
+                                                        width: `${(ratingCounts[star - 1] / reviews.length) * 100 || 0}%`
+                                                    }}
+                                                ></div>
+                                            </div>
+                                            <span>{ratingCounts[star - 1]}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Hiển thị danh sách đánh giá */}
+                                <div>
+                                    {reviews.map((review) => (
+                                        <div key={review._id} className="mb-4 border-bottom pb-2">
+                                            <div className="d-flex align-items-center mb-2">
+                                                <img
+                                                    src={review.reviewerId.image}
+                                                    alt="avatar"
+                                                    className="rounded-circle me-2"
+                                                    style={{ width: '40px', height: '40px' }}
+                                                />
+                                                <div className="d-flex flex-column">
+                                                    <span className="fw-bold">{review.reviewerId.fullName}</span>
+                                                    <small className="text-muted">
+                                                        {new Date(review.createdAt).toLocaleDateString('vi-VN')}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div className="star-rating mb-1">
+                                                {[...Array(5)].map((_, index) => (
+                                                    <i
+                                                        key={index}
+                                                        className={`bi ${index < review.rating ? 'bi-star-fill' : 'bi-star'
+                                                            } text-warning`}
+                                                    ></i>
+                                                ))}
+
+                                            </div>
+                                            <p>{review.comment}</p>
+                                            {review.images && review.images.length > 0 && (
+                                                <div className="d-flex flex-wrap gap-2 mb-2">
+                                                    {review.images.map((imgUrl, index) => (
+                                                        <img
+                                                            key={index}
+                                                            src={imgUrl}
+                                                            alt={`review-img-${index}`}
+                                                            className="rounded"
+                                                            style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

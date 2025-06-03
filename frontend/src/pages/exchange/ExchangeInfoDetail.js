@@ -5,6 +5,7 @@ import StepLabel from '@mui/material/StepLabel';
 import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import React, { useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 import { toast } from 'react-toastify';
 import { useStateContext } from "../../context/UserContext";
@@ -17,12 +18,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import CheckIcon from '@mui/icons-material/Check';
 
 //service
-import { getRequestByRequestId } from '../../services/exchange/exchangeRequestService';
+import { getRequestByRequestId, acceptExchangeRequest, completeExchangeRequest, cancelExchangeRequest } from '../../services/exchange/exchangeRequestService';
 import { getExchangeInforSer } from '../../services/exchange/exchangeInforService';
-import {
-    getExchangeRequestsByUserId, getRequestsByRequesterSer, getExchangeRequestsByOwnerBook, acceptExchangeRequest,
-    completeExchangeRequest
-} from '../../services/exchange/exchangeRequestService'
 import { checkIfRequestIdExists } from '../../services/exchange/userReviewService';
 
 //format
@@ -38,7 +35,7 @@ const ExchangeInfoDetail = (props) => {
     const { requestId } = useParams();
     const { user } = useStateContext();
     const userId = user._id;
-    
+
     const [request, setRequest] = useState(null);
     const [infoForm, setInfoForm] = useState(null);
     const [owner, setOwner] = useState(null);
@@ -266,10 +263,30 @@ const ExchangeInfoDetail = (props) => {
     const handleConfirmRequest = (requestId) => {
         setConfirmRequestId(requestId);
     }
+    const [cancelled, setCancelled] = useState(false);
+
+    const handleCancelRequest = async (requestId) => {
+        try {
+            if (requestId) {
+                const response = await cancelExchangeRequest(requestId);
+                if (response.data.success) {
+                    setCancelled(true);
+                    toast.success("Yêu cầu đã được hủy!");
+                }
+                if (!response.data.success) {
+                    toast.error(response.data.message || "Đã xảy ra lỗi khi hủy yêu cầu, vui lòng thử lại!");
+                }
+            }
+        } catch (error) {
+            console.error("Lỗi khi hủy yêu cầu:", error);
+            toast.error("Đã xảy ra lỗi khi hủy yêu cầu, vui lòng thử lại!");
+        }
+    }
+
     useEffect(() => {
         getRequestById();
         getExchangeInfoByRequestId();
-    }, [requestId, showModalReview, startExchangeRequestId, confirmRequestId, openConfirm]);
+    }, [requestId, showModalReview, startExchangeRequestId, confirmRequestId, openConfirm, cancelled]);
 
     const renderActionButtons = () => {
         if (request?.status === 'pending' && request?.requesterId !== userId) {
@@ -280,7 +297,9 @@ const ExchangeInfoDetail = (props) => {
                         <i className="fa-solid fa-check-circle me-2"></i>
                         Chấp nhận yêu cầu
                     </button>
-                    <button className=' btn btn-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm'> Hủy giao dịch </button>
+                    <button className=' btn btn-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm'
+                        onClick={() => handleCancelRequest(request._id)}
+                    > Hủy giao dịch </button>
                 </>
             );
         } else if (request?.status === 'accepted' && infoForm == null) {
@@ -293,6 +312,7 @@ const ExchangeInfoDetail = (props) => {
                             Điền thông tin giao dịch
                         </button>
                         <button className=' btn btn-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm'
+                            onClick={() => handleCancelRequest(request._id)}
                         > Hủy giao dịch </button>
 
                     </>
@@ -300,6 +320,7 @@ const ExchangeInfoDetail = (props) => {
             } else {
                 return (
                     <button className=' btn btn-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm'
+                        onClick={() => handleCancelRequest(request._id)}
                     > Hủy giao dịch </button>
                 )
             }
@@ -418,25 +439,27 @@ const ExchangeInfoDetail = (props) => {
                 <h1 className="h1 text-center fw-bold">Thông tin giao dịch</h1>
                 <div className="">
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        <div className="text-center">
-                            <div
-                                className="bg-secondary rounded"
+                        <Link to={`/exchange-post-detail/${request?.bookRequestedId?._id}`} className="text-decoration-none text-dark">
+                            <div className="text-center cursor-pointer">
+                                <div
+                                    className="bg-secondary rounded"
 
-                            ></div>
-                            <img
-                                src={request?.bookRequestedId?.images[0]}
-                                style={{ width: "150px", height: "160px" }}
-                            ></img>
-                            <p className="mt-2 fw-bold text-dark "
-                                style={{ maxWidth: "150px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-                            >{request?.bookRequestedId?.title}</p>
-                            <h5 className='h5  text-danger fw-bold'>{request?.bookRequestedId?.creditPoints} đ</h5>
-                            <div className="mt-2">
-                                <span className="badge bg-success px-3 py-1">
-                                    <i className="bi bi-person-fill me-1"></i> Chủ sở hữu
-                                </span>
+                                ></div>
+                                <img
+                                    src={request?.bookRequestedId?.images[0]}
+                                    style={{ width: "150px", height: "160px" }}
+                                ></img>
+                                <p className="mt-2 fw-bold text-dark "
+                                    style={{ maxWidth: "150px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                                >{request?.bookRequestedId?.title}</p>
+                                <h5 className='h5  text-danger fw-bold'>{request?.bookRequestedId?.creditPoints} đ</h5>
+                                <div className="mt-2">
+                                    <span className="badge bg-success px-3 py-1">
+                                        <i className="bi bi-person-fill me-1"></i> Chủ sở hữu
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        </Link>
 
                         <hr className="flex-grow-1 mx-3 text-primary" style={{ height: "1px" }} />
 
@@ -453,7 +476,7 @@ const ExchangeInfoDetail = (props) => {
 
                         <div className="text-center">
                             {request?.exchangeMethod === 'book' ?
-                                <>
+                                <Link to={`/exchange-post-detail/${request?.exchangeBookId?._id}`} className="text-decoration-none text-dark">
                                     <img
                                         src={request?.exchangeBookId?.images[0]}
                                         style={{ width: "150px", height: "160px" }}
@@ -463,7 +486,7 @@ const ExchangeInfoDetail = (props) => {
                                         style={{ maxWidth: "150px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
                                     >{request?.exchangeBookId?.title}</p>
                                     <h5 className='h5  text-danger fw-bold'>{request?.exchangeBookId?.creditPoints} đ</h5>
-                                </>
+                                </Link>
                                 :
                                 <h2 className="h2 text-center">
                                     <span className="badge bg-danger text-white px-3 py-2 rounded-pill">
