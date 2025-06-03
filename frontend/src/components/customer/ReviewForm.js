@@ -76,7 +76,7 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
                 });
             }
             else{
-                toast.success("Đánh giá đơn hàng thất bại");
+                toast.error("Đánh giá đơn hàng thất bại");
             }
 
         } catch (error) {
@@ -89,7 +89,6 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
     return (
 
         <div className="container">
-              <ToastContainer />
             <h4
                 className="mb-4 text-center"
                 style={{ fontSize: "1.5rem", fontWeight: "bold" }}
