@@ -6,7 +6,7 @@ const handleBookClick = async (req, res) => {
     const { userId, bookId } = req.body; // Lấy userId và bookId từ request body
     try {
         // Kiểm tra xem Interaction đã tồn tại chưa
-        let interaction = await Interaction.findOne({ userId, bookId });
+        let interaction = await Interaction.findOne({ userId, bookId }).sort({ last_visit_date: -1 });
 
         if (!interaction) {
             // Nếu chưa có Interaction, tạo mới
@@ -16,7 +16,7 @@ const handleBookClick = async (req, res) => {
 
                 return res.status(200).json({ message: 'Book not found' });
             }
-            
+
 
             // Tạo Interaction mới
             interaction = new Interaction({
@@ -28,9 +28,9 @@ const handleBookClick = async (req, res) => {
             });
 
             // Kiểm tra nếu có rating cho book từ model Rating
-            const rating = await Review.findOne({ userId, bookId });
+            const rating = await Review.findOne({ userId, bookId }).sort({ createdAt: -1 });
             if (rating) {
-                interaction.rating = rating.value; // Gán rating từ model Rating vào Interaction
+                interaction.rating = rating.rating; // Gán rating từ model Rating vào Interaction
             }
 
             // Lưu Interaction mới
@@ -43,17 +43,16 @@ const handleBookClick = async (req, res) => {
             interaction.last_visit_date = new Date();
             interaction.click_count += 1;
 
-            if (interaction.rating === null) {
-                const rating = await Review.findOne({ userId, bookId });
-                if (rating) {
-                    interaction.rating = rating.value; // Gán rating vào interaction
-                }
+            const rating = await Review.findOne({ userId, bookId }).sort({ createdAt: -1 });
+            if (rating) {
+                interaction.rating = rating.rating; // Gán rating vào interaction
             }
+
 
             // Lưu lại Interaction đã cập nhật
             await interaction.save();
 
-            return res.status(200).json({ message: 'Interaction updated',data: interaction });
+            return res.status(200).json({ message: 'Interaction updated', data: interaction });
         }
     } catch (err) {
         console.error(err);
@@ -62,7 +61,7 @@ const handleBookClick = async (req, res) => {
 };
 
 const getLatestInteractions = async (req, res) => {
-   
+
     try {
         // Lấy 100 tương tác gần nhất của userId, sắp xếp theo last_visit_date (mới nhất trước)
         const interactions = await Interaction.find()
