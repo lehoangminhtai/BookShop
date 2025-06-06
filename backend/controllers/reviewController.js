@@ -166,10 +166,34 @@ const getReviewsByUser = async (req, res) => {
     }
 };
 
+const checkReviewExistence = async (req, res) => {
+    try {
+        const { userId, bookId, orderId } = req.body;
+
+        if (!userId || !bookId || !orderId) {
+            return res.status(400).json({ message: 'Thiếu thông tin userId, bookId hoặc orderId' });
+        }
+
+        const existingReview = await Review.findOne({
+            userId,
+            bookId,
+            orderId
+        });
+
+        if (existingReview) {
+            return res.status(200).json({ exists: true, review: existingReview });
+        } else {
+            return res.status(200).json({ exists: false });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'Lỗi server', error });
+    }
+};
 
 module.exports = {
     createReview,
     getReviewsByBook,
     deleteReview,
-    getReviewsByUser, // Thêm hàm vào danh sách export
+    getReviewsByUser,
+    checkReviewExistence
 };

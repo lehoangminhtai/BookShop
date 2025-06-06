@@ -9,3 +9,5 @@ export const createReview = async (reviewData) => await API.post('/', reviewData
 export const getReviewsByBook = async (bookId) => await API.get(`/${bookId}`);
 
 export const deleteReview = async (reviewId) => await API.delete(`/${reviewId}`);
+
+export const checkReview = async (data) => await API.get(`/check-exist`,data);

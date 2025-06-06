@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { updateStatusOrder } from "../../services/orderService";
 import { toast, ToastContainer } from "react-toastify";
-const AdUpdateOrder = ({onClose, initialOrderStatus, orderId, reloadData }) => {
+const AdUpdateOrder = ({ onClose, initialOrderStatus, orderId, reloadData }) => {
     const [status, setStatus] = useState(initialOrderStatus);
     const [deliveryDate, setDeliveryDate] = useState("");  // State lưu ngày giao hàng
 
@@ -29,26 +29,43 @@ const AdUpdateOrder = ({onClose, initialOrderStatus, orderId, reloadData }) => {
     const currentDate = new Date().toISOString().split("T")[0]; // Lấy ngày hiện tại dưới dạng YYYY-MM-DD
 
     const handleUpdateOrder = async () => {
-            
+
         const orderStatus = status;
 
         const deliveryAt = orderStatus === "completed" ? Date.now() : deliveryDate;
 
-        if (orderStatus !== "completed" && !deliveryDate) {
-            toast.error('Vui lòng nhập ngày giao hàng!');
-            return; 
+        if (orderStatus !== "completed") {
+            if (!deliveryDate) {
+                toast.error('Vui lòng nhập ngày giao hàng!');
+                return;
+            }
+            
+            const selectedDate = new Date(deliveryDate);
+    const now = new Date();
+
+    // Đặt giờ phút giây về 0 để so sánh theo ngày
+    now.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    const oneDayLater = new Date(now);
+    oneDayLater.setDate(now.getDate() + 1);
+
+    if (selectedDate < oneDayLater) {
+        toast.error('Ngày giao hàng phải sau ít nhất 1 ngày so với ngày hiện tại!');
+        return;
+    }
         }
 
         if (orderStatus !== "completed" && !deliveryDate) {
             toast.error('Vui lòng nhập ngày giao hàng!');
-            return; 
+            return;
         }
-        
-        const statusData = {orderStatus, deliveryAt}
+
+        const statusData = { orderStatus, deliveryAt }
         try {
             const response = await updateStatusOrder(orderId, statusData)
             if (response.data.success) {
-                 reloadData();
+                reloadData();
                 // Hiển thị thông báo thành công
                 toast.success('Cập nhật trạng thái đơn hàng thành công', {
                     autoClose: 1000,
@@ -120,7 +137,7 @@ const AdUpdateOrder = ({onClose, initialOrderStatus, orderId, reloadData }) => {
                     Cập Nhật
                 </button>
             </div>
-            <ToastContainer/>
+            <ToastContainer />
         </div>
     );
 };

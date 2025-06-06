@@ -885,7 +885,7 @@ function Checkout() {
                         <input type="checkbox" className="form-check-input" id="termsCheckbox" checked />
                         <label className="form-check-label" htmlFor="termsCheckbox">
                             Bằng việc tiến hành mua hàng, bạn đã đồng ý với
-                            <a className="text-primary ml-1">Điều khoản & Điều kiện của Pahasa.com</a>
+                            <a className="text-primary ms-2 cursor-pointer">Điều khoản & Điều kiện của BookShop.VN</a>
                         </label>
                     </div>
                     <button className="btn btn-danger font-weight-semibold px-4" onClick={handleSubmit} >Xác nhận thanh toán</button>
