@@ -24,6 +24,7 @@ const AdOrderDetail = () => {
     const [showModal, setShowModal] = useState(false);
     const [showModalCancelOrder, setShowModalCancelOrder] = useState(false);
 
+
     const reloadData = async () => {
         try {
             // Lấy dữ liệu thanh toán
@@ -234,7 +235,7 @@ const AdOrderDetail = () => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
     return (
-        <div className="d-flex">
+        <div className="d-flex" >
             <AdSidebar />
             <div className="container">
                 <div className="card shadow-lg">
@@ -312,10 +313,7 @@ const AdOrderDetail = () => {
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <div className="d-flex justify-content-end">
-                                        <button className="btn btn-success me-3">In hóa đơn</button>
-                                        <button className="btn" style={{ backgroundColor: "orange", color: "white" }}>Tải hóa đơn</button>
-                                    </div>
+                                   
                                 </div>
                             </div>
                             <div className="col-lg-4">
@@ -347,13 +345,7 @@ const AdOrderDetail = () => {
 
                                         <div className="d-flex justify-content-between align-items-center">
                                             <h6 className="mb-3">Thông tin vận chuyển</h6>
-                                            <button
-                                                className="btn btn-link p-2"
-                                                style={{ fontSize: "1.5rem", color: "#007bff" }}
-                                                onClick={() => alert('Chỉnh sửa thông tin vận chuyển')}
-                                            >
-                                                <i className="fas fa-pencil-alt"></i>
-                                            </button>
+                                            
                                         </div>
 
                                         <ul className="list-unstyled">
@@ -387,7 +379,7 @@ const AdOrderDetail = () => {
                                             </li>
                                         </ul>
 
-                                        <button className="btn btn-primary w-100 mt-3">Đặt lại</button>
+                                        {/* <button className="btn btn-primary w-100 mt-3">Đặt lại</button> */}
                                     </div>
                                 </div>
                             </div>
@@ -409,18 +401,9 @@ const AdOrderDetail = () => {
                                 <div className="d-flex align-items-center mb-3">
                                     <i className={`fas ${payment.paymentStatus !== 'success' ? 'fa-credit-card text-secondary' : 'fa-check text-success'} me-2`}></i>
                                     <h5 className="mb-0 fw-bold">
-                                        {payment.paymentStatus !== 'success' ? 'XÁC NHẬN THANH TOÁN' : 'ĐÃ THANH TOÁN'}
+                                        {payment.paymentStatus !== 'success' ? 'CHƯA THANH TOÁN' : 'ĐÃ THANH TOÁN'}
                                     </h5>
-                                    {payment.paymentStatus !== 'success' ? (
-                                        <button className="btn btn-primary ms-auto">
-                                            Xác Nhận <i className="fas fa-check me-2"></i>
-                                        </button>
-                                    ) : (
-                                        <button className="btn btn-info ms-auto">
-                                            Hoàn Tiền <i className="fas fa-undo  me-2"></i>
-
-                                        </button>
-                                    )}
+                                    
                                 </div>
 
                             </div>

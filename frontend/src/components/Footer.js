@@ -1,65 +1,49 @@
 import { Link } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
 import '../css/bootstrap.min.css'
 import '../css/style.css'
+
 const Footer = () => {
     return (
-        <div class="container-fluid bg-light text-white-50 footer pt-5 mt-5">
-            <div class="container py-5">
-                <div class="pb-4 mb-4" style={{ borderBottom: "1px solid rgba(226, 175, 24, 0.5)" }}>
-                    <div class="row g-4">
-                        <div class="col-lg-3">
-
-                        </div>
-                        <div class="col-lg-6">
-
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="d-flex justify-content-end pt-3">
-                                <a class="btn  btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i class="fab fa-twitter"></i></a>
-                                <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i class="fab fa-facebook-f"></i></a>
-                                <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i class="fab fa-youtube"></i></a>
-                                <a class="btn btn-outline-secondary btn-md-square rounded-circle" href=""><i class="fab fa-linkedin-in"></i></a>
-                            </div>
-                        </div>
+        <footer className=" text-light pt-5 mt-5" style={{"backgroundColor": "#1e3a8a"}}>
+            <div className="container">
+                <div className="row g-4 mb-4 pb-4 border-bottom border-secondary">
+                    <div className="col-md-4">
+                        <h5 className="mb-3 text-light">Tại sao chọn chúng tôi?</h5>
+                        <p>
+                            <i className="fas fa-star me-2 text-warning"></i>
+                            "Chọn chúng tôi – nơi tạo nên website mua sách chuyên nghiệp, nhanh chóng, và tối ưu trải nghiệm người dùng!"
+                        </p>
+                        <Link to="/" className="btn btn-outline-light btn-sm rounded-pill mt-2">Xem thêm</Link>
+                    </div>
+                    <div className="col-md-4">
+                        <h5 className="mb-3 text-light">Thông tin cửa hàng</h5>
+                        <ul className="list-unstyled">
+                            <li><Link to="/" className="text-light text-decoration-none"><i className="fas fa-chevron-right me-2"></i>Về chúng tôi</Link></li>
+                            <li><Link to="/" className="text-light text-decoration-none"><i className="fas fa-chevron-right me-2"></i>Liên lạc</Link></li>
+                            <li><Link to="/" className="text-light text-decoration-none"><i className="fas fa-chevron-right me-2"></i>Chính sách</Link></li>
+                        </ul>
+                    </div>
+                    <div className="col-md-4">
+                        <h5 className="mb-3 text-light">Liên hệ</h5>
+                        <p><i className="fas fa-map-marker-alt me-2 text-warning"></i>Số 1 Võ Văn Ngân, Linh Chiểu, Thủ Đức, TP.HCM</p>
+                        <p><i className="fas fa-envelope me-2 text-warning"></i>bookshopute@gmail.com</p>
+                        <p><i className="fas fa-phone me-2 text-warning"></i>0326 344 084</p>
                     </div>
                 </div>
-                <div class="row g-5">
-                    <div class="col-lg-3 col-md-6">
-                        <div class="footer-item">
-                            <h5 class=" mb-3">Tại sao nên chọn chúng tôi</h5>
-                            <p class="mb-4">"Chọn chúng tôi – nơi tạo nên website mua sách chuyên nghiệp, nhanh chóng, và tối ưu trải nghiệm người dùng!"</p>
-                            <a href="" class="btn border-secondary py-2 px-4 rounded-pill text-secondary">Xem thêm</a>
-                        </div>
+
+                <div className="row text-center pb-3">
+                    <div className="col-md-6 text-md-start mb-3 mb-md-0">
+                        <p className="mb-0">&copy; {new Date().getFullYear()} <strong className="text-warning">BookShop UTE</strong>. All rights reserved.</p>
                     </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="d-flex flex-column text-start footer-item">
-                            <h5 class=" mb-3">Thông tin cửa hàng</h5>
-                            <a class="btn-link" href="">Về chúng tôi</a>
-                            <a class="btn-link" href="">Liên lạc</a>
-                            <a class="btn-link" href="">Chính sách</a>
-
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="d-flex flex-column text-start footer-item">
-                            <h5 class="h3 text-dark">Vui vẻ, tốt lành!</h5>
-
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="footer-item">
-                            <h5 class=" mb-3">Liên lạc</h5>
-                            <p>Số 1 VVN, Linh Chiều, Thủ Đức, TP.HCM</p>
-                            <p>Email: bookshop@gmail.com</p>
-                            <p>SĐT: 0326344084</p>
-
-
-                        </div>
+                    <div className="col-md-6 text-md-end">
+                        <a className="btn btn-outline-light btn-sm rounded-circle me-2" href="#"><i className="fab fa-facebook-f"></i></a>
+                        <a className="btn btn-outline-light btn-sm rounded-circle me-2" href="#"><i className="fab fa-twitter"></i></a>
+                        <a className="btn btn-outline-light btn-sm rounded-circle me-2" href="#"><i className="fab fa-youtube"></i></a>
+                        <a className="btn btn-outline-light btn-sm rounded-circle" href="#"><i className="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
             </div>
-        </div>
+        </footer>
     )
 }
 

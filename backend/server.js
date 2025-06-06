@@ -24,6 +24,7 @@ const addressRoutes = require('./routes/addressRoute');
 const reportRoutes = require('./routes/reportRoute');
 const logRoutes = require('./routes/logRoute');
 const notificationRoutes = require('./routes/notificationRoute');
+const wishlistRoutes = require('./routes/wishListRoute');
 
 //exchange
 const bookExchangeRoutes = require('./routes/exchange/bookExchangeRoute');
@@ -36,6 +37,7 @@ const pointHistoryRoutes = require('./routes/exchange/pointHistoryRoute');
 //AI
 const summarizeBookRoutes = require('./routes/AI/summarizeBookRoute')
 const userReviewRoutes = require('./routes/exchange/userReviewRoute');
+const interactionRoutes = require('./routes/suggestion/interactionRoute');
 
 //connect database
 mongoose.connect(process.env.MONGO_URI)
@@ -73,6 +75,7 @@ app.use('/api/user/addresses', addressRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 //exchange
 app.use('/api/book-exchange', bookExchangeRoutes);
@@ -85,6 +88,7 @@ app.use('/api/point-history', pointHistoryRoutes);
 //AI
 app.use('/api/summarize', summarizeBookRoutes)
 app.use('/api/user-reviews', userReviewRoutes);
+app.use('/api/interaction', interactionRoutes);
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);

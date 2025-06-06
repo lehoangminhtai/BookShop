@@ -1,5 +1,6 @@
 import * as api from "../api/UserApi"
 import { createCartSer, addItemToCart } from "../services/cartService"
+import { addToWishlistSer } from "../services/wishListService"
 import { REGISTER, LOGIN, LOGOUT, SEND_OTP, CHANGE_PASSWORD, START_LOADING, END_LOADING } from "../constants/Auth"
 
 const initialUserState = { name: '', email: '',phone:'', password: '', confirmPassword: '', registerOTP: '', forgetPasswordOTP: '' }
@@ -42,6 +43,7 @@ export const register = (userData, navigate, setErrorObj, setUserFormData,redire
             setErrorObj(initialErrorObj)
             createCartSer(data.result._id)
             handleAddItemToCart(data.result._id);
+            handleAddItemToWishList(data.result._id);
             navigate(redirectPath, { replace: true });
             setUserFormData(initialUserState)
             window.location.reload()
@@ -70,6 +72,7 @@ export const login = (userData, navigate, setErrorObj, setUserFormData, redirect
             setErrorObj(initialErrorObj);
             setUserFormData(initialUserState);
             handleAddItemToCart(data.result._id);
+            handleAddItemToWishList(data.result._id);
 
             const userRole = data.result.role;
 
@@ -153,6 +156,8 @@ export const logout = () => async (dispatch) => {
         dispatch({ type: LOGOUT })
 
         dispatch({ type: END_LOADING })
+        window.location.href = '/'; // hoặc '/'
+
     } catch (error) {
         console.log("error in logout - user.js actions", error.response.data.message)
         dispatch({ type: END_LOADING })
@@ -171,3 +176,18 @@ const handleAddItemToCart = async (userId) => {
     });
     localStorage.removeItem('cart');
 }
+const handleAddItemToWishList =  (userId) => {
+   
+    const localWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+    if (localWishlist.length === 0) return;
+
+    localWishlist.forEach(localItem => {
+       const itemData = {userId, bookId: localItem}
+       console.log(itemData)
+       addToWishlistSer(itemData.userId, itemData.bookId);
+    });
+    localStorage.removeItem('wishlist');
+}
+
+

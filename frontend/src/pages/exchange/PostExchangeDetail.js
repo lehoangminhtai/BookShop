@@ -335,8 +335,9 @@ const PostExchangeDetail = () => {
             <div className="container mt-4" style={{ marginLeft: user?.role === 1 ? '11px' : '9px' }}>
 
                 <div className="row">
+                    <div className='d-flex justify-content-center align-items-center'>
                     {bookExchangeDetail?.images.length > 1 ?
-                        <div className="bg-white p-3 rounded shadow-sm  align-items-center" >
+                        <div className="bg-white p-3 rounded shadow-sm align-items-center" style={{maxHeight:"800px", maxWidth:"300px"}} >
                             <Slider {...settings}>
                                 {bookExchangeDetail?.images.map((image) => (
                                     <img
@@ -360,6 +361,7 @@ const PostExchangeDetail = () => {
                             />
                         </div>
                     }
+                    </div>
                     {requestForm.bookExchangeMethod !== '' && (
                         <div className="card my-3 shadow">
                             <div className="card-header text-dark fw-bold">

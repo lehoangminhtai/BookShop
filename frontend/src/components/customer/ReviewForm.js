@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { createReview } from "../../services/reviewService";
+import { serverUrl } from "../../services/config";
+import { clickInteractionSer } from "../../services/suggestion/suggestionService";
 
 
 const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
@@ -52,6 +54,12 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
             for (const review of reviewData) {
                 if (await createReview(review)) {
                     error = false
+                    const bookSaleResponse = await fetch(`${serverUrl}/api/bookSales/${review.bookId}`);
+                    const bookSale = await bookSaleResponse.json();
+                    const bookSaleId = bookSale._id;
+                    if(bookSaleId){
+                        await clickInteractionSer(userId, bookSaleId);
+                    }
                 }
                 else {
                     error = true

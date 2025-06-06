@@ -1,5 +1,7 @@
 const Review = require('../models/reviewModel');
 const User = require('../models/userModel');
+const BookSale = require('../models/bookSaleModel');
+const Interaction = require('../models/suggestion/interactionModel');
 const { updatePoints } = require('../controllers/exchange/pointHistoryController.js');
 
 const Notification = require("../models/notificationModel");
@@ -13,6 +15,9 @@ const createReview = async (req, res) => {
     try {
         const review = new Review({ userId, bookId, orderId, rating, comment });
         await review.save();
+
+        await handleBookClick(userId, bookId);
+
 
         let gradeIncrease = 1; // Mặc định
         if (comment && comment.trim().length > 0) gradeIncrease += 1;
@@ -35,6 +40,60 @@ const createReview = async (req, res) => {
         res.status(201).json({ success: true, data: review });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Không thể thêm đánh giá', error });
+    }
+};
+
+const handleBookClick = async (userId, bookId) => {
+
+    try {
+        const bookSale = await BookSale.findOne({ bookId });
+        // Kiểm tra xem Interaction đã tồn tại chưa
+        let interaction = await Interaction.findOne({ userId, bookId: bookSale._id }).sort({ last_visit_date: -1 });
+
+        if (!interaction) {
+            // Nếu chưa có Interaction, tạo mới
+            const book = await BookSale.findById(bookId).populate('bookId'); // Populate để lấy thông tin categoryId từ model CategoryBook
+            if (!book) {
+
+            }
+
+
+            // Tạo Interaction mới
+            interaction = new Interaction({
+                userId,
+                bookId,
+                categoryId: book.bookId.categoryId, // Lấy categoryId từ Book
+                rating: null, // Chưa có rating ở đây
+                click_count: 1,
+            });
+
+            // Kiểm tra nếu có rating cho book từ model Rating
+            const rating = await Review.findOne({ userId, bookId }).sort({ createdAt: -1 });
+            if (rating) {
+                interaction.rating = rating.rating; // Gán rating từ model Rating vào Interaction
+            }
+
+            // Lưu Interaction mới
+            await interaction.save();
+
+        } else {
+
+            // Cập nhật last_visit_date và tăng click_count lên 1
+            interaction.last_visit_date = new Date();
+            interaction.click_count += 1;
+
+            const rating = await Review.findOne({ userId, bookId }).sort({ createdAt: -1 });
+            if (rating) {
+                interaction.rating = rating.rating; // Gán rating vào interaction
+            }
+
+
+            // Lưu lại Interaction đã cập nhật
+            await interaction.save();
+
+        }
+    } catch (err) {
+        console.error(err);
     }
 };
 
@@ -106,10 +165,34 @@ const getReviewsByUser = async (req, res) => {
     }
 };
 
+const checkReviewExistence = async (req, res) => {
+    try {
+        const { userId, bookId, orderId } = req.body;
+
+        if (!userId || !bookId || !orderId) {
+            return res.status(400).json({ message: 'Thiếu thông tin userId, bookId hoặc orderId' });
+        }
+
+        const existingReview = await Review.findOne({
+            userId,
+            bookId,
+            orderId
+        });
+
+        if (existingReview) {
+            return res.status(200).json({ exists: true, review: existingReview });
+        } else {
+            return res.status(200).json({ exists: false });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'Lỗi server', error });
+    }
+};
 
 module.exports = {
     createReview,
     getReviewsByBook,
     deleteReview,
-    getReviewsByUser, // Thêm hàm vào danh sách export
+    getReviewsByUser,
+    checkReviewExistence
 };

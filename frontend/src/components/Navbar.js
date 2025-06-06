@@ -1,12 +1,16 @@
 import { useStateContext } from '../context/UserContext'
 import { Link, useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef }, { useEffect, useState, useRef } from 'react';
 import '../css/bootstrap.min.css'
 import '../css/style.css'
 import { io } from 'socket.io-client'
 
 import { getNotifications, markNotificationAsRead } from '../services/notificationService'
+
+import { getNotifications, markNotificationAsRead } from '../services/notificationService'
+import WishListItem from './customer/WishListItem';
+import useWishlistStore from '../store/useWishListStore';
 const Navbar = () => {
     const navigate = useNavigate()
     const location = useLocation() // Lấy đường dẫn hiện tại
@@ -14,10 +18,12 @@ const Navbar = () => {
 
     // Hàm kiểm tra xem đường dẫn hiện tại có trùng với đường dẫn của Link không
     const isActive = (path) => location.pathname === path ? "active text-primary" : "text-dark";
-
+    const isInWishlist = (path) => location.pathname === path ? "text-danger" : "";
+    const wishlist = useWishlistStore(state => state.wishlist);
 
     const [notifications, setNotifications] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
+    const [showWishlist, setShowWishlist] = useState(false);
     const bellRef = useRef(null);
 
     const socketRef = useRef(null);
@@ -89,7 +95,6 @@ const Navbar = () => {
             console.error("Không thể đánh dấu đã đọc:", err);
         }
     };
-
     return (
         <div className="navbar">
             <div className="container-fluid fixed-top">
@@ -134,7 +139,7 @@ const Navbar = () => {
                                 {user && (
                                     <div className="position-relative me-4" ref={bellRef}>
                                         <i
-                                            className="fa fa-bell fa-2x cart-nav"
+                                            className={`fa fa-bell fa-2x ${showDropdown ? 'cart-nav' : ''}`}
                                             style={{ cursor: "pointer" }}
                                             onClick={() => setShowDropdown(!showDropdown)}
                                         ></i>
@@ -212,8 +217,39 @@ const Navbar = () => {
                                         )}
                                     </div>
                                 )}
+                                <div className="position-relative me-4 my-auto">
+                                    <i
+                                        className={`fa fa-heart fa-2x cursor-pointer ${showWishlist && 'text-danger'}`}
+                                        onClick={() => setShowWishlist(prev => !prev)}
+                                    ></i>
+                                    <span
+                                        className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                        style={{ fontSize: '0.75rem', padding: '0.4em 0.6em' }}
+                                    >
+                                        {wishlist.length}
+                                    </span>
+
+                                    {showWishlist && (
+                                        <div
+                                            className="dropdown-menu show p-3 position-absolute end-0"
+                                            style={{ width: '400px', top: '100%', maxHeight: '300px', overflowY: 'auto' }}
+                                        >
+                                            <h6 className="mb-2">Yêu thích</h6>
+                                            {wishlist.length > 0 ? (
+                                                wishlist.map(item => (
+                                                    <WishListItem key={item} item={item} />
+                                                ))
+                                            ) : (
+                                                <p className="text-muted">😔 Chưa thêm sách nào</p>
+                                            )}
+
+                                        </div>
+
+                                    )}
+                                </div>
+
                                 <Link to="/cart" className="position-relative me-4 my-auto">
-                                    <i className="fa fa-shopping-cart fa-2x cart-nav"></i>
+                                    <i className={`fa fa-shopping-cart fa-2x ${isActive('/cart')}`}></i>
                                 </Link>
 
                                 {user ? (

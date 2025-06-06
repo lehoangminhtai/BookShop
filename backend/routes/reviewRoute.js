@@ -1,5 +1,5 @@
 const express = require('express');
-const { createReview, getReviewsByBook, deleteReview, getReviewsByUser } = require('../controllers/reviewController');
+const { createReview, getReviewsByBook, deleteReview, getReviewsByUser, checkReviewExistence } = require('../controllers/reviewController');
 
 const router = express.Router();
 
@@ -14,5 +14,7 @@ router.delete('/:reviewId', deleteReview);
 
 
 router.get('/account/:userId', getReviewsByUser);
+
+router.get('/check-exist', checkReviewExistence);
 
 module.exports = router;

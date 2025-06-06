@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 //service
 import { fetchBooks } from "../services/bookService";
 import { getBookSales, getTopCategoryBooks, getTopBooks, getLastBooks } from "../services/homeService";
+import { recommendSer } from "../services/suggestion/recommendService";
+import { getBookSaleById } from "../services/bookSaleService";
 
 import '../css/bootstrap.min.css'
 import '../css/style.css'
@@ -14,15 +16,16 @@ import Slider from "react-slick";
 //Component
 import BookDetail from '../components/BookDetail';
 
-
+import { useStateContext } from "../context/UserContext";
 
 const Home = () => {
-
+    const { user } = useStateContext();
     const [bookSales, setBookSales] = useState([])
     const [topBookSales, setTopBookSales] = useState([])
     const [newBookSales, setNewBookSales] = useState([])
     const [categoryBooks, setCategoryBooks] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
+    const [recommendations, setRecommendations] = useState([]);
 
     const navigate = useNavigate();
     const searchButtonRef = useRef(null);
@@ -73,8 +76,31 @@ const Home = () => {
         }
     }
 
+    const getRecommendations = async () => {
+        try {
+            const response = await recommendSer(user._id);
+            if (response.success) {
+                response.data.forEach(async (item) => {
+                    const bookSaleData = await getBookSaleById(item.bookId);
+                    setBookSales((prevBookSales) => [...prevBookSales, bookSaleData.data.data]);
+                });
+            }
+            else {
+                alert("Hệ thống gợi ý đang bảo trì")
+            }
+        }
+        catch (error) {
+            console.error("Error fetching recommendations:", error);
+        }
+    }
+
     useEffect(() => {
-        fetchBookSales()
+        if (user) {
+            getRecommendations();
+        }
+        else {
+            fetchBookSales()
+        }
         fetchCategoryBooks();
         fetchNewBookSales();
         fetchTopBookSales();
@@ -177,7 +203,7 @@ const Home = () => {
                                             className="img-fluid w-100 rounded"
                                             alt="Second slide"
                                         />
-                                       
+
                                     </div>
                                 </div>
                                 <button
@@ -209,7 +235,7 @@ const Home = () => {
                                             className="img-fluid w-100 bg-secondary rounded"
                                             alt="First slide"
                                         />
-                                        
+
                                     </div>
                                     <div className="carousel-item rounded">
                                         <img
@@ -217,7 +243,7 @@ const Home = () => {
                                             className="img-fluid w-100 rounded"
                                             alt="Second slide"
                                         />
-                                        
+
                                     </div>
                                 </div>
                                 <button
@@ -357,11 +383,13 @@ const Home = () => {
             <div className="container mt-5 ms-5">
 
                 <div className="row align-items-center">
+
                     {bookSales && bookSales.map(book => book?._id && (
                         <div key={book?._id} className="col-md-4 col-sm-6 col-lg-3">
                             <BookDetail book={book.bookId} />
                         </div>
                     ))}
+
                 </div>
             </div>
             <div className="d-flex justify-content-center mt-2">
@@ -428,7 +456,7 @@ const Home = () => {
             <ToastContainer />
 
         </div>
-       
+
     );
 }
 
