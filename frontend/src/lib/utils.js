@@ -8,9 +8,33 @@ export const formatDate = (date) => {
   };
 
   export const formatMessageTime = (date) => {
-    return new Date(date).toLocaleTimeString("en-US", {
+  const d = new Date(date);
+  const now = new Date();
+
+  const isToday =
+    d.getDate() === now.getDate() &&
+    d.getMonth() === now.getMonth() &&
+    d.getFullYear() === now.getFullYear();
+
+  if (isToday) {
+    // Nếu là hôm nay → chỉ hiển thị giờ:phút
+    return d.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
+  } else {
+    // Nếu không phải hôm nay → hiển thị dd/mm/yyyy hh:mm
+    const day  = d.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    const time = d.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,  
+    });
+    return `${day} ${time}`;
   }
+};

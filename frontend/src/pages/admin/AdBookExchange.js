@@ -14,7 +14,7 @@ const AdBookExchange = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [limit, setLimit] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
-    const [status, setStatus] = useState('pending');
+    const [status, setStatus] = useState("pending");
 
     const navigate = useNavigate();
 
@@ -111,7 +111,7 @@ const AdBookExchange = () => {
                                     <td>{(currentPage - 1) * limit + index + 1}</td>
                                     <td>
                                         <img
-                                            src={book.images}
+                                            src={book.images[0]}
                                             alt={book.title}
                                             style={{ width: '50px' }}
                                         />

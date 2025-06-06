@@ -3,14 +3,13 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useStateContext } from "../../context/UserContext";
-import { ToastContainer } from "react-toastify";
 import ExchangeInforForm from '../../pages/exchange/ExchangeInfoForm';
 import ExchangeInfoConfirmForm from '../../components/customer/BookExchange/ExchangeInfoConfirmForm';
 import UserReviewForm from '../../components/customer/BookExchange/UserReviewForm';
 //service
 import {
     getExchangeRequestsByUserId, getRequestsByRequesterSer, getExchangeRequestsByOwnerBook, acceptExchangeRequest,
-    completeExchangeRequest
+    completeExchangeRequest, cancelExchangeRequest
 } from '../../services/exchange/exchangeRequestService'
 import { getUserInfo } from '../../services/userService'
 import { getBookExchangeSer } from '../../services/exchange/bookExchangeService'
@@ -224,10 +223,29 @@ const MyExchangeOverview = () => {
     const handleNavigateToDetail = (requestId) => {
         navigate(`/exchange/exchange-info-detail/${requestId}`)
     }
+    const [cancelled, setCancelled] = useState(false);
+
+    const handleCancelRequest = async (requestId) => {
+        try {
+            if (requestId) {
+                const response = await cancelExchangeRequest(requestId);
+                if (response.data.success) {
+                    setCancelled(true);
+                    toast.success("Yêu cầu đã được hủy!");
+                }
+                if (!response.data.success) {
+                    toast.error(response.data.message || "Đã xảy ra lỗi khi hủy yêu cầu, vui lòng thử lại!");
+                }
+            }
+        } catch (error) {
+            console.error("Lỗi khi hủy yêu cầu:", error);
+            toast.error("Đã xảy ra lỗi khi hủy yêu cầu, vui lòng thử lại!");
+        }
+    }
 
     useEffect(() => {
         fetchData();
-    }, [userId, activeTab, showModal, startExchangeRequestId, confirmRequestId]);
+    }, [userId, activeTab, showModal, startExchangeRequestId, confirmRequestId, cancelled]);
 
     const checkReviewExists = async (requestId, userId) => {
         try {
@@ -249,7 +267,7 @@ const MyExchangeOverview = () => {
                     <button
                         className="btn btn-success me-2"
                         onClick={() => handleClickRequest(request.id)}>Chấp nhận</button>
-                    <button className=' btn btn-danger'> Hủy </button>
+                    <button className=' btn btn-danger' onClick={() => handleCancelRequest(request.id)}> Hủy </button>
                 </>
             );
 
@@ -262,11 +280,11 @@ const MyExchangeOverview = () => {
                         <button
                             className="btn btn-primary me-2"
                             onClick={() => handleStartExchange(request.id)}>Điền thông tin giao dịch</button>
-                        <button className="btn btn-danger">Hủy giao dịch</button>
+                        <button className="btn btn-danger" onClick={() => handleCancelRequest(request.id)}>Hủy giao dịch</button>
                     </>
                 );
             } else {
-                return <button className="btn btn-danger">Hủy giao dịch</button>;
+                return <button className="btn btn-danger" onClick={() => handleCancelRequest(request.id)}>Hủy giao dịch</button>;
             }
         }
 
@@ -428,7 +446,12 @@ const MyExchangeOverview = () => {
 
                 {/* Danh sách request */}
                 <div className="row">
-                    {requests.map((request, index) => (
+                    {requests.length === 0 ? (
+                    <div className="col-12 text-center">
+                        <p className="text-muted">Không có yêu cầu trao đổi nào.</p>
+                    </div>
+                    ) : (
+                    requests.map((request, index) => (
                         <div className="card shadow mb-3" key={request._id}>
 
                             <div className="card-body">
@@ -541,7 +564,7 @@ const MyExchangeOverview = () => {
                         </div>
 
 
-                    ))}
+                    )))}
                     {startExchangeRequestId && (
                         <ExchangeInforForm
                             requestId={startExchangeRequestId}
