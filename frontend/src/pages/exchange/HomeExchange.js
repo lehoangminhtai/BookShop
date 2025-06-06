@@ -48,6 +48,7 @@ const HomeExchange = () => {
             const params = new URLSearchParams({
                 page: String(page),
                 limit: String(8),
+                status: "available",
                 ...filters,
             });
             console.log("params", params.toString())
@@ -349,10 +350,10 @@ const HomeExchange = () => {
                                         </div>
                                     </Link>
                                     <hr />
-                                    <Link to='/post-request'>
+                                    <Link to='/exchange/chat'>
                                         <div className="option-exchange mb-2">
                                             <i className="fa fa-paper-plane me-2"></i>
-                                            <span className="fs-6">Bài đăng đã gửi</span>
+                                            <span className="fs-6">Nhắn tin</span>
                                         </div>
                                     </Link>
                                     <hr />

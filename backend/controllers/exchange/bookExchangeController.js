@@ -115,7 +115,6 @@ const getBooksExchanges = async (req, res) => {
         if (req.query.condition) {
             query.condition = req.query.condition;
         }
-        query.status = "available"; // Chỉ lấy sách có trạng thái "available"
 
         if (req.query.dateFilter) {
             const dateFilter = parseInt(req.query.dateFilter); // Lấy giá trị số ngày từ query

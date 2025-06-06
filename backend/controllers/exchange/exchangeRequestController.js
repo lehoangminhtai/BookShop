@@ -668,7 +668,7 @@ const completeExchangeRequest = async (req, res) => {
                 
             }
         }
-        res.status(200).json({ success: true, message: 'Hoàn thành trao đổi thành công' });
+        res.status(200).json({ success: true, message: 'Đã xác nhận hoàn thành trao đổi.' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Lỗi khi xác nhận hoàn thành trao đổi' });

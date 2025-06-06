@@ -175,7 +175,7 @@ const AdSidebar = () => {
                       to="/admin/exchange-books"
                       className={`nav-link ${isActive('/admin/exchange-books') ? 'bg-primary text-white' : 'text-dark'}`}
                     >
-                      Danh sách trao đổi
+                      Danh sách bài đăng trao đổi
                     </Link>
                   </li>
                   <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>

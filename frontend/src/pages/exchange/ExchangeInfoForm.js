@@ -114,7 +114,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                 const res = await updateExchangeInforSer(dataToSend); // Thêm hàm cập nhật
                 console.log('Update Response:', res);
                 if (res.data.success) {
-                    toast.success('Cập nhật giao dịch thành công!');
+                    toast.success('Cập nhật thông tin thành công!');
                     onClose();
                 }
             } else {
@@ -122,7 +122,7 @@ const ExchangeInforForm = ({ requestId, onClose }) => {
                 const res = await createExchangeInforSer(dataToSend);
                 console.log('Create Response:', res);
                 if (res.data.success) {
-                    toast.success('Tạo giao dịch thành công!');
+                    toast.success('Hoàn tất điền thông tin!');
                     onClose();
                 }
             }

@@ -410,19 +410,19 @@ const PostExchangeDetail = () => {
                                 :
 
                                 (user?._id === bookExchangeDetail?.ownerId?._id) ?
-                                    ( bookExchangeDetail?.status !== "completed" ? 
-                                    <button
+                                    (bookExchangeDetail?.status !== "completed" ?
+                                        <button
 
-                                        className="btn btn-outline-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
-                                        onClick={() => handleOpenListRequest()}
+                                            className="btn btn-outline-success w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
+                                            onClick={() => handleOpenListRequest()}
 
-                                    >
-                                        <h4 className='h4 text-danger me-2'> ({listRequest.length}) </h4>   Danh sách yêu cầu trao đổi <i class=" ms-2 me-2 fa fa-external-link text-light" aria-hidden="true"></i>
-                                    </button> : <></>)
+                                        >
+                                            <h4 className='h4 text-danger me-2'> ({listRequest.length}) </h4>   Danh sách yêu cầu trao đổi <i class=" ms-2 me-2 fa fa-external-link text-light" aria-hidden="true"></i>
+                                        </button> : <></>)
                                     :
                                     (
                                         requestForm.bookExchangeMethod === "" ?
-                                            (( bookExchangeDetail?.status !== "completed" ? <button
+                                            ((bookExchangeDetail?.status !== "completed" ? <button
 
                                                 className="btn btn-primary w-100 d-flex align-items-center justify-content-center px-4 py-2 text-nowrap"
                                                 onClick={() => handleSendRequest()}
@@ -558,11 +558,14 @@ const PostExchangeDetail = () => {
                             />
                             <span className='text-dark fw-bold'>{bookExchangeDetail?.ownerId?.fullName}</span>
                         </Link>
-                        <button className='btn btn-primary'
-                            onClick={() => handleClickChatButton()}
-                        ><span className='me-2'>Trao đổi</span>
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
+
+                        {user?._id !== bookExchangeDetail?.ownerId?._id && (
+                            <button className='btn btn-primary' onClick={handleClickChatButton}>
+                                <span className='me-2'>Trao đổi</span>
+                                <i className="fa-solid fa-paper-plane"></i>
+                            </button>
+                        )}
+
                     </div>
                 </div>
                 <div className="container-fluid d-flex justify-content-center align-items-center mt-5">
