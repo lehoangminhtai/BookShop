@@ -246,6 +246,7 @@ const AdOrderDetail = () => {
                                 payment.orderId.orderStatus === 'pending' && orderConfirmed ? 'Đã Xác Nhận' : payment.orderId.orderStatus === 'pending' ? 'Đang Chờ' :
                                     payment.orderId.orderStatus === 'confirm' ? 'Đã Xác Nhận' :
                                         payment.orderId.orderStatus === 'failed' ? 'Đã Hủy' :
+                                        payment.orderId.orderStatus === 'shipped' ? 'Đã Vận Chuyển' :
                                             'Đang Vận Chuyển'}</button>
                         </div>
                         <div className="row">
@@ -417,7 +418,7 @@ const AdOrderDetail = () => {
 
                                     <div className="col-md-4">
                                         <div className="text-muted small">TRẠNG THÁI</div>
-                                        <span className={`badge ${payment.orderId.orderStatus === 'shipping' ? 'bg-warning' : payment.orderId.orderStatus === 'completed' ? 'bg-success' : payment.orderId.orderStatus === 'failed' ? 'bg-danger' : 'bg-info'} bg-success`}>{payment.orderId.orderStatus === 'shipping' ? 'Đang vận chuyển' : payment.orderId.orderStatus === 'completed' ? 'Hoàn thành' : payment.orderId.orderStatus === 'failed' ? 'Đã Hủy': 'Đang chờ'}</span>
+                                        <span className={`badge ${payment.orderId.orderStatus === 'shipping' ? 'bg-warning' :payment.orderId.orderStatus === 'shipped'? 'bg-warning' :  payment.orderId.orderStatus === 'completed' ? 'bg-success' : payment.orderId.orderStatus === 'failed' ? 'bg-danger' : 'bg-info'} bg-success`}>{payment.orderId.orderStatus === 'shipping' ? 'Đang vận chuyển' : payment.orderId.orderStatus === 'shipped' ? 'Đã vận chuyển' : payment.orderId.orderStatus === 'completed' ? 'Hoàn thành' : payment.orderId.orderStatus === 'failed' ? 'Đã Hủy': 'Đang chờ'}</span>
                                     </div>
 
                                     <div className="col-md-4">

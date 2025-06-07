@@ -122,6 +122,9 @@ exports.updateOrderStatus = async (req, res) => {
 
         // Nếu trạng thái đơn hàng là 'completed' thì thêm thời gian giao hàng
         const updateData = { orderStatus, deliveryAt };
+        if (orderStatus === 'shipped') {
+            updateData.deliveryAt = Date.now();
+        }
         if (orderStatus === 'completed') {
             updateData.deliveryAt = Date.now();
         }
@@ -171,7 +174,20 @@ exports.updateOrderStatus = async (req, res) => {
             if (receiverSocketId) {
                 io.to(receiverSocketId).emit("getNotification", notification);
             }
-        } else if (updatedOrder.orderStatus === 'completed') {
+        } else if (updatedOrder.orderStatus === 'shipped') {
+            const notification = await Notification.create({
+                receiverId: updatedOrder.userId,
+                content: `Đơn hàng ${updatedOrder._id} đã được giao. Vui lòng xác nhận hoàn thành để nhận điểm thưởng nhé.`,
+                link: `/account/orders#`,
+                image: book.images[0],
+            });
+
+            const receiverSocketId = getReceiverSocketId(updatedOrder.userId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("getNotification", notification);
+            }
+        }
+        else if (updatedOrder.orderStatus === 'completed') {
             const notification = await Notification.create({
                 receiverId: updatedOrder.userId,
                 content: `Đơn hàng ${updatedOrder._id} đã hoàn tất. Bạn hãy đánh giá sản phẩm để nhận điểm thưởng nhé.`,
@@ -183,7 +199,8 @@ exports.updateOrderStatus = async (req, res) => {
             if (receiverSocketId) {
                 io.to(receiverSocketId).emit("getNotification", notification);
             }
-        } else if (updatedOrder.orderStatus === 'failed') {
+        }
+         else if (updatedOrder.orderStatus === 'failed') {
             const notification = await Notification.create({
                 receiverId: updatedOrder.userId,
                 content: `Đơn hàng ${updatedOrder._id} đã bị hủy. Vui lòng kiểm tra lại thông tin đơn hàng.`,

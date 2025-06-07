@@ -8,6 +8,7 @@ const AdUpdateOrder = ({ onClose, initialOrderStatus, orderId, reloadData }) => 
     const statusStyles = {
         confirm: { backgroundColor: 'rgba(29, 78, 216)', color: 'white', fontWeight: 'bold' },
         shipping: { backgroundColor: '#ffc107', color: 'black', fontWeight: 'bold' },
+        shipped: { backgroundColor: '#fd7e14', color: 'black', fontWeight: 'bold' },
         completed: { backgroundColor: '#198754', color: 'white', fontWeight: 'bold' },
     };
 
@@ -32,33 +33,30 @@ const AdUpdateOrder = ({ onClose, initialOrderStatus, orderId, reloadData }) => 
 
         const orderStatus = status;
 
-        const deliveryAt = orderStatus === "completed" ? Date.now() : deliveryDate;
+        const isShippedOrCompleted = orderStatus === "shipped" || orderStatus === "completed";
 
-        if (orderStatus !== "completed") {
+        const deliveryAt = isShippedOrCompleted ? Date.now() : deliveryDate;
+
+        if (!isShippedOrCompleted) {
             if (!deliveryDate) {
                 toast.error('Vui lòng nhập ngày giao hàng!');
                 return;
             }
-            
+
             const selectedDate = new Date(deliveryDate);
-    const now = new Date();
+            const now = new Date();
 
-    // Đặt giờ phút giây về 0 để so sánh theo ngày
-    now.setHours(0, 0, 0, 0);
-    selectedDate.setHours(0, 0, 0, 0);
+            // Đặt giờ phút giây về 0 để so sánh theo ngày
+            now.setHours(0, 0, 0, 0);
+            selectedDate.setHours(0, 0, 0, 0);
 
-    const oneDayLater = new Date(now);
-    oneDayLater.setDate(now.getDate() + 1);
+            const oneDayLater = new Date(now);
+            oneDayLater.setDate(now.getDate() + 1);
 
-    if (selectedDate < oneDayLater) {
-        toast.error('Ngày giao hàng phải sau ít nhất 1 ngày so với ngày hiện tại!');
-        return;
-    }
-        }
-
-        if (orderStatus !== "completed" && !deliveryDate) {
-            toast.error('Vui lòng nhập ngày giao hàng!');
-            return;
+            if (selectedDate < oneDayLater) {
+                toast.error('Ngày giao hàng phải sau ít nhất 1 ngày so với ngày hiện tại!');
+                return;
+            }
         }
 
         const statusData = { orderStatus, deliveryAt }
@@ -113,7 +111,8 @@ const AdUpdateOrder = ({ onClose, initialOrderStatus, orderId, reloadData }) => 
                 >
                     <option value="confirm">Xác Nhận</option>
                     <option value="shipping">Đang Vận Chuyển</option>
-                    <option value="completed">Đã Giao</option>
+                    <option value="shipped">Đã Vận Chuyển</option>
+                    <option value="completed">Hoàn Thành</option>
                 </select>
 
                 <label htmlFor="datepicker" className="form-label fw-semibold">

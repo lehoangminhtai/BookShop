@@ -38,6 +38,8 @@ const Order = ({ orders, userId }) => {
                 return 'Chờ lấy hàng';
             case 'shipping':
                 return 'Đang giao hàng';
+            case 'shipped':
+                return 'Đã giao hàng';
             case 'completed':
                 return 'Hoàn thành';
             case 'failed':

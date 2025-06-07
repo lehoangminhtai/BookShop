@@ -131,6 +131,7 @@ const AdOrder = () => {
                                     <option value="pending">Đang chờ</option>
                                     <option value="confirm">Đã xác nhận</option>
                                     <option value="shipping">Đang vận chuyển</option>
+                                    <option value="shipped">Đã vận chuyển</option>
                                     <option value="completed">Hoàn thành</option>
                                     <option value="failed">Thất bại</option>
                                 </select>
@@ -167,6 +168,7 @@ const AdOrder = () => {
                                         <td className="text-center">
                                             <span className={`badge 
                                                 ${payment.orderId.orderStatus === 'completed' ? 'bg-success' :
+                                                    payment.orderId.orderStatus === 'shipped' ? 'bg-info' :
                                                     payment.orderId.orderStatus === 'shipping' ? 'bg-info' :
                                                         payment.orderId.orderStatus === 'confirm' ? 'bg-primary' :
                                                             payment.orderId.orderStatus === 'failed' ? 'bg-danger' :
@@ -174,6 +176,7 @@ const AdOrder = () => {
 
                                                 <i className={`fas me-1 
                                                     ${payment.orderId.orderStatus === 'completed' ? 'fa-check-circle' :
+                                                        payment.orderId.orderStatus === 'shipped' ? 'fa-truck' :
                                                         payment.orderId.orderStatus === 'shipping' ? 'fa-truck' :
                                                             payment.orderId.orderStatus === 'confirm' ? 'fa-thumbs-up' :
                                                                 payment.orderId.orderStatus === 'failed' ? 'fa-times-circle' :
@@ -182,6 +185,7 @@ const AdOrder = () => {
 
                                                 {/* Hiển thị tên trạng thái */}
                                                 {payment.orderId.orderStatus === 'completed' ? 'Hoàn Thành' :
+                                                    payment.orderId.orderStatus === 'shipped' ? 'Đã Vận Chuyển' :
                                                     payment.orderId.orderStatus === 'shipping' ? 'Đang Vận Chuyển' :
                                                         payment.orderId.orderStatus === 'confirm' ? 'Đã Xác Nhận' :
                                                             payment.orderId.orderStatus === 'failed' ? 'Thất Bại' :
