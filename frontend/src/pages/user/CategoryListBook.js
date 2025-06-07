@@ -4,6 +4,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { searchBookSales, getBookSalesByCategory } from "../../services/homeService";
 //component
 import BookDetail from '../../components/BookDetail';
+import { ToastContainer } from "react-toastify";
 
 const CategoryListBook = () => {
     const { nameCategory, categoryId } = useParams();
@@ -83,6 +84,7 @@ const CategoryListBook = () => {
                     </button>
                 </div>
             )}
+            <ToastContainer/>
         </div>
     );
 };

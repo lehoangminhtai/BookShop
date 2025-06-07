@@ -364,11 +364,7 @@ const HomeExchange = () => {
                                             <span className="fs-6">Giao dịch của tôi</span>
                                         </div>
                                     </Link>
-                                    <hr />
-                                    <div className="option-exchange mb-2">
-                                        <i className="fa fa-star me-2"></i>
-                                        <span className="fs-6">Tổng điểm</span>
-                                    </div>
+                                    
                                 </>
                             )}
                         </div>
