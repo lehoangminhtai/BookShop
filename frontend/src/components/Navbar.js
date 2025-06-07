@@ -102,10 +102,10 @@ const Navbar = () => {
                     <div className="d-flex justify-content-between">
                         <div className="top-info ps-2">
                             <small className="me-3"><i className="fas fa-map-marker-alt me-2 text-secondary"></i>
-                                <a href="#" className="text-white">Số 1 VVN, Linh Chiểu, Thủ Đức</a>
+                                <a href="#" className="text-white">Số 1 Võ Văn Ngân, Linh Chiểu, Thủ Đức</a>
                             </small>
                             <small className="me-3"><i className="fas fa-envelope me-2 text-secondary"></i>
-                                <a href="#" className="text-white">bookshop@gmail.com</a>
+                                <a href="#" className="text-white">bookshopute@gmail.com</a>
                             </small>
                         </div>
                         <div className="top-link pe-2">
@@ -131,7 +131,7 @@ const Navbar = () => {
                                 <Link to="/" className={`nav-item nav-link fw-bold fs-5 ${isActive("/")}`}>Trang chủ</Link>
 
                                 <Link to="/exchange" className={`nav-item nav-link fw-bold fs-5 ${isActive("/exchange")}`}>Trao Đổi Sách</Link>
-                                <Link to="/contact" className={`nav-item nav-link fw-bold fs-5 ${isActive("/contact")}`}>Liên Lạc</Link>
+                                
                             </div>
 
                             <div className="d-flex m-3 me-0">

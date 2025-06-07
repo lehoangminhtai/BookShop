@@ -307,7 +307,7 @@ const HomeExchange = () => {
                                                         <p className="text-muted"><i className="fa fa-map-marker-alt text-primary"></i> {book?.location}</p>
                                                     </div>
 
-                                                    <i className="far fa-heart ms-auto text-secondary"></i>
+                                                    
                                                 </div>
                                             </div>
                                         ))

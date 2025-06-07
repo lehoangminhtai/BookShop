@@ -159,23 +159,7 @@ const AdDiscount = () => {
                 </table>
 
                 {/* Pagination */}
-                <div className="d-flex justify-content-between align-items-center mt-4">
-                    <div>
-                        <select className="form-control d-inline w-auto">
-                            <option>10</option>
-                            <option>20</option>
-                            <option>30</option>
-                        </select>
-                        <span className="ml-2">Show from 1 to 10 in 24 records</span>
-                    </div>
-                    <div className="btn-group" role="group">
-                        <button className="btn btn-secondary">Previous</button>
-                        <button className="btn btn-primary">1</button>
-                        <button className="btn btn-secondary">2</button>
-                        <button className="btn btn-secondary">3</button>
-                        <button className="btn btn-secondary">Next</button>
-                    </div>
-                </div>
+                
 
                 {/* Modal */}
                 {showModal && (
