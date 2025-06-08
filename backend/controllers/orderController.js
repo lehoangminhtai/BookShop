@@ -200,7 +200,7 @@ exports.updateOrderStatus = async (req, res) => {
                 io.to(receiverSocketId).emit("getNotification", notification);
             }
         }
-         else if (updatedOrder.orderStatus === 'failed') {
+        else if (updatedOrder.orderStatus === 'failed') {
             const notification = await Notification.create({
                 receiverId: updatedOrder.userId,
                 content: `Đơn hàng ${updatedOrder._id} đã bị hủy. Vui lòng kiểm tra lại thông tin đơn hàng.`,
@@ -266,6 +266,64 @@ exports.updatePaymentStatus = async (req, res) => {
 
         res.status(200).json({ success: true, data: updatedOrder });
     } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.userUpdateOrder = async (req, res) => {
+    try {
+        const { userId, orderId, orderStatus } = req.body;
+
+        if (orderStatus === 'cancel') {
+            const deleteOrder = await Order.findByIdAndDelete(orderId);
+
+            const notification = await Notification.create({
+                receiverId: userId,
+                content: `Đơn hàng ${orderId} đã được hủy.`,
+                link: `/`,
+                image: null,
+            });
+
+            const receiverSocketId = getReceiverSocketId(userId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("getNotification", notification);
+            }
+            await logAction(
+                'Huỷ đơn hàng',
+                userId,
+                `Người dùng ${userId} hủy đơn hàng: ${orderId} `,
+                { deleteOrder }
+            );
+            return res.status(200).json({ success: true, data: deleteOrder });
+
+        }
+
+        if (orderStatus === 'completed') {
+            const updateOrder = await Order.findById(orderId);
+            updateOrder.orderStatus = 'completed';
+            await updateOrder.save();
+
+            const notification = await Notification.create({
+                receiverId: userId,
+                content: `Đơn hàng ${orderId} đã thành công vui lòng đánh giá để nhận điểm thưởng.`,
+                link: `/account/orders#`,
+                image: null,
+            });
+
+            const receiverSocketId = getReceiverSocketId(userId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("getNotification", notification);
+            }
+             await logAction(
+                'Xác nhận đơn hàng',
+                userId,
+                `Người dùng ${userId} xác nhận đơn: ${orderId} `,
+                { updateOrder }
+            );
+            return res.status(200).json({ success: true, data: updateOrder });
+        }
+    } catch (error) {
+        console.log(error)
         res.status(500).json({ success: false, message: error.message });
     }
 };

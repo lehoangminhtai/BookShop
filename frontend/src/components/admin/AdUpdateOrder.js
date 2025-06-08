@@ -114,7 +114,7 @@ const AdUpdateOrder = ({ onClose, initialOrderStatus, orderId, reloadData }) => 
                     <option value="shipped">Đã Vận Chuyển</option>
                     <option value="completed">Hoàn Thành</option>
                 </select>
-
+                {status !=='shipped' && status !=='completed' && (<>
                 <label htmlFor="datepicker" className="form-label fw-semibold">
                     Ngày dự kiến hàng được giao
                 </label>
@@ -129,6 +129,7 @@ const AdUpdateOrder = ({ onClose, initialOrderStatus, orderId, reloadData }) => 
                         onChange={handleDateChange}
                     />
                 </div>
+                </>)}
 
             </div>
             <div className="d-flex justify-content-center mb-3">

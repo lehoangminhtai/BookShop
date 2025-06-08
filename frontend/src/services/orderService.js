@@ -24,3 +24,5 @@ export const getOrderByOrderId = async(orderId) => await API.get(`/${orderId}`)
 export const updateStatusOrder = async(orderId, statusOrder) => await API.put(`/${orderId}`,statusOrder)
 
 export const getOrdersByUser = async (userId) => await API.get(`/user/${userId}`);
+
+export const userUpdateOrder = async (data) => await API.post(`/user/update-order`,data);

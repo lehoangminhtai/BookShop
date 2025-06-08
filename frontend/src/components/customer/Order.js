@@ -2,13 +2,17 @@ import { Link } from "react-router-dom";
 import ReviewForm from "./ReviewForm";
 import React, { useState, useEffect } from "react";
 import { checkReview } from "../../services/reviewService";
+import { updateStatusOrder, userUpdateOrder } from "../../services/orderService";
+import { toast, ToastContainer } from "react-toastify";
+import { useStateContext } from '../../context/UserContext';
 
 
 const Order = ({ orders, userId }) => {
-
+    const { user } = useStateContext();
     const [showModal, setShowModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [reviewStatus, setReviewStatus] = useState({});
+    const [orderList, setOrderList] = useState([]);
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
@@ -70,13 +74,79 @@ const Order = ({ orders, userId }) => {
 
     useEffect(() => {
         if (orders.length > 0 && userId) {
+            setOrderList(orders);
             checkReviewExist();
         }
     }, [orders, userId]);
 
+    const handleUpdateStatus = async (orderId, orderStatus) => {
+        const userId = user._id
+        const data = { userId, orderId, orderStatus }
+        try {
+            const response = await userUpdateOrder(data);
+            if (response.data.success) {
+                if (orderStatus === 'cancel') {
+                    setOrderList(prev => prev.filter(order => order._id !== orderId));
+                    toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                        Sản phẩm đã được hủy
+
+                    </div>,
+                        {
+                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                            autoClose: 1500, // Đóng sau 3 giây
+                            hideProgressBar: true, // Ẩn thanh tiến độ
+                            closeButton: false, // Ẩn nút đóng
+                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                            draggable: false, // Tắt kéo di chuyển
+                            rtl: false, // Không hỗ trợ RTL
+                        }
+                    );
+                }
+                if (orderStatus === 'completed') {
+                    setOrderList(prev =>
+                        prev.map(order =>
+                            order._id === orderId ? { ...order, orderStatus: 'completed' } : order
+                        )
+                    );
+                    toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                        Vui lòng đánh giá để nhận điểm thưởng
+
+                    </div>,
+                        {
+                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                            autoClose: 1500, // Đóng sau 3 giây
+                            hideProgressBar: true, // Ẩn thanh tiến độ
+                            closeButton: false, // Ẩn nút đóng
+                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                            draggable: false, // Tắt kéo di chuyển
+                            rtl: false, // Không hỗ trợ RTL
+                        }
+                    );
+                }
+            } else {
+                toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                      Hệ thống lỗi!
+                    </div>,
+                        {
+                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                            autoClose: 1500, // Đóng sau 3 giây
+                            hideProgressBar: true, // Ẩn thanh tiến độ
+                            closeButton: false, // Ẩn nút đóng
+                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                            draggable: false, // Tắt kéo di chuyển
+                            rtl: false, // Không hỗ trợ RTL
+                        }
+                    );
+            }
+        } catch (error) {
+            console.log(error)
+            toast.error('Có lỗi xảy ra khi cập nhật trạng thái!');
+        }
+    }
+
     return (
         <div className="container mt-5">
-            {orders.map((order) => (
+            {orderList.map((order) => (
                 <Link to={`/payment/success?orderId=${order._id}`}>
                     <div className="card shadow-sm border-0 mb-4" key={order._id}>
                         <div className="card-body">
@@ -131,6 +201,27 @@ const Order = ({ orders, userId }) => {
                                         </p>
                                     </div>
                                     <div className="d-flex gap-2">
+                                        {order.orderStatus === 'pending' && (
+                                            <>
+                                                <button className="btn btn-danger"
+                                                onClick={(event) => {
+                                                                event.preventDefault();
+                                                                event.stopPropagation();
+                                                               handleUpdateStatus(order._id, 'cancel');
+                                                            }}
+                                                 >Hủy đơn hàng</button>
+                                            </>
+                                        )}
+                                        {order.orderStatus === 'shipped' && (
+                                            <>
+                                                <button className="btn btn-primary"
+                                                onClick={(event) => {
+                                                                event.preventDefault();
+                                                                event.stopPropagation();
+                                                               handleUpdateStatus(order._id, 'completed');
+                                                            }}>Xác nhận thành công</button>
+                                            </>
+                                        )}
 
                                         {order.orderStatus === 'completed' && (
                                             <>
@@ -179,8 +270,8 @@ const Order = ({ orders, userId }) => {
 
                     </div>
                 </div>
-
             )}
+            <ToastContainer />
         </div>
     );
 };
