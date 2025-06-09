@@ -336,31 +336,31 @@ const PostExchangeDetail = () => {
 
                 <div className="row">
                     <div className='d-flex justify-content-center align-items-center'>
-                    {bookExchangeDetail?.images.length > 1 ?
-                        <div className="bg-white p-3 rounded shadow-sm align-items-center" style={{maxHeight:"800px", maxWidth:"300px"}} >
-                            <Slider {...settings}>
-                                {bookExchangeDetail?.images.map((image) => (
-                                    <img
-                                        alt={`${bookExchangeDetail?.title}`}
+                        {bookExchangeDetail?.images.length > 1 ?
+                            <div className="bg-white p-3 rounded shadow-sm align-items-center" style={{ maxHeight: "800px", maxWidth: "300px" }} >
+                                <Slider {...settings}>
+                                    {bookExchangeDetail?.images.map((image) => (
+                                        <img
+                                            alt={`${bookExchangeDetail?.title}`}
 
-                                        src={image}
-                                        style={{ maxHeight: '100px', objectFit: 'cover' }}
-                                        className="img-fluid w-90 d-block rounded"
-                                    />
-                                ))}
-                            </Slider>
-                        </div>
-                        :
-                        <div className="bg-white p-3 rounded shadow-sm d-flex justify-content-center align-items-center">
-                            <img
-                                alt={`${bookExchangeDetail?.title}`}
-                                className="img-fluid w-90 d-block rounded"
-                                src={bookExchangeDetail?.images[0]}
-                                style={{ height: "300px", objectFit: "cover" }}
-                                ref={exchangeButtonRef}
-                            />
-                        </div>
-                    }
+                                            src={image}
+                                            style={{ maxHeight: '100px', objectFit: 'cover' }}
+                                            className="img-fluid w-90 d-block rounded"
+                                        />
+                                    ))}
+                                </Slider>
+                            </div>
+                            :
+                            <div className="bg-white p-3 rounded shadow-sm d-flex justify-content-center align-items-center">
+                                <img
+                                    alt={`${bookExchangeDetail?.title}`}
+                                    className="img-fluid w-90 d-block rounded"
+                                    src={bookExchangeDetail?.images[0]}
+                                    style={{ height: "300px", objectFit: "cover" }}
+                                    ref={exchangeButtonRef}
+                                />
+                            </div>
+                        }
                     </div>
                     {requestForm.bookExchangeMethod !== '' && (
                         <div className="card my-3 shadow">
@@ -522,6 +522,11 @@ const PostExchangeDetail = () => {
                             <p className="mb-2">
                                 <i className="bi bi-person-fill me-2"></i>
                                 Tác giả: <strong>{bookExchangeDetail?.author}</strong>
+                            </p>
+
+                            <p className="mb-2">
+                                <i className="bi bi-file-earmark-text me-2"></i>
+                                Số trang: <strong>{bookExchangeDetail?.pageCount}</strong>
                             </p>
                         </div>
 

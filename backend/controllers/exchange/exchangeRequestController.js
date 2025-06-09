@@ -574,7 +574,7 @@ const completeExchangeRequest = async (req, res) => {
                 } else if (pointDifference < 0) {
                     requester.grade -= pointDifference;// trừ số âm
                     await requester.save();
-                    await updatePoints(requester._id, pointDifference, 'earn', `Nhận điểm bù chênh lệch từ yêu cầu trao đổi sách ${bookRequested.title}`);
+                    await updatePoints(requester._id, Math.abs(pointDifference), 'earn', `Nhận điểm bù chênh lệch từ yêu cầu trao đổi sách ${bookRequested.title}`);
 
                     const notification_requester = await Notification.create({
                         receiverId: requester._id,
@@ -665,7 +665,7 @@ const completeExchangeRequest = async (req, res) => {
 
             //xóa các yêu cầu mà 2 cuốn sách này là exchangeBook
             if (exchangeRequest.exchangeMethod === 'book') {
-                
+
             }
         }
         res.status(200).json({ success: true, message: 'Đã xác nhận hoàn thành trao đổi.' });
@@ -675,8 +675,41 @@ const completeExchangeRequest = async (req, res) => {
     }
 }
 
+const getExchangeRequests = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.limit) || 8; 
+    const skip = (page - 1) * limit; 
+
+    const query = {};
+
+    if (req.query.status) {
+        query.status = req.query.status;
+    }
+
+    const totalExchanges = await ExchangeRequest.countDocuments(query); // Tổng số yêu cầu trao đổi
+    const exchanges = await ExchangeRequest.find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 });
+
+    res.status(200).json({
+        success: true,
+        data: exchanges,
+        pagination: {
+            currentPage: page,
+            totalPages: Math.ceil(totalExchanges / limit),
+            totalExchanges,
+        }
+    });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message ||'Lỗi khi lấy yêu cầu trao đổi' });
+    }
+}
+
 module.exports = {
     createExchangeRequest, checkExchangeRequest, deleteRequest,
-    getExchangeRequestByBookRequested, acceptExchangeRequest, getExchangeRequestsByRequester,
+    getExchangeRequestByBookRequested, acceptExchangeRequest, getExchangeRequestsByRequester, getExchangeRequests,
     cancelExchangeRequest, getExchangeRequestById, getExchangeRequestsByOwnerBook, getExchangeRequestsByUserId, completeExchangeRequest
 };

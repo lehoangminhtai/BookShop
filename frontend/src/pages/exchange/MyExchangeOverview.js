@@ -16,7 +16,8 @@ import { getUserInfo } from '../../services/userService'
 import { getBookExchangeSer } from '../../services/exchange/bookExchangeService'
 import { getExchangeInforSer } from '../../services/exchange/exchangeInforService';
 import { checkIfRequestIdExists } from '../../services/exchange/userReviewService';
-
+//store
+import { useChatStore } from '../../store/useChatStore';
 const MyExchangeOverview = () => {
 
     const { user } = useStateContext();
@@ -30,6 +31,19 @@ const MyExchangeOverview = () => {
 
     const [showModal, setShowModal] = useState(false);
     const [reviewExchange, setReviewExchange] = useState(null);
+
+    //chat
+    const { setSelectedUser } = useChatStore();
+    
+    const handleClickChatButton = (userId) => {
+        if (user) {
+            console.log("chat", userId)
+            setSelectedUser(userId);
+            navigate(`/exchange/chat`);
+        } else {
+            navigate('/auth?redirect=/my-exchange`, { replace: true });');
+        }
+    }
 
     const handleShowModal = (exchange) => {
         setReviewExchange(exchange);
@@ -73,6 +87,10 @@ const MyExchangeOverview = () => {
                     filteredRequests = data.filter(req => req.status === "completed");
                 } else if (activeTab === "cancelled") {
                     filteredRequests = data.filter(req => req.status === "cancelled");
+                } else if (activeTab === "sent") {
+                    filteredRequests = data.filter(req => req.status === "pending");
+                } else if (activeTab === "received") {
+                    filteredRequests = data.filter(req => req.status === "pending");
                 }
                 const requests = await Promise.all(
                     filteredRequests.map(async (request) => {
@@ -553,7 +571,8 @@ const MyExchangeOverview = () => {
                                         />
                                         <span className='text-dark fw-bold'>{request?.partner?.fullName}</span>
                                     </Link>
-                                    <button className='btn btn-primary ms-3'>
+                                    <button className='btn btn-primary ms-3'
+                                    onClick={()=>handleClickChatButton(request?.partner)}>
                                         <span className='me-2'>Nhắn tin</span>
                                         <i className="fa-solid fa-paper-plane"></i>
                                     </button>

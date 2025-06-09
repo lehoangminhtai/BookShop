@@ -1,12 +1,10 @@
 import { useStateContext } from '../context/UserContext'
 import { Link, useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import React, { useEffect, useState, useRef }, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react'
 import '../css/bootstrap.min.css'
 import '../css/style.css'
 import { io } from 'socket.io-client'
-
-import { getNotifications, markNotificationAsRead } from '../services/notificationService'
 
 import { getNotifications, markNotificationAsRead } from '../services/notificationService'
 import WishListItem from './customer/WishListItem';

@@ -13,8 +13,7 @@ const ChatHeader = () => {
               src={selectedUser?.image} 
               alt={selectedUser?.fullName} 
               className="rounded-circle" 
-              width="40" 
-              height="40" 
+              style={{ width: '40px', height: '40px' }}
             />
           </div>
 

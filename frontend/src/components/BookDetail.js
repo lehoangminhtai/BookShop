@@ -13,7 +13,7 @@ import { addToWishlistSer, removeFromWishlistSer } from "../services/wishListSer
 
 const BookDetail = ({ book }) => {
   const wishlist = useWishlistStore(state => state.wishlist);
-  
+
   const toggleWishlist = useWishlistStore(state => state.toggleWishlist);
 
   const { dispatch } = useBookContext();
@@ -35,16 +35,16 @@ const BookDetail = ({ book }) => {
     };
 
     fetchBookSaleDetails();
-   
+
   }, [book._id]);
 
   useEffect(() => {
-  if (!bookSale?._id) return;
+    if (!bookSale?._id) return;
 
-  const isWishListed = wishlist.some(item => item === bookSale._id); 
-  setIsWishlist(isWishListed);
-  setAnimationClass(isWishListed ? 'text-danger' : '');
-}, [bookSale, wishlist]);
+    const isWishListed = wishlist.some(item => item === bookSale._id);
+    setIsWishlist(isWishListed);
+    setAnimationClass(isWishListed ? 'text-danger' : '');
+  }, [bookSale, wishlist]);
 
 
   const formatCurrency = (value) => {
@@ -121,10 +121,10 @@ const BookDetail = ({ book }) => {
       toggleWishlist(user._id, bookSale._id)
       setIsWishlist(prev => !prev); // Chuyển đổi trạng thái wishlist
     }
-   else{
-     toggleWishlist(null, bookSale._id)
+    else {
+      toggleWishlist(null, bookSale._id)
       setIsWishlist(prev => !prev);
-   }
+    }
   }
 
   const handleAddToWishlist = () => {
@@ -149,20 +149,20 @@ const BookDetail = ({ book }) => {
         />
 
         {bookSale?._id && (
-        <div className="hover-overlay d-flex justify-content-end align-items-start p-2">
-          <div className="heart-icon bg-white rounded-circle d-flex justify-content-center align-items-center shadow">
-            <button
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                handleAddToWishlist();
-              }}
-              className="border-0 bg-transparent"
-            >
-              <i className={`fas fa-heart ${animationClass}`} ></i>
-            </button>
+          <div className="hover-overlay d-flex justify-content-end align-items-start p-2">
+            <div className="heart-icon bg-white rounded-circle d-flex justify-content-center align-items-center shadow">
+              <button
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  handleAddToWishlist();
+                }}
+                className="border-0 bg-transparent"
+              >
+                <i className={`fas fa-heart ${animationClass}`} ></i>
+              </button>
+            </div>
           </div>
-        </div>
         )}
       </div>
 
@@ -214,16 +214,16 @@ const BookDetail = ({ book }) => {
 
           {/* Nút thêm vào giỏ hàng */}
           {bookSale._id && (
-          <button
-            className="btn btn-primary tw-flex tw-items-center tw-px-4 tw-py-2 tw-rounded-lg tw-shadow-sm tw-bg-blue-600 tw-hover:bg-blue-700 tw-focus:ring-2 tw-focus:ring-blue-300"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              handleAddToCart();
-            }}
-          >
-            <i className="fas fa-cart-plus"></i>
-          </button>
+            <button
+              className="btn btn-primary tw-flex tw-items-center tw-px-4 tw-py-2 tw-rounded-lg tw-shadow-sm tw-bg-blue-600 tw-hover:bg-blue-700 tw-focus:ring-2 tw-focus:ring-blue-300"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                handleAddToCart();
+              }}
+            >
+              <i className="fas fa-cart-plus"></i>
+            </button>
           )}
         </div>
       </div>

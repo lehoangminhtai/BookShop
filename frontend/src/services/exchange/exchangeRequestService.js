@@ -24,3 +24,14 @@ export const getExchangeRequestsByOwnerBook = async (userId) => API.get(`/reques
 export const getExchangeRequestsByUserId = async (userId) => API.get(`/requests/user/${userId}`)
 
 export const completeExchangeRequest = async (data) => API.post(`/complete`,data)
+
+
+export const getExchangeRequests = async (queryParams = "") => {
+    try {
+        const res = await API.get(`/requests/?${queryParams}`);
+        return res;
+    } catch (error) {
+        return { success: false, message: error.message
+        };
+    }
+}

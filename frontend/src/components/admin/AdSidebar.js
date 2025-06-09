@@ -175,20 +175,20 @@ const AdSidebar = () => {
                       to="/admin/exchange-books"
                       className={`nav-link ${isActive('/admin/exchange-books') ? 'bg-primary text-white' : 'text-dark'}`}
                     >
-                      Danh sách bài đăng trao đổi
+                      Danh sách bài đăng
                     </Link>
                   </li>
                   <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
                     <Link
-                      to="/admin/exchange-books/create"
-                      className={`nav-link ${isActive('/admin/exchange-books/create') ? 'bg-primary text-white' : 'text-dark'}`}
+                      to="/admin/exchange-requests"
+                      className={`nav-link ${isActive('/admin/exchange-requests') ? 'bg-primary text-white' : 'text-dark'}`}
                     >
-                      Chi tiết giao dịch
+                      Danh sách giao dịch
                     </Link>
                   </li>
                   <li className="nav-item ms-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
                     <Link
-                      to="/admin/exchange-status"
+                      to="/admin/reports"
                       className={`nav-link ${isActive('/admin/exchange-status') ? 'bg-primary text-white' : 'text-dark'}`}
                     >
                       Tố cáo

@@ -1027,7 +1027,6 @@ function Checkout() {
                 </div>
 
             )}
-            <ToastContainer />
         </div>
     );
 }

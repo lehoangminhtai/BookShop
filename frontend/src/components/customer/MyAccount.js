@@ -4,28 +4,47 @@ import CustomerSidebar from './CustomerSidebar'
 import { useStateContext } from '../../context/UserContext'
 import { useDropzone } from 'react-dropzone'
 import { updateUser, getUser } from '../../services/accountService' // Import service update user
+import { useEffect } from 'react';
 
 const MyAccount = () => {
-    const { user, setUser } = useStateContext(); // Thêm setUser để cập nhật thông tin người dùng
+    const { user } = useStateContext();
     const [userSelected, setUserSelected] = useState()
-    const [formData, setFormData] = useState({
-        fullName: user?.fullName || '',
-        email: user?.email || '',
-        phone: user?.phone || '',
-        dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.split('T')[0] : ''
-    });
+
     const [images, setImages] = useState(user?.image || null); // Lưu ảnh
     const [errors, setErrors] = useState({}); // Lưu lỗi
 
-    const fetchUser = async () =>{
+    const fetchUser = async () => {
         try {
             const response = await getUser(user?._id);
-            
-            
+            console.log(response)
+            if (response.data.success) {
+                setUserSelected(response.data.user)
+            }
         } catch (error) {
-            
+            console.log("Lỗi khi tải thông tin người dùng: ", error)
         }
     }
+    const [formData, setFormData] = useState({
+        fullName: userSelected?.fullName || '',
+        email: userSelected?.email || '',
+        phone: userSelected?.phone || '',
+        dateOfBirth: userSelected?.dateOfBirth ? userSelected.dateOfBirth.split('T')[0] : ''
+    });
+
+    useEffect(() => {
+        fetchUser();
+    }, []);
+    useEffect(() => {
+        if (userSelected) {
+            setFormData({
+                fullName: userSelected.fullName || '',
+                email: userSelected.email || '',
+                phone: userSelected.phone || '',
+                dateOfBirth: userSelected.dateOfBirth ? userSelected.dateOfBirth.split('T')[0] : ''
+            });
+            setImages(userSelected.image || null);
+        }
+    }, [userSelected]);
 
     // Xử lý khi thay đổi dữ liệu trong form
     const handleInputChange = (e) => {
@@ -63,7 +82,7 @@ const MyAccount = () => {
         try {
             const updatedData = { ...formData, image: images }; // Gộp dữ liệu form và ảnh
             const response = await updateUser(user?._id, updatedData);
-            if(response.data.success){
+            if (response.data.success) {
                 toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
                     Đã cập nhật thông tin
                 </div>,
@@ -79,10 +98,9 @@ const MyAccount = () => {
                 );
             }
             console.log(response) // Gửi yêu cầu cập nhật
-            setUser(response.data.user);
         } catch (error) {
             console.error('Lỗi khi cập nhật thông tin:', error);
-            alert('Cập nhật thông tin thất bại. Vui lòng thử lại.');
+            toast.error('Cập nhật thông tin thất bại. Vui lòng thử lại.');
         }
     };
 

@@ -10,13 +10,6 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useStateContext } from "../../context/UserContext";
 
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import CheckIcon from '@mui/icons-material/Check';
-
 //service
 import { getRequestByRequestId, acceptExchangeRequest, completeExchangeRequest, cancelExchangeRequest } from '../../services/exchange/exchangeRequestService';
 import { getExchangeInforSer } from '../../services/exchange/exchangeInforService';
@@ -49,10 +42,6 @@ const ExchangeInfoDetail = (props) => {
 
     const [hasReview, setHasReview] = useState(false);
 
-    //Notify
-
-    const [open, setOpen] = useState(true);
-
     const steps = [
         'Gửi yêu cầu trao đổi', //0
         'Chấp nhận yêu cầu', //1
@@ -76,9 +65,6 @@ const ExchangeInfoDetail = (props) => {
         return 0;
     }, [request, infoForm]);
 
-    const handleClose = () => {
-        setOpen(false);
-    };
 
     const getRequestById = async () => {
         try {
@@ -289,74 +275,77 @@ const ExchangeInfoDetail = (props) => {
     }, [requestId, showModalReview, startExchangeRequestId, confirmRequestId, openConfirm, cancelled]);
 
     const renderActionButtons = () => {
-        if (request?.status === 'pending' && request?.requesterId !== userId) {
-            return (
-                <>
-                    <button className="btn btn-primary d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
-                        onClick={() => handleClickRequest(request?._id)}>
-                        <i className="fa-solid fa-check-circle me-2"></i>
-                        Chấp nhận yêu cầu
-                    </button>
-                    <button className=' btn btn-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm'
-                        onClick={() => handleCancelRequest(request._id)}
-                    > Hủy giao dịch </button>
-                </>
-            );
-        } else if (request?.status === 'accepted' && infoForm == null) {
-            if (request?.requesterId !== userId) {
+        if (user.role === 0) {
+            if (request?.status === 'pending' && request?.requesterId !== userId) {
                 return (
                     <>
-                        <button className="btn btn-secondary d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
-                            onClick={() => handleStartExchange(request._id)}>
-                            <i className="fa-solid fa-user-check me-2"></i>
-                            Điền thông tin giao dịch
+                        <button className="btn btn-primary d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
+                            onClick={() => handleClickRequest(request?._id)}>
+                            <i className="fa-solid fa-check-circle me-2"></i>
+                            Chấp nhận yêu cầu
                         </button>
                         <button className=' btn btn-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm'
                             onClick={() => handleCancelRequest(request._id)}
                         > Hủy giao dịch </button>
-
                     </>
                 );
-            } else {
+            } else if (request?.status === 'accepted' && infoForm == null) {
+                if (request?.requesterId !== userId) {
+                    return (
+                        <>
+                            <button className="btn btn-secondary d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
+                                onClick={() => handleStartExchange(request._id)}>
+                                <i className="fa-solid fa-user-check me-2"></i>
+                                Điền thông tin giao dịch
+                            </button>
+                            <button className=' btn btn-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm'
+                                onClick={() => handleCancelRequest(request._id)}
+                            > Hủy giao dịch </button>
+
+                        </>
+                    );
+                } else {
+                    return (
+                        <button className=' btn btn-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm'
+                            onClick={() => handleCancelRequest(request._id)}
+                        > Hủy giao dịch </button>
+                    )
+                }
+            } else if (request?.status === 'accepted' && infoForm?.status === 'pending') {
+                if (request?.requesterId === userId) {
+                    return (
+                        <>
+                            <button className="btn btn-secondary d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
+                                onClick={() => handleConfirmRequest(request._id)}>
+                                <i className="fa-solid fa-user-check me-2"></i>
+                                Xác nhận thông tin
+                            </button>
+
+                        </>
+                    );
+                } else {
+                    return (
+                        <>
+                            <button className="btn btn-secondary d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
+                                onClick={() => handleStartExchange(request._id)}>Cập nhật thông tin</button>
+                        </>
+                    );
+                }
+            } else if (request?.status === 'processing' && infoForm?.status === 'accepted') {
                 return (
-                    <button className=' btn btn-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm'
-                        onClick={() => handleCancelRequest(request._id)}
-                    > Hủy giao dịch </button>
+                    <>
+                        <button className="btn btn-success d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
+                            onClick={handleOpenConfirm}>
+                            <i className="fa-solid fa-check-circle me-2"></i>
+                            Xác nhận hoàn thành
+
+                        </button>
+                    </>
                 )
             }
-        } else if (request?.status === 'accepted' && infoForm?.status === 'pending') {
-            if (request?.requesterId === userId) {
-                return (
-                    <>
-                        <button className="btn btn-secondary d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
-                            onClick={() => handleConfirmRequest(request._id)}>
-                            <i className="fa-solid fa-user-check me-2"></i>
-                            Xác nhận thông tin
-                        </button>
-
-                    </>
-                );
-            } else {
-                return (
-                    <>
-                        <button className="btn btn-secondary d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
-                            onClick={() => handleStartExchange(request._id)}>Cập nhật thông tin</button>
-                    </>
-                );
-            }
-        } else if (request?.status === 'processing' && infoForm?.status === 'accepted') {
-            return (
-                <>
-                    <button className="btn btn-success d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
-                        onClick={handleOpenConfirm}>
-                        <i className="fa-solid fa-check-circle me-2"></i>
-                        Xác nhận hoàn thành
-
-                    </button>
-                </>
-            )
-        } else if (request?.status === 'owner_confirmed') {
-            if (request?.requesterId === userId) {
+        }
+        if (request?.status === 'owner_confirmed') {
+            if (request?.requesterId === userId || user.role === 1) {
                 return (
                     <>
                         <button className="btn btn-success d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
@@ -369,7 +358,7 @@ const ExchangeInfoDetail = (props) => {
                 )
             }
         } else if (request?.status === 'requester_confirmed') {
-            if (request?.ownerId !== userId) {
+            if (request?.ownerId !== userId || user.role === 1) {
                 return (
                     <>
                         <button className="btn btn-success d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
@@ -381,7 +370,7 @@ const ExchangeInfoDetail = (props) => {
                     </>
                 )
             }
-        } else if (request?.status === 'completed') {
+        } else if (request?.status === 'completed' && user.role === 0) {
             return (
                 <>
                     {!hasReview && (
@@ -403,29 +392,7 @@ const ExchangeInfoDetail = (props) => {
     }
     return (
         <div className='container mt-5'>
-            <React.Fragment>
-
-                <Dialog
-                    open={open}
-                    onClose={handleClose}
-                    aria-labelledby="scroll-dialog-title"
-                    aria-describedby="scroll-dialog-description"
-                >
-                    <DialogTitle id="scroll-dialog-title">Chú ý</DialogTitle>
-                    <DialogContent dividers>
-                        <DialogContentText
-                            id="scroll-dialog-description"
-
-                            tabIndex={-1}
-                        >
-                            <h4 className='h4 text-center text-danger fw-bold fst-italic'>* Sau khi hoàn tất trao đổi vui lòng lướt xuống xác nhận hoàn thành để nhận điểm *</h4>
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions sx={{ justifyContent: 'center' }} onClick={handleClose}>
-                        <CheckIcon />
-                    </DialogActions>
-                </Dialog>
-            </React.Fragment>
+           
             <Box sx={{ width: '100%' }}>
                 <Stepper activeStep={activeStep} alternativeLabel>
                     {steps.map((label) => (
@@ -669,13 +636,14 @@ const ExchangeInfoDetail = (props) => {
 
                         <div className="d-flex  justify-content-between gap-3 mt-3">
                             {renderActionButtons()}
-
-                            <button className="btn btn-outline-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
-                                onClick={handleOpenReport}
-                            >
-                                <i className="fa-solid fa-triangle-exclamation me-2"></i>
-                                Báo cáo vấn đề
-                            </button>
+                            {user.role === 0 &&
+                                <button className="btn btn-outline-danger d-flex align-items-center justify-content-center w-100 py-2 rounded-3 shadow-sm"
+                                    onClick={handleOpenReport}
+                                >
+                                    <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                                    Báo cáo vấn đề
+                                </button>
+                            }
                         </div>
 
 
