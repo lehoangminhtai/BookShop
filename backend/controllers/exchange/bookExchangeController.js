@@ -13,32 +13,39 @@ const calculatePoints = ({ condition, publicationYear, pageCount, description, i
 
     // 1. Điểm theo tình trạng sách
     const conditionPoints = {
-        "new-unused": 7,
-        "new-used": 5,
-        "old-intact": 3,
-        "old-damaged": 2
+        "new-unused": 5,
+        "new-used": 3,
+        "old-intact": 2,
+        "old-damaged": 1
     };
     points += conditionPoints[condition] || 0;
 
     // 2. Điểm theo năm xuất bản
-    if (yearDiff <= 1) points += 5;
+    if (yearDiff <= 1) points += 4;
     else if (yearDiff <= 5) points += 3;
     else if (yearDiff <= 10) points += 2;
     else points += 1;
 
     // 3. Điểm theo số trang
-    if (pageCount >= 300) points += 7;
-    else if (pageCount >= 200) points += 5;
-    else if (pageCount >= 100) points += 3;
-    else if (pageCount >= 5) points += 1;
+    if (pageCount >= 1000) points += 10;
+    else if (pageCount >= 900) points +=9;
+    else if (pageCount >= 800) points +=8;
+    else if (pageCount >= 700) points +=7;
+    else if (pageCount >= 600) points +=6;
+    else if (pageCount >= 500) points +=5;
+    else if (pageCount >= 400) points +=4;
+    else if (pageCount >= 300) points +=3;
+    else if (pageCount >= 200) points += 2;
+    else if (pageCount >= 100) points += 1;
+    else if (pageCount >= 5) points += 0.5;
 
     // 4. Điểm theo mô tả sách (nếu > 100 ký tự)
     if (description && description.length >= 100) points += 2;
 
     // 5. Điểm nếu có ảnh
-    if (images && images.length > 0) points += 1;
+    if (images && images.length > 0) points += 3;
 
-    return points;
+    return points*4;
 };
 
 const createBookExchange = async (req, res) => {
@@ -72,6 +79,21 @@ const createBookExchange = async (req, res) => {
 
         // Ghi log hành động
         await logAction("Thêm sách trao đổi", ownerId, `Người dùng ${ownerId} đã thêm sách trao đổi: ${title}`);
+
+        // Tạo thông báo cho người dùng
+        const notification = await Notification.create({
+            receiverId: ownerId,
+            content: `Bạn đã đăng sách trao đổi "${title}" thành công. Vui lòng chờ quản trị viên duyệt để bắt đầu trao đổi.`,
+            link: `/exchange-post-detail/${newBookExchange._id}`,
+            type: "book-added",
+            image: imageUrls[0] || null, // Lấy ảnh đầu tiên nếu có
+        });
+        // Gửi thông báo đến người dùng qua socket
+        const receiverSocketId = getReceiverSocketId(ownerId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("getNotification", notification);
+        }
+
 
         res.status(201).json({
             success: true,
@@ -270,6 +292,12 @@ const deleteBookExchange = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: 'Sách trao đổi không tồn tại',
+            });
+        }
+        if (bookExchange.status === "processing") {
+            return res.status(400).json({
+                success: false,
+                message: 'Không thể xóa sách đang trong quá trình trao đổi',
             });
         }
 

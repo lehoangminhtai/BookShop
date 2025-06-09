@@ -66,8 +66,7 @@ const ChatContainer = () => {
                     src={selectedUser.image}
                     alt="profile"
                     className="rounded-circle border"
-                    width="40"
-                    height="40"
+                    style={{ width: '40px', height: '40px' }}
                   />
                 </div>
               )}
@@ -100,8 +99,7 @@ const ChatContainer = () => {
                     src={user.image}
                     alt="profile"
                     className="rounded-circle border"
-                    width="40"
-                    height="40"
+                    style={{ width: '40px', height: '40px' }}
                   />
                 </div>
               )}

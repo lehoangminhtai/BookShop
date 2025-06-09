@@ -4,8 +4,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { searchBookSales, getBookSalesByCategory } from "../../services/homeService";
 //component
 import BookDetail from '../../components/BookDetail';
-import { ToastContainer } from "react-toastify";
-
+ import { ToastContainer } from 'react-toastify';
 const CategoryListBook = () => {
     const { nameCategory, categoryId } = useParams();
     const [bookSales, setBookSales] = useState([]);
@@ -53,6 +52,7 @@ const CategoryListBook = () => {
 
     return (
         <div className="container mt-5">
+<ToastContainer />
             <div class="container mt-3">
                 <div class="d-flex align-items-center p-2" style={{ backgroundColor: "#FFDAB9", borderRadius: "10px" }}>
                     <div class="d-flex align-items-center justify-content-center me-2" style={{ padding: "10px" }}>

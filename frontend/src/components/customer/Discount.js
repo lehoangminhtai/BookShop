@@ -29,6 +29,7 @@ const Discount = ({ onClose, totalPrice, selectedDiscount }) => {
             const userId = user._id;
             const data = { userId };
             const response = await getDiscountForUser(data);
+            console.log("discount", response)
             if (response.data.success) {
                 setDiscounts(response.data.discounts);
             }

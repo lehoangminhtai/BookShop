@@ -1,18 +1,21 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useDropzone } from 'react-dropzone';
 //service
 import { createReportSer } from "../../../services/exchange/reportExchangeService";
-
+//context
+import { useStateContext } from "../../../context/UserContext";
 const ReportExchangeForm = (props) => {
   const [content, setContent] = useState("");
   const [requestId, setRequestId] = useState("");
   const [imageUrls, setImageUrls] = useState([""]);
 
+  const { user } = useStateContext();
   const [formData, setFormData] = useState({
+    reporterId: user?._id,
     content: "",
     requestId: props.requestId,
     images: [],
@@ -84,7 +87,7 @@ const ReportExchangeForm = (props) => {
       handleOpenProgress();
       const response = await createReportSer(formData);
       const result = response.data;
-
+      console.log(result)
       if (result.success) {
         handleCloseProgress();
         toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
@@ -112,10 +115,11 @@ const ReportExchangeForm = (props) => {
 
   return (
     <div className="modal show fade" tabIndex="-1" style={{ display: 'block' }}>
+      <ToastContainer />
       <div className="modal-dialog modal-lg">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">Đăng sách</h5>
+            <h5 className="modal-title">Báo cáo</h5>
             <button type="button" className="btn-close" onClick={props.handleClose}></button>
           </div>
           <div className="modal-body">

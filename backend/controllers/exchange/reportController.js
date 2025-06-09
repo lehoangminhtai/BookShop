@@ -5,13 +5,15 @@ const Report = require('../../models/exchange/reportModel')
 const ExchangeRequest = require('../../models/exchange/exchangeRequestModel')
 
 
+
 const createReport = async (req, res) => {
     try {
-        const { content, requestId, images } = req.body;
+        const { reporterId, content, requestId, images } = req.body;
         const token = process.env.TELEGRAM_BOT_TOKEN;
         const chatId = process.env.TELEGRAM_CHAT_ID;
         let imageUrls = [];
 
+        console.log("reporterId: ", reporterId)
         if (!requestId) {
             return res.status(200).json({ success: false, message: "Apply requestId pls" });
         }
@@ -33,42 +35,42 @@ const createReport = async (req, res) => {
             }
         }
 
-        const newReport = await Report.create({ content, images: imageUrls, requestId, status: "pending" });
+        const newReport = await Report.create({ reporterId, content, images: imageUrls, requestId, status: "pending" });
 
         // 2. Gửi nội dung tới Telegram
-        const message = `
-                        <b>📣 Tố cáo mới</b>\n
-                        <b>🆔 ID Request:</b> <code>${requestId}</code>\n
-                        <b>📄 Nội dung:</b> ${content}`;
+        // const message = `
+        //                 <b>📣 Tố cáo mới</b>\n
+        //                 <b>🆔 ID Request:</b> <code>${requestId}</code>\n
+        //                 <b>📄 Nội dung:</b> ${content}`;
 
-        await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
-            chat_id: chatId,
-            text: message,
-            parse_mode: "HTML",
-            reply_markup: {
-                inline_keyboard: [
-                    [
-                        {
-                            text: "🔍 Xem chi tiết",
-                            callback_data: `get_request_${requestId}`,
-                        },
-                    ],
-                ]
-            }
-        });
+        // await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+        //     chat_id: chatId,
+        //     text: message,
+        //     parse_mode: "HTML",
+        //     reply_markup: {
+        //         inline_keyboard: [
+        //             [
+        //                 {
+        //                     text: "🔍 Xem chi tiết",
+        //                     callback_data: `get_request_${requestId}`,
+        //                 },
+        //             ],
+        //         ]
+        //     }
+        // });
 
 
-        // 3. Gửi ảnh nếu có
-        if (imageUrls?.length > 0) {
-            const media = imageUrls.map((url) => ({
-                type: "photo",
-                media: url,
-            }));
-            await axios.post(`https://api.telegram.org/bot${token}/sendMediaGroup`, {
-                chat_id: chatId,
-                media: media,
-            });
-        }
+        // // 3. Gửi ảnh nếu có
+        // if (imageUrls?.length > 0) {
+        //     const media = imageUrls.map((url) => ({
+        //         type: "photo",
+        //         media: url,
+        //     }));
+        //     await axios.post(`https://api.telegram.org/bot${token}/sendMediaGroup`, {
+        //         chat_id: chatId,
+        //         media: media,
+        //     });
+        // }
 
         return res.status(200).json({ success: true, data: newReport });
     } catch (err) {
@@ -127,7 +129,7 @@ const getRequestByIdTelegram = async (req, res) => {
             
             <b>🔗 Chi tiết:</b> <a href="https://bookshop-vn.onrender.com/chi-tiet/${request._id}">Xem trên website</a>
             `;
-            
+
 
             await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
                 chat_id: chatId,
@@ -140,6 +142,35 @@ const getRequestByIdTelegram = async (req, res) => {
     res.sendStatus(200);
 }
 
+const getReports = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1; // Trang hiện tại (mặc định là 1)
+        const limit = parseInt(req.query.limit) || 8; // Số sách mỗi trang (mặc định là 8)
+        const skip = (page - 1) * limit; // Tính số lượng sách cần bỏ qua
+
+
+        const totalReports = await Report.countDocuments(); // Tổng số sách
+
+
+        const reports = await Report.find()
+            .populate('reporterId')
+            .populate('requestId')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            data: reports,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalReports / limit),
+                totalReports
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách sách trao đổi' });
+    }
+};
+
 module.exports = {
-    createReport, getRequestByIdTelegram
+    createReport, getRequestByIdTelegram, getReports
 };

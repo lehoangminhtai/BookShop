@@ -49,7 +49,7 @@ const UserProfile = () => {
 
     const fetchReviews = async () => {
         try {
-            const response = await getReviewsByReviewedUser(currentUser?._id);
+            const response = await getReviewsByReviewedUser(userId);
             console.log('Response fetching reviews:', response);
             setReviewsData(response.data);
         } catch (error) {
@@ -119,10 +119,10 @@ const UserProfile = () => {
 
     const handleClickChatButton = () => {
         if (currentUser) {
-            setSelectedUser(currentUser._id);
+            setSelectedUser(user);
             navigate(`/exchange/chat`);
         } else {
-            navigate('/auth?redirect=/exchange-post-detail/${bookExchangeId}`, { replace: true });');
+            navigate('/auth?redirect=/user-profile/${userId}`, { replace: true });');
         }
     }
 
@@ -371,7 +371,7 @@ const UserProfile = () => {
                                         </div>
                                         <div className="ml-3 ms-2">
                                             <div className="d-flex align-items-center">
-                                                <span className="fs-5 fw-bold text-warning">{currentUser.grade}</span>
+                                                <span className="fs-5 fw-bold text-warning">{user?.grade}</span>
                                                 <span className="text-warning fw-bold ml-1 fs-5 ms-1"> điểm đang có</span>
                                             </div>
                                         </div>
