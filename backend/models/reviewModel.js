@@ -26,7 +26,6 @@ const reviewSchema = new Schema({
     },
     comment: {
         type: String,
-        required: true,
         maxlength: 500 // Giới hạn độ dài comment
     }
 }, { timestamps: true });
