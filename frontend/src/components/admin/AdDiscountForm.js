@@ -310,10 +310,10 @@ return (
                                 className="form-check-label"
                                 htmlFor="displayCheck"
                             >
-                                Hiển thị trên trang thanh toán
+                                Không hiển thị trên trang thanh toán
                             </label>
                             <small className="text-muted d-block ms-4">
-                                Khách hàng có thể thấy mã lúc thanh toán
+                                Chỉ có khách hàng có mã mới áp dụng được
                             </small>
                         </div>
 
