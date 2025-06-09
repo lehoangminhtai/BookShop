@@ -325,7 +325,7 @@ const AdOrderDetail = () => {
                                                 src={payment?.userId?.image || "https://placehold.co/50x50"}
                                                 alt="avatar"
                                                 className="rounded-circle me-3"
-                                                style={{ height: "50px" }}
+                                                style={{width: "50px", height: "50px" }}
                                             />
                                             <div>
                                                 <h5 className="mb-1">{payment?.userId?.fullName}</h5>
@@ -434,6 +434,7 @@ const AdOrderDetail = () => {
                                 {!orderFailed &&(
                                 <div className="d-flex gap-3">
                                     {(payment.orderId.orderStatus !== 'pending' || orderConfirmed) && (
+                                        payment.orderId.orderStatus !== 'completed' &&
                                         <button className="btn btn-outline-secondary d-flex align-items-center" onClick={handleUpdateOrder}>
                                             <i className="fas fa-truck me-2"></i> Cập nhật trạng thái
                                         </button>

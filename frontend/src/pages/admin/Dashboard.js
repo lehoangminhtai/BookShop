@@ -398,7 +398,7 @@ const Dashboard = () => {
                                 <p className="text-primary mb-1">Đơn Hàng</p>
                                 <p className="h4 fw-bold">{orders}</p>
                                 <p className="text-success mb-0"><hr /></p>
-                                <Link><p className="text-success mb-0" onClick={()=> handleShowDetail('Chi Tiết Đơn Hàng', 'orders')}>Chi Tiết</p></Link>
+                                
                             </div>
                             <div className="bg-dark p-3 rounded-circle" style={{ width: '50px', height: '50px' }}>
                                 <i className="fas fa-chart-bar text-white"></i>
@@ -411,7 +411,7 @@ const Dashboard = () => {
                                 <p className="text-primary mb-1">Người Dùng</p>
                                 <p className="h4 fw-bold">{user}</p>
                                 <p className="text-success mb-0"><hr /></p>
-                                <Link><p className="text-success mb-0"onClick={()=> handleShowDetail('Chi Tiết Người Dùng Mới', 'newUsers')}>Chi Tiết</p></Link>
+                                
                             </div>
                             <div className="bg-dark p-3 rounded-circle" style={{ width: '50px', height: '50px' }}>
                                 <i className="fas fa-user text-white"></i>
@@ -425,7 +425,7 @@ const Dashboard = () => {
                                 <p className="text-primary mb-1">Số sách được đặt</p>
                                 <p className="h4 fw-bold">{bookSales}</p>
                                 <p className="text-success mb-0"><hr /></p>
-                                <Link><p className="text-success mb-0" onClick={()=> handleShowDetail('Sách Được Đặt', 'booksOrdered')}>Chi Tiết</p></Link>
+                            
                             </div>
                             <div className="bg-dark p-3 rounded-circle w-500" style={{ width: '50px', height: '50px' }}>
                                 <i className="fas fa-book text-white"></i>

@@ -188,6 +188,10 @@ exports.updateOrderStatus = async (req, res) => {
             }
         }
         else if (updatedOrder.orderStatus === 'completed') {
+            const gradePlus = (updatedOrder.finalAmount / 1000) * 0.1
+            user.grade += gradePlus;
+            await user.save();
+            
             const notification = await Notification.create({
                 receiverId: updatedOrder.userId,
                 content: `Đơn hàng ${updatedOrder._id} đã hoàn tất. Bạn hãy đánh giá sản phẩm để nhận điểm thưởng nhé.`,
@@ -303,6 +307,11 @@ exports.userUpdateOrder = async (req, res) => {
             updateOrder.orderStatus = 'completed';
             await updateOrder.save();
 
+            const gradePlus = (updateOrder.finalAmount / 1000) * 0.1
+            const user = await User.findById(userId);
+            user.grade += gradePlus;
+            await user.save();
+            
             const notification = await Notification.create({
                 receiverId: userId,
                 content: `Đơn hàng ${orderId} đã thành công vui lòng đánh giá để nhận điểm thưởng.`,

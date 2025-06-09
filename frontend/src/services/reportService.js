@@ -119,3 +119,19 @@ export const getTopCustomers = async (dateData) => {
         }
     }
 };
+
+export const getRevenueDetail = async (data) => {
+    try {
+        const response = await API.post('/revenue-detail', data);
+        return response.data;
+    } catch (error) {
+
+        if (error.response) {
+
+            return error.response;
+        } else {
+
+            return { success: false, message: 'Có lỗi xảy ra khi kết nối tới server.' };
+        }
+    }
+};
