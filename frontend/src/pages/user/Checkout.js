@@ -576,6 +576,8 @@ function Checkout() {
             address: `${street}, ${ward}, ${district}, ${province}`,
             itemsPayment: items.map(item => ({
                 bookId: item.bookId._id,
+                bookTitle: item.bookId.title,
+                bookImage: item.bookId.images[0],
                 quantity: item.quantity,
                 price: item.price
             })),

@@ -256,9 +256,9 @@ const AdOrderDetail = () => {
                                         <div key={index} className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
 
                                             <div className="d-flex align-items-center">
-                                                <img src={item.image || "https://placehold.co/50x50"} alt={item.title || "Book"} className="rounded me-3" style={{ height: "100px", width: "70px" }} />
+                                                <img src={item.bookImage || "https://placehold.co/50x50"} alt={item.bookTitle || "Book"} className="rounded me-3" style={{ height: "100px", width: "70px" }} />
                                                 <div>
-                                                    <h5 className="mb-1">{item.title || "Tên sách"}</h5>
+                                                    <h5 className="mb-1">{item.bookTitle || "Tên sách"}</h5>
                                                     <small className="text-muted">{item.author || "Tác Giả"}</small><br />
                                                 </div>
                                             </div>

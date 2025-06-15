@@ -171,13 +171,13 @@ const Order = ({ orders, userId }) => {
 
                                     <div className="d-flex mb-4" key={index}>
                                         <img
-                                            src={item.bookId.images[0]}
-                                            alt={`Product image of ${item.bookId.title}`}
+                                            src={item.bookImage}
+                                            alt={`Product image of ${item.bookTitle}`}
                                             className="img-thumbnail me-3"
                                             style={{ width: 100, height: 100, objectFit: "cover" }}
                                         />
                                         <div className="flex-grow-1">
-                                            <h6 className="fw-bold mb-1">{item.bookId.title}</h6>
+                                            <h6 className="fw-bold mb-1">{item.bookTitle}</h6>
 
                                             <p className="mb-0">Số lượng: x{item.quantity}</p>
                                         </div>
