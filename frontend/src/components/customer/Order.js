@@ -5,7 +5,11 @@ import { checkReview } from "../../services/reviewService";
 import { updateStatusOrder, userUpdateOrder } from "../../services/orderService";
 import { toast, ToastContainer } from "react-toastify";
 import { useStateContext } from '../../context/UserContext';
+import { useChatStore } from '../../store/useChatStore';
+import { useNavigate } from "react-router-dom";
+import { getUser } from "../../services/accountService";
 
+const AdminId = '6730ed8eb4d8865f974afcf5'
 
 const Order = ({ orders, userId }) => {
     const { user } = useStateContext();
@@ -13,6 +17,8 @@ const Order = ({ orders, userId }) => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [reviewStatus, setReviewStatus] = useState({});
     const [orderList, setOrderList] = useState([]);
+    const { setSelectedUser } = useChatStore();
+    const navigate = useNavigate();
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
@@ -144,6 +150,13 @@ const Order = ({ orders, userId }) => {
         }
     }
 
+     const handleClickChatButton = async () => {
+        const admin = await getUser(AdminId)
+        console.log('admin',admin.data.user)
+        setSelectedUser(admin.data.user);
+        navigate(`/exchange/chat`);
+    }
+
     return (
         <div className="container mt-5">
             {orderList.map((order) => (
@@ -244,7 +257,11 @@ const Order = ({ orders, userId }) => {
                                             </>
                                         )}
 
-                                        <button className="btn btn-outline-secondary">
+                                        <button className="btn btn-outline-secondary" onClick={(event) => {
+                                                                event.preventDefault();
+                                                                event.stopPropagation();
+                                                                handleClickChatButton();
+                                                            }}>
                                             Liên Hệ Người Bán
                                         </button>
                                     </div>
