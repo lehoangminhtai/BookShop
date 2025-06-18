@@ -1,4 +1,5 @@
 const Payment = require('../models/paymentModel');
+const mongoose = require('mongoose');
 
 // Tạo thanh toán mới
 exports.createPayment = async (req, res) => {
@@ -93,7 +94,33 @@ exports.getAllPayments = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10; // Số lượng mục trên mỗi trang, mặc định là 10
         const skip = (page - 1) * limit;
 
+        const searchKeyword = req.query.search ? req.query.search.trim().toLowerCase() : "";
+
         const query = [];
+
+        if (searchKeyword) {
+            query.push(
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'userInfo'
+                    }
+                },
+                { $unwind: '$userInfo' }, // Quan trọng để tìm theo userInfo.fullName
+                {
+                    $match: {
+                        $or: [
+                            { 'userInfo.fullName': { $regex: searchKeyword, $options: 'i' } }, // Tìm theo tên
+                            ...(mongoose.Types.ObjectId.isValid(searchKeyword)
+                                ? [{ 'orderId': new mongoose.Types.ObjectId(searchKeyword) }]
+                                : [])
+                        ]
+                    }
+                }
+            );
+        }
 
         // Kiểm tra các query string từ client
         if (req.query.paymentStatus) {
@@ -174,8 +201,10 @@ exports.getAllPayments = async (req, res) => {
             totalItems: totalPayments
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    console.error("Error in getAllPayments:", error); // Thêm dòng này
+    res.status(500).json({ error: error.message });
+}
+
 };
 
 

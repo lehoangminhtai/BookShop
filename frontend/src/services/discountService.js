@@ -61,7 +61,7 @@ export const deleteDiscount = async (discountId) => {
         }
     }
 };
-export const getAllDiscount = async () => await API.get('/')
+export const getAllDiscount = async (keyword = '') => await API.get(`/?keyword=${keyword}`);
 
 export const getDiscountForUser = async (dataDiscount) => {
     try {

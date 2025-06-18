@@ -126,7 +126,7 @@ const AdBookSale = () => {
             <AdSidebar />
 
             {/* Main content */}
-            <div className="p-4 w-100">
+            <div className="container">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     {/* Search box */}
                     <div className="position-relative">

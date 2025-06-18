@@ -41,7 +41,17 @@ exports.createDiscount = async (req, res) => {
 // Lấy danh sách tất cả mã giảm giá
 exports.getAllDiscounts = async (req, res) => {
     try {
-        const discounts = await Discount.find().sort({createdAt:-1}).populate('usedBy.userId')
+        const keyword = req.query.keyword || '';
+        
+        const discounts = await Discount.find({
+            $or: [
+                { discountCode: { $regex: keyword, $options: 'i' } },
+                { discountName: { $regex: keyword, $options: 'i' } }
+            ]
+        })
+        .sort({createdAt:-1})
+        .populate('usedBy.userId')
+        
         res.status(200).json({
             success: true,
             discounts
