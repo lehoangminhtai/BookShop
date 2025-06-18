@@ -6,15 +6,23 @@ const orderSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    address:{
+    address: {
         type: String,
-        required:true
+        required: true
     },
     itemsPayment: [
         {
             bookId: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Book',
+                required: true
+            },
+            bookTitle: {
+                type: String,
+                required: true
+            },
+            bookImage: {
+                type: String,
                 required: true
             },
             quantity: {
@@ -34,7 +42,7 @@ const orderSchema = new mongoose.Schema({
         ref: 'Discount',
         default: null
     },
-    
+
     shippingFee: {
         type: Number,
         required: true,
@@ -52,10 +60,10 @@ const orderSchema = new mongoose.Schema({
     },
     orderStatus: {
         type: String,
-        enum: ['pending','confirm','shipping','shipped', 'completed', 'failed'],
+        enum: ['pending', 'confirm', 'shipping', 'shipped', 'completed', 'failed'],
         default: 'pending'
     },
-   
+
     deliveryAt: Date,
     createdAt: {
         type: Date,
@@ -72,7 +80,7 @@ orderSchema.pre('save', function (next) {
     this.updatedAt = Date.now();
     next();
 });
-orderSchema.pre(['update', 'findOneAndUpdate', 'updateOne'], function(next) {
+orderSchema.pre(['update', 'findOneAndUpdate', 'updateOne'], function (next) {
     // Chỉ cập nhật trường `updatedAt` nếu có thay đổi gì đó
     this.set({ updatedAt: Date.now() });
     next();

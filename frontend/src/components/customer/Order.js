@@ -5,7 +5,11 @@ import { checkReview } from "../../services/reviewService";
 import { updateStatusOrder, userUpdateOrder } from "../../services/orderService";
 import { toast, ToastContainer } from "react-toastify";
 import { useStateContext } from '../../context/UserContext';
+import { useChatStore } from '../../store/useChatStore';
+import { useNavigate } from "react-router-dom";
+import { getUser } from "../../services/accountService";
 
+const AdminId = '6730ed8eb4d8865f974afcf5'
 
 const Order = ({ orders, userId }) => {
     const { user } = useStateContext();
@@ -13,6 +17,8 @@ const Order = ({ orders, userId }) => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [reviewStatus, setReviewStatus] = useState({});
     const [orderList, setOrderList] = useState([]);
+    const { setSelectedUser } = useChatStore();
+    const navigate = useNavigate();
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
@@ -144,6 +150,13 @@ const Order = ({ orders, userId }) => {
         }
     }
 
+     const handleClickChatButton = async () => {
+        const admin = await getUser(AdminId)
+        console.log('admin',admin.data.user)
+        setSelectedUser(admin.data.user);
+        navigate(`/exchange/chat`);
+    }
+
     return (
         <div className="container mt-5">
             {orderList.map((order) => (
@@ -158,13 +171,13 @@ const Order = ({ orders, userId }) => {
 
                                     <div className="d-flex mb-4" key={index}>
                                         <img
-                                            src={item.bookId.images[0]}
-                                            alt={`Product image of ${item.bookId.title}`}
+                                            src={item.bookImage}
+                                            alt={`Product image of ${item.bookTitle}`}
                                             className="img-thumbnail me-3"
                                             style={{ width: 100, height: 100, objectFit: "cover" }}
                                         />
                                         <div className="flex-grow-1">
-                                            <h6 className="fw-bold mb-1">{item.bookId.title}</h6>
+                                            <h6 className="fw-bold mb-1">{item.bookTitle}</h6>
 
                                             <p className="mb-0">Số lượng: x{item.quantity}</p>
                                         </div>
@@ -244,7 +257,11 @@ const Order = ({ orders, userId }) => {
                                             </>
                                         )}
 
-                                        <button className="btn btn-outline-secondary">
+                                        <button className="btn btn-outline-secondary" onClick={(event) => {
+                                                                event.preventDefault();
+                                                                event.stopPropagation();
+                                                                handleClickChatButton();
+                                                            }}>
                                             Liên Hệ Người Bán
                                         </button>
                                     </div>
