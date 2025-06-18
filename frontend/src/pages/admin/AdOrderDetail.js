@@ -246,6 +246,7 @@ const AdOrderDetail = () => {
                                 payment.orderId.orderStatus === 'pending' && orderConfirmed ? 'Đã Xác Nhận' : payment.orderId.orderStatus === 'pending' ? 'Đang Chờ' :
                                     payment.orderId.orderStatus === 'confirm' ? 'Đã Xác Nhận' :
                                         payment.orderId.orderStatus === 'failed' ? 'Đã Hủy' :
+                                        payment.orderId.orderStatus === 'shipped' ? 'Đã Vận Chuyển' :
                                             'Đang Vận Chuyển'}</button>
                         </div>
                         <div className="row">
@@ -255,9 +256,9 @@ const AdOrderDetail = () => {
                                         <div key={index} className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
 
                                             <div className="d-flex align-items-center">
-                                                <img src={item.image || "https://placehold.co/50x50"} alt={item.title || "Book"} className="rounded me-3" style={{ height: "100px", width: "70px" }} />
+                                                <img src={item.bookImage || "https://placehold.co/50x50"} alt={item.bookTitle || "Book"} className="rounded me-3" style={{ height: "100px", width: "70px" }} />
                                                 <div>
-                                                    <h5 className="mb-1">{item.title || "Tên sách"}</h5>
+                                                    <h5 className="mb-1">{item.bookTitle || "Tên sách"}</h5>
                                                     <small className="text-muted">{item.author || "Tác Giả"}</small><br />
                                                 </div>
                                             </div>
@@ -324,7 +325,7 @@ const AdOrderDetail = () => {
                                                 src={payment?.userId?.image || "https://placehold.co/50x50"}
                                                 alt="avatar"
                                                 className="rounded-circle me-3"
-                                                style={{ height: "50px" }}
+                                                style={{width: "50px", height: "50px" }}
                                             />
                                             <div>
                                                 <h5 className="mb-1">{payment?.userId?.fullName}</h5>
@@ -417,7 +418,7 @@ const AdOrderDetail = () => {
 
                                     <div className="col-md-4">
                                         <div className="text-muted small">TRẠNG THÁI</div>
-                                        <span className={`badge ${payment.orderId.orderStatus === 'shipping' ? 'bg-warning' : payment.orderId.orderStatus === 'completed' ? 'bg-success' : payment.orderId.orderStatus === 'failed' ? 'bg-danger' : 'bg-info'} bg-success`}>{payment.orderId.orderStatus === 'shipping' ? 'Đang vận chuyển' : payment.orderId.orderStatus === 'completed' ? 'Hoàn thành' : payment.orderId.orderStatus === 'failed' ? 'Đã Hủy': 'Đang chờ'}</span>
+                                        <span className={`badge ${payment.orderId.orderStatus === 'shipping' ? 'bg-warning' :payment.orderId.orderStatus === 'shipped'? 'bg-warning' :  payment.orderId.orderStatus === 'completed' ? 'bg-success' : payment.orderId.orderStatus === 'failed' ? 'bg-danger' : 'bg-info'} bg-success`}>{payment.orderId.orderStatus === 'shipping' ? 'Đang vận chuyển' : payment.orderId.orderStatus === 'shipped' ? 'Đã vận chuyển' : payment.orderId.orderStatus === 'completed' ? 'Hoàn thành' : payment.orderId.orderStatus === 'failed' ? 'Đã Hủy': 'Đang chờ'}</span>
                                     </div>
 
                                     <div className="col-md-4">
@@ -433,6 +434,7 @@ const AdOrderDetail = () => {
                                 {!orderFailed &&(
                                 <div className="d-flex gap-3">
                                     {(payment.orderId.orderStatus !== 'pending' || orderConfirmed) && (
+                                        payment.orderId.orderStatus !== 'completed' &&
                                         <button className="btn btn-outline-secondary d-flex align-items-center" onClick={handleUpdateOrder}>
                                             <i className="fas fa-truck me-2"></i> Cập nhật trạng thái
                                         </button>

@@ -22,14 +22,14 @@ const CustomerSidebar = () => {
       <aside
         className="bg-white text-dark"
         style={{
-          width: '250px',
+          width: '200px',
           borderRadius: '10px',
           boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
           overflow: 'hidden',
         }}
       >
         <div className="p-4">
-          <h1 className="h4 text-primary">Customer</h1>
+          <h1 className="h4 text-primary">Thông Tin</h1>
         </div>
         <nav className="mt-3">
           <ul className="nav flex-column" style={{ padding: '0' }}>

@@ -319,7 +319,7 @@ const Cart = () => {
                             )}
 
 
-                            <p className="text-muted small text-center">(Giảm giá trên web chỉ áp dụng cho bán lẻ)</p>
+                           
                         </div>
                     </div>
                 </div>

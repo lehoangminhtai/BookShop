@@ -95,6 +95,15 @@ const CustomerOrders = () => {
                                     </li>
                                     <li className="nav-item flex-grow-1">
                                         <a
+                                            className={`nav-link ${selectedStatus === "shipped" ? "active text-orange fw-bold" : ""}`}
+                                            href="#"
+                                            onClick={() => setSelectedStatus("shipped")}
+                                        >
+                                            Đã giao hàng
+                                        </a>
+                                    </li>
+                                    <li className="nav-item flex-grow-1">
+                                        <a
                                             className={`nav-link ${selectedStatus === "completed" ? "active text-danger fw-bold" : ""}`}
                                             href="#"
                                             onClick={() => setSelectedStatus("completed")}
@@ -112,20 +121,7 @@ const CustomerOrders = () => {
                                         </a>
                                     </li>
                                 </ul>
-                                <div className="input-group p-2 bg-light mx-auto">
-                                    <span
-                                        className="input-group-text bg-light border-0 text-muted"
-                                        style={{ padding: "4px 8px", fontSize: "14px" }}
-                                    >
-                                        <i className="fas fa-search" />
-                                    </span>
-                                    <input
-                                        type="text"
-                                        className="form-control border-0 bg-light"
-                                        placeholder="Bạn có thể tìm kiếm theo tên Shop, ID đơn hàng hoặc Tên Sản phẩm"
-                                        style={{ height: "30px", fontSize: "14px", padding: "4px 8px" }}
-                                    />
-                                </div>
+                                
                             </div>
 
                         </div>
@@ -133,7 +129,9 @@ const CustomerOrders = () => {
                             {error ? (
                                 <p className="text-danger">{error}</p>
                             ) : (
+                                filteredOrders.length > 0 ?
                                 <Order orders={filteredOrders} userId={user?._id} />
+                                : <p className="text-center">Không có đơn hàng nào</p>
                             )}
                         </div>
                     </div>

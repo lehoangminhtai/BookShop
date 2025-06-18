@@ -2,13 +2,23 @@ import { Link } from "react-router-dom";
 import ReviewForm from "./ReviewForm";
 import React, { useState, useEffect } from "react";
 import { checkReview } from "../../services/reviewService";
+import { updateStatusOrder, userUpdateOrder } from "../../services/orderService";
+import { toast, ToastContainer } from "react-toastify";
+import { useStateContext } from '../../context/UserContext';
+import { useChatStore } from '../../store/useChatStore';
+import { useNavigate } from "react-router-dom";
+import { getUser } from "../../services/accountService";
 
+const AdminId = '6730ed8eb4d8865f974afcf5'
 
 const Order = ({ orders, userId }) => {
-
+    const { user } = useStateContext();
     const [showModal, setShowModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [reviewStatus, setReviewStatus] = useState({});
+    const [orderList, setOrderList] = useState([]);
+    const { setSelectedUser } = useChatStore();
+    const navigate = useNavigate();
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
@@ -38,6 +48,8 @@ const Order = ({ orders, userId }) => {
                 return 'Chờ lấy hàng';
             case 'shipping':
                 return 'Đang giao hàng';
+            case 'shipped':
+                return 'Đã giao hàng';
             case 'completed':
                 return 'Hoàn thành';
             case 'failed':
@@ -68,13 +80,86 @@ const Order = ({ orders, userId }) => {
 
     useEffect(() => {
         if (orders.length > 0 && userId) {
+            setOrderList(orders);
             checkReviewExist();
         }
     }, [orders, userId]);
 
+    const handleUpdateStatus = async (orderId, orderStatus) => {
+        const userId = user._id
+        const data = { userId, orderId, orderStatus }
+        try {
+            const response = await userUpdateOrder(data);
+            if (response.data.success) {
+                if (orderStatus === 'cancel') {
+                    setOrderList(prev => prev.filter(order => order._id !== orderId));
+                    toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                        Sản phẩm đã được hủy
+
+                    </div>,
+                        {
+                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                            autoClose: 1500, // Đóng sau 3 giây
+                            hideProgressBar: true, // Ẩn thanh tiến độ
+                            closeButton: false, // Ẩn nút đóng
+                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                            draggable: false, // Tắt kéo di chuyển
+                            rtl: false, // Không hỗ trợ RTL
+                        }
+                    );
+                }
+                if (orderStatus === 'completed') {
+                    setOrderList(prev =>
+                        prev.map(order =>
+                            order._id === orderId ? { ...order, orderStatus: 'completed' } : order
+                        )
+                    );
+                    toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
+                        Vui lòng đánh giá để nhận điểm thưởng
+
+                    </div>,
+                        {
+                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                            autoClose: 1500, // Đóng sau 3 giây
+                            hideProgressBar: true, // Ẩn thanh tiến độ
+                            closeButton: false, // Ẩn nút đóng
+                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                            draggable: false, // Tắt kéo di chuyển
+                            rtl: false, // Không hỗ trợ RTL
+                        }
+                    );
+                }
+            } else {
+                toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                      Hệ thống lỗi!
+                    </div>,
+                        {
+                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                            autoClose: 1500, // Đóng sau 3 giây
+                            hideProgressBar: true, // Ẩn thanh tiến độ
+                            closeButton: false, // Ẩn nút đóng
+                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                            draggable: false, // Tắt kéo di chuyển
+                            rtl: false, // Không hỗ trợ RTL
+                        }
+                    );
+            }
+        } catch (error) {
+            console.log(error)
+            toast.error('Có lỗi xảy ra khi cập nhật trạng thái!');
+        }
+    }
+
+     const handleClickChatButton = async () => {
+        const admin = await getUser(AdminId)
+        console.log('admin',admin.data.user)
+        setSelectedUser(admin.data.user);
+        navigate(`/exchange/chat`);
+    }
+
     return (
         <div className="container mt-5">
-            {orders.map((order) => (
+            {orderList.map((order) => (
                 <Link to={`/payment/success?orderId=${order._id}`}>
                     <div className="card shadow-sm border-0 mb-4" key={order._id}>
                         <div className="card-body">
@@ -86,13 +171,13 @@ const Order = ({ orders, userId }) => {
 
                                     <div className="d-flex mb-4" key={index}>
                                         <img
-                                            src={item.bookId.images[0]}
-                                            alt={`Product image of ${item.bookId.title}`}
+                                            src={item.bookImage}
+                                            alt={`Product image of ${item.bookTitle}`}
                                             className="img-thumbnail me-3"
                                             style={{ width: 100, height: 100, objectFit: "cover" }}
                                         />
                                         <div className="flex-grow-1">
-                                            <h6 className="fw-bold mb-1">{item.bookId.title}</h6>
+                                            <h6 className="fw-bold mb-1">{item.bookTitle}</h6>
 
                                             <p className="mb-0">Số lượng: x{item.quantity}</p>
                                         </div>
@@ -129,6 +214,27 @@ const Order = ({ orders, userId }) => {
                                         </p>
                                     </div>
                                     <div className="d-flex gap-2">
+                                        {order.orderStatus === 'pending' && (
+                                            <>
+                                                <button className="btn btn-danger"
+                                                onClick={(event) => {
+                                                                event.preventDefault();
+                                                                event.stopPropagation();
+                                                               handleUpdateStatus(order._id, 'cancel');
+                                                            }}
+                                                 >Hủy đơn hàng</button>
+                                            </>
+                                        )}
+                                        {order.orderStatus === 'shipped' && (
+                                            <>
+                                                <button className="btn btn-primary"
+                                                onClick={(event) => {
+                                                                event.preventDefault();
+                                                                event.stopPropagation();
+                                                               handleUpdateStatus(order._id, 'completed');
+                                                            }}>Xác nhận thành công</button>
+                                            </>
+                                        )}
 
                                         {order.orderStatus === 'completed' && (
                                             <>
@@ -151,7 +257,11 @@ const Order = ({ orders, userId }) => {
                                             </>
                                         )}
 
-                                        <button className="btn btn-outline-secondary">
+                                        <button className="btn btn-outline-secondary" onClick={(event) => {
+                                                                event.preventDefault();
+                                                                event.stopPropagation();
+                                                                handleClickChatButton();
+                                                            }}>
                                             Liên Hệ Người Bán
                                         </button>
                                     </div>
@@ -177,8 +287,8 @@ const Order = ({ orders, userId }) => {
 
                     </div>
                 </div>
-
             )}
+            <ToastContainer />
         </div>
     );
 };

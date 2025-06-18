@@ -455,4 +455,60 @@ exports.getTopCustomers = async (req, res) => {
     }
 };
 
+exports.getOrderRevenueDataDetail = async (req, res) => {
+    try {
+        const { range, startDate, endDate } = req.body;
+        // Lấy ngày hiện tại
+        let start, end;
+
+        const today = new Date();
+        today.setHours(23, 59, 59, 999); // Set time to end of today
+
+        if (range === '7days') {
+            start = new Date(today);
+            start.setDate(today.getDate() - 6);
+            start.setHours(0, 0, 0, 0);
+            end = today;
+        } else if (range === '30days') {
+            start = new Date(today);
+            start.setDate(today.getDate() - 29);
+            start.setHours(0, 0, 0, 0);
+            end = today;
+        } else if (startDate && endDate) {
+            start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+        } else {
+            return res.status(400).json({ error: 'Thiếu tham số ngày hợp lệ' });
+        }
+
+        // Truy vấn các đơn hàng `completed` trong tuần
+        const orders = await Order.find({
+            orderStatus: 'completed',
+            updatedAt: {
+                $gte: start,
+                $lte: end,
+            }
+        }).populate('itemsPayment.bookId').sort({updatedAt: -1});
+
+        // Tạo mảng doanh thu theo ngày trong tuần (Chủ Nhật -> Thứ Bảy)
+        const revenueByDay = Array(7).fill(0); // Khởi tạo mảng với 7 ngày, giá trị ban đầu là 0
+
+        orders.forEach(order => {
+            const orderDate = new Date(order.updatedAt);
+            const dayIndex = orderDate.getDay(); // Trả về số ngày trong tuần (0: Chủ Nhật, 6: Thứ Bảy)
+            revenueByDay[dayIndex] += order.finalAmount;
+        });
+
+        // Gửi kết quả về client
+        res.status(200).json({
+            data: orders,
+            totalRevenue: revenueByDay.reduce((sum, revenue) => sum + revenue, 0) // Tổng doanh thu tuần
+        });
+    } catch (error) {
+        console.error('Lỗi khi tính toán doanh thu tuần:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
 

@@ -15,6 +15,6 @@ router.delete('/:reviewId', deleteReview);
 
 router.get('/account/:userId', getReviewsByUser);
 
-router.get('/check-exist', checkReviewExistence);
+router.post('/check-exist', checkReviewExistence);
 
 module.exports = router;

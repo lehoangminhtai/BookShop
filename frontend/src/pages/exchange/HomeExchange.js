@@ -307,7 +307,7 @@ const HomeExchange = () => {
                                                         <p className="text-muted"><i className="fa fa-map-marker-alt text-primary"></i> {book?.location}</p>
                                                     </div>
 
-                                                    <i className="far fa-heart ms-auto text-secondary"></i>
+                                                    
                                                 </div>
                                             </div>
                                         ))
@@ -363,11 +363,7 @@ const HomeExchange = () => {
                                             <span className="fs-6">Giao dịch của tôi</span>
                                         </div>
                                     </Link>
-                                    <hr />
-                                    <div className="option-exchange mb-2">
-                                        <i className="fa fa-star me-2"></i>
-                                        <span className="fs-6">Tổng điểm</span>
-                                    </div>
+                                    
                                 </>
                             )}
                         </div>

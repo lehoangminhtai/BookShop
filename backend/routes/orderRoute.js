@@ -21,4 +21,6 @@ router.put('/:id/payment-method', orderController.updatePaymentMethod);
 // Cập nhật trạng thái thanh toán khi đã thanh toán
 router.put('/:id/payment-status', orderController.updatePaymentStatus);
 
+router.post('/user/update-order', orderController.userUpdateOrder)
+
 module.exports = router;

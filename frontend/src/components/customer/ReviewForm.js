@@ -136,7 +136,6 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
                                 onChange={(e) =>
                                     handleCommentChange(book.bookId._id, e.target.value)
                                 }
-                                required
                             ></textarea>
                         </div>
                     </div>

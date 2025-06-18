@@ -1,35 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getRevenueDetail } from '../../services/reportService';
+import { toast } from 'react-toastify';
+import debounce from 'lodash/debounce';
+
 
 const AdRevenueDetail = ({ title, type }) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('7'); // Default is 7 days
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
+  const [range, setRange] = useState('7days')
+
+
+  function formatDate(isoDateString) {
+    const date = new Date(isoDateString);
+    const day = String(date.getDate()).padStart(2, '0');     // 01 -> 09
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  };
+
+  const fetchRevenue = debounce( async () => {
+    if (startDate > endDate) {
+      toast.error('Ngày bắt đầu không được lớn hơn ngày kết thúc!');
+      return;
+    }
+    const data = { range, startDate, endDate }
+    try {
+      const response = await getRevenueDetail(data);
+      console.log(response)
+      setData(response.data)
+      setTotal(response.totalRevenue)
+    } catch (error) {
+      toast.error('Lỗi hệ thống!')
+    }
+  },1000)
+
+  useEffect(() => {
+    if (range === 'custom') {
+      if (startDate && endDate) {
+        fetchRevenue();
+      }
+    }
+    else fetchRevenue();
+  }, [range, startDate, endDate])
 
   // Handle date range selection
   const handleDateRangeChange = (e) => {
-    setSelectedPeriod(e.target.value);
-    let start = '';
-    let end = '';
+    setRange(e.target.value);
 
-    if (e.target.value === '7') {
-      // 7 days before
-      const currentDate = new Date();
-      start = new Date(currentDate.setDate(currentDate.getDate() - 7)).toISOString().split('T')[0];
-      end = new Date().toISOString().split('T')[0];
-    } else if (e.target.value === '30') {
-      // 30 days before
-      const currentDate = new Date();
-      start = new Date(currentDate.setDate(currentDate.getDate() - 30)).toISOString().split('T')[0];
-      end = new Date().toISOString().split('T')[0];
-    }
-
-    setStartDate(start);
-    setEndDate(end);
   };
 
-  // Handle custom date range input
   const handleStartDateChange = (e) => setStartDate(e.target.value);
   const handleEndDateChange = (e) => setEndDate(e.target.value);
 
@@ -50,13 +75,13 @@ const AdRevenueDetail = ({ title, type }) => {
   const renderTableHeaders = () => {
     switch (type) {
       case 'revenue':
-        return ['Ngày', 'Revenue', 'Orders'];
+        return ['Ngày', 'Doanh Thu', 'Đơn Hàng'];
       case 'newUsers':
-        return ['Ngày', 'Họ Tên','Email','SĐT'];
+        return ['Ngày', 'Họ Tên', 'Email', 'SĐT'];
       case 'orders':
-        return ['Mã đơn hàng', 'Khách hàng', 'Thành tiền', 'Trạng thái','Chi tiết'];
+        return ['Mã đơn hàng', 'Khách hàng', 'Thành tiền', 'Trạng thái', 'Chi tiết'];
       case 'booksOrdered':
-        return [ 'Tên', 'Giá' ,'Số lượng'];
+        return ['Tên', 'Giá', 'Số lượng'];
       default:
         return [];
     }
@@ -68,9 +93,22 @@ const AdRevenueDetail = ({ title, type }) => {
         case 'revenue':
           return (
             <tr key={index}>
-              <td>{item.date}</td>
-              <td>{item.revenue}</td>
-              <td>{item.orders}</td>
+              <td>{formatDate(item.updatedAt)}</td>
+              <td className=' text-danger fw-bold'>{formatCurrency(item.finalAmount)}</td>
+              <td>
+                <ul className="mb-0">
+                  {item.itemsPayment.map((bookItem, idx) => (
+                    <li key={idx}>
+                      <div className='d-flex justify-content-between'>
+                        <img src={bookItem.bookId?.images[0]} width={50}></img>
+                        <span className=' text-primary fw-bold'>{formatCurrency(bookItem.price)}</span>
+                      </div>
+
+                      {bookItem.bookId?.title || 'Không rõ tên sách'}  <span className='text-danger'>x {bookItem.quantity}</span>
+                    </li>
+                  ))}
+                </ul>
+              </td>
             </tr>
           );
         case 'newUsers':
@@ -108,12 +146,12 @@ const AdRevenueDetail = ({ title, type }) => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3>{title}</h3>
         <div>
-          <select className='form-select w-100' onChange={handleDateRangeChange} value={selectedPeriod}>
-            <option value="7">7 ngày trước</option>
-            <option value="30">30 ngày trước</option>
+          <select className='form-select w-100' onChange={handleDateRangeChange} value={range}>
+            <option value="7days">7 ngày trước</option>
+            <option value="30days">30 ngày trước</option>
             <option value="custom">Tùy chọn</option>
           </select>
-          {selectedPeriod === 'custom' && (
+          {range === 'custom' && (
             <div className='d-flex mt-2 align-items-center'>
               <input type="date" value={startDate} onChange={handleStartDateChange} className='me-3 form-control' />
               <p className=''>đến</p>
@@ -122,10 +160,6 @@ const AdRevenueDetail = ({ title, type }) => {
           )}
         </div>
       </div>
-
-      <form onSubmit={handleSubmit}>
-        <button type="submit">Filter</button>
-      </form>
 
       <table className="table">
         <thead>
@@ -139,7 +173,7 @@ const AdRevenueDetail = ({ title, type }) => {
       </table>
 
       <div className="stats-footer">
-        <p>Total: {total}</p>
+        <h4 className='h4'>Tổng:<span className='text-danger'> {formatCurrency(total)}</span></h4>
       </div>
     </div>
   );

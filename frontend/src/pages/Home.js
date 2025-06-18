@@ -77,22 +77,33 @@ const Home = () => {
     }
 
     const getRecommendations = async () => {
-        try {
-            const response = await recommendSer(user._id);
-            if (response.success) {
-                response.data.forEach(async (item) => {
-                    const bookSaleData = await getBookSaleById(item.bookId);
-                    setBookSales((prevBookSales) => [...prevBookSales, bookSaleData.data.data]);
-                });
-            }
-            else {
-                alert("Hệ thống gợi ý đang bảo trì")
-            }
+    try {
+        const response = await recommendSer(user._id);
+        if (response.success) {
+            // Dùng Promise.all để đợi tất cả các request
+            const bookSalePromises = response.data.map(item => getBookSaleById(item.bookId));
+            const bookSaleResponses = await Promise.all(bookSalePromises);
+
+            // Lọc các book hợp lệ và không bị null
+            const bookSalesData = bookSaleResponses
+                .map(res => res?.data?.data)
+                .filter(book => book); // loại bỏ undefined/null
+
+            // Loại bỏ duplicate theo _id
+            const uniqueBookSales = bookSalesData.filter(
+                (book, index, self) =>
+                    index === self.findIndex(b => b._id === book._id)
+            );
+
+            setBookSales(uniqueBookSales);
+        } else {
+            alert("Hệ thống gợi ý đang bảo trì");
         }
-        catch (error) {
-            console.error("Error fetching recommendations:", error);
-        }
+    } catch (error) {
+        console.error("Error fetching recommendations:", error);
     }
+};
+
 
     useEffect(() => {
         if (user) {
@@ -191,7 +202,7 @@ const Home = () => {
                                 <div className="carousel-inner" role="listbox">
                                     <div className="carousel-item active rounded">
                                         <img
-                                            src="https://res.cloudinary.com/dyu419id3/image/upload/v1734618483/panel3_vdcll3.jpg"
+                                            src="https://res.cloudinary.com/dyu419id3/image/upload/v1749278842/Screenshot_2025-06-07_134512_ytiekx.png"
                                             className="img-fluid w-100 bg-secondary rounded"
                                             alt="First slide"
                                         />
@@ -199,7 +210,7 @@ const Home = () => {
                                     </div>
                                     <div className="carousel-item rounded">
                                         <img
-                                            src="https://res.cloudinary.com/dyu419id3/image/upload/v1734379774/panel1_caqyfo.jpg"
+                                            src="https://res.cloudinary.com/dyu419id3/image/upload/v1749280141/Screenshot_2025-06-07_140849_pm50wt.png"
                                             className="img-fluid w-100 rounded"
                                             alt="Second slide"
                                         />

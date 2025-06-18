@@ -4,9 +4,9 @@ const Book = require('../models/bookModel');
 const BookSaleController = require('../controllers/bookSaleController')
 const { logAction } = require('../middleware/logMiddleware.js');
 
-const createBook = async (req,res, next) =>{
-    const { title, author, description,images, publisher, categoryId } = req.body;
-   
+const createBook = async (req, res, next) => {
+    const { title, author, description, images, publisher, categoryId } = req.body;
+
     const userId = req.userId
     try {
         const result = await cloudinary.uploader.upload(images, {
@@ -22,27 +22,27 @@ const createBook = async (req,res, next) =>{
             publisher,
             categoryId
         });
-        if(book){
+        if (book) {
             const responseBookSale = await BookSaleController.createBookSale(
                 {
-                    body: {bookId: book._id, quantity: 0, price: 0, discount: 0}
+                    body: { bookId: book._id, quantity: 0, price: 0, discount: 0 }
                 }
             )
-            
+
             if (responseBookSale.success) {
                 await logAction(
                     'Thêm sách',
                     userId,
                     `Quản trị viên ${userId} đã thêm sách mới với tiêu đề: ${title}`
-                  );
-            } else  if (!responseBookSale.success) {
+                );
+            } else if (!responseBookSale.success) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Lỗi tạo sách bán' 
+                    message: 'Lỗi tạo sách bán'
                 });
             }
         }
-        else{
+        else {
             return res.status(400).json({
                 success: false,
                 message: 'Tạo sách thất bại'
@@ -65,18 +65,23 @@ const createBook = async (req,res, next) =>{
 
 const getBooks = async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1; // Trang hiện tại
-        const limit = parseInt(req.query.limit) || 10; // Số lượng sách mỗi trang
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
-        // Tìm sách và phân trang
-        const books = await Book.find({})
+        const searchQuery = req.query.search || '';
+
+        const searchCondition = searchQuery
+            ? { title: { $regex: searchQuery, $options: 'i' } }
+            : {};
+
+        const books = await Book.find(searchCondition)
             .sort({ createdAt: -1 }) // Sắp xếp theo thời gian giảm dần
             .skip(skip) // Bỏ qua các tài liệu của các trang trước
             .limit(limit) // Lấy số tài liệu giới hạn mỗi trang
             .populate('categoryId', 'nameCategory'); // Liên kết với thông tin thể loại
 
         // Tính tổng số lượng sách
-        const totalBooks = await Book.countDocuments();
+        const totalBooks = await Book.countDocuments(searchCondition);
         const totalPages = Math.max(Math.ceil(totalBooks / limit), 1);
 
         // Trả về dữ liệu cùng thông tin phân trang
@@ -87,35 +92,35 @@ const getBooks = async (req, res) => {
             totalPages: totalPages,
             totalItems: totalBooks, // Đổi tên thành totalItems
         });
-        
+
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách sách', error: error.message });
     }
 };
 
-const getBook = async (req,res) =>{
-    const{id} =req.params;
-    if(!mongoose.Types.ObjectId.isValid(id)){
-        return(res.status(404).json({error: 'No such book'}));
+const getBook = async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return (res.status(404).json({ error: 'No such book' }));
     }
-    const book = await Book.findById(id).populate('categoryId','nameCategory');
+    const book = await Book.findById(id).populate('categoryId', 'nameCategory');
 
-    if(!book){
-        return res.status(404).json({error: 'No such book'});
+    if (!book) {
+        return res.status(404).json({ error: 'No such book' });
 
     }
     res.status(200).json(book);
 }
 
-const deleteBook = async(req, res) =>{
-    const{id} =req.params; 
-    if(!mongoose.Types.ObjectId.isValid(id)){
-        return(res.status(404).json({error: 'No such book'}));
+const deleteBook = async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return (res.status(404).json({ error: 'No such book' }));
     }
 
-    const book = await Book.findOneAndDelete({_id:id});
-    if(!book){
-        return res.status(404).json({error: 'No such book'});
+    const book = await Book.findOneAndDelete({ _id: id });
+    if (!book) {
+        return res.status(404).json({ error: 'No such book' });
 
     }
 
@@ -126,7 +131,7 @@ const updateBook = async (req, res) => {
     const { title, author, description, images, publisher, categoryId } = req.body;
 
     const userId = req.userId
-    
+
     try {
         // Tìm sách theo bookId
         const book = await Book.findById(bookId);
@@ -144,7 +149,7 @@ const updateBook = async (req, res) => {
         if (images) {
             if (Array.isArray(images)) {
                 // Nếu images là một mảng, ta upload từng ảnh lên Cloudinary
-                const uploadPromises = images.map(image => 
+                const uploadPromises = images.map(image =>
                     cloudinary.uploader.upload(image, { folder: 'uploads' })
                 );
                 const uploadResults = await Promise.all(uploadPromises);
@@ -165,14 +170,13 @@ const updateBook = async (req, res) => {
         book.categoryId = categoryId || book.categoryId;
 
         // Lưu sách đã cập nhật
-        if(await book.save())
-        {
+        if (await book.save()) {
             await logAction(
                 'Cập nhật sách',
                 userId,
                 `Quản trị viên ${userId} đã cập nhật sách: ${book.title}`,
                 book
-              );
+            );
         }
 
 
@@ -199,11 +203,11 @@ const searchBooks = async (req, res) => {
         // Xây dựng điều kiện tìm kiếm
         const searchCondition = query
             ? {
-                  $or: [
-                      { title: { $regex: query, $options: 'i' } }, // Tìm kiếm trong title
-                      { author: { $regex: query, $options: 'i' } }, // Tìm kiếm trong author
-                  ],
-              }
+                $or: [
+                    { title: { $regex: query, $options: 'i' } }, // Tìm kiếm trong title
+                    { author: { $regex: query, $options: 'i' } }, // Tìm kiếm trong author
+                ],
+            }
             : {};
 
         // Phân trang
@@ -236,10 +240,10 @@ const searchBooks = async (req, res) => {
 
 
 module.exports = {
-   createBook,
+    createBook,
     getBook,
     getBooks,
     deleteBook,
     updateBook,
-    searchBooks    
+    searchBooks
 }

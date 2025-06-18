@@ -130,7 +130,7 @@ function AppContent() {
             <Route
               key={path}
               path={path}
-              element={element}
+             element={<AdminRoute>{element}</AdminRoute>}
             />
           ))}
         </Routes>

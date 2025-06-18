@@ -14,6 +14,8 @@ const AdOrder = () => {
     const [limit, setLimit] = useState(10);
     const navigate = useNavigate();
 
+    const [searchKeyword, setSearchKeyword] = useState("");
+
     const [filters, setFilters] = useState({
         paymentStatus: "",
         orderStatus: "",
@@ -27,19 +29,13 @@ const AdOrder = () => {
             [name]: value,
         }));
     };
-    const handleFilterReset = () => {
-        setFilters({
-            paymentStatus: "",
-            orderStatus: "",
-            paymentMethod: "",
-        });
-    };
 
-    const fetchPayments = async (page = 1, limit = 10, filters = {}) => {
+    const fetchPayments = async (page = 1, limit = 10, filters = {}, search = "") => {
         try {
             const params = new URLSearchParams({
                 page: String(page),
                 limit: String(limit),
+                search: search.trim(),
                 ...filters,
             });
             console.log("Fetching payments with params:", params.toString());
@@ -59,8 +55,8 @@ const AdOrder = () => {
 
 
     useEffect(() => {
-        fetchPayments(currentPage, limit, filters);
-    }, [currentPage, limit, filters]);
+        fetchPayments(currentPage, limit, filters, searchKeyword);
+    }, [currentPage, limit, filters, searchKeyword]);
 
     const handleViewDetails = (orderId) => {
         navigate(`/admin/order/edit/${orderId}`);  // Chuyển hướng đến trang chỉnh sửa đơn hàng
@@ -72,130 +68,146 @@ const AdOrder = () => {
     return (
         <div className="d-flex">
             <AdSidebar />
-            <div className="container p-4">
+            <div className="container " >
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <input type="text" placeholder="Search..." className="form-control w-25" />
-                    <button className="btn btn-primary ms-2" >
-                        Thêm mới
-                    </button>
+                    <input
+                        type="text"
+                        placeholder="Tìm theo tên hoặc mã đơn hàng..."
+                        className="form-control w-25"
+                        value={searchKeyword}
+                        onChange={(e) => setSearchKeyword(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') fetchPayments(1, limit, filters, searchKeyword);
+                        }}
+                    />
                 </div>
 
                 {/* Hiển thị Loading nếu đang tải dữ liệu */}
                 {loading ? (
                     <div className="text-center">Loading...</div>
                 ) : (
-                    <table className="table  table-striped">
-                        <thead>
-                            <tr>
-                                <th className="text-center">STT</th>
-                                <th className="text-center">Người Dùng</th>
-                                <th className="text-center">Thành Tiền</th>
-                                <th className="text-center"> Phương Thức
+                    <div className="table-responsive">
+                        <table className="table  table-striped">
+                            <thead>
+                                <tr>
+                                    <th className="text-center">STT</th>
+                                    <th className="text-center">Mã đơn hàng</th>
+                                    <th className="text-center">Người Dùng</th>
+                                    <th className="text-center">Thành Tiền</th>
+                                    <th className="text-center"> Phương Thức
 
-                                </th>
-                                <th >
-                                    Thanh toán
+                                    </th>
+                                    <th className="text-center">
+                                        Thanh toán
+                                    </th>
+                                    <th className="text-center">
+
+                                        Trạng thái
+                                    </th>
+                                    <th className="text-center"></th>
+                                </tr>
+                            </thead>
+                            <thead>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th>
+                                    <select className="text-center" name="paymentMethod" onChange={handleFilterChange} value={filters.paymentMethod}>
+
+                                        <option value="">Tất cả</option>
+                                        <option value="cash">Tiền mặt</option>
+                                        <option value="momo">Momo</option>
+                                        <option value="zalopay">ZaloPay</option>
+                                    </select>
                                 </th>
                                 <th>
+                                    <select className="text-center" name="paymentStatus" onChange={handleFilterChange} value={filters.paymentStatus}>
 
-                                    Trạng thái Đơn
+                                        <option value="">Tất cả</option>
+                                        <option value="pending">Chưa thanh toán</option>
+                                        <option value="success">Đã thanh toán</option>
+                                    </select>
                                 </th>
-                                <th className="text-center"></th>
-                            </tr>
-                        </thead>
-                        <thead>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th>
-                                <select className="text-center" name="paymentMethod" onChange={handleFilterChange} value={filters.paymentMethod}>
+                                <th>
+                                    <select className="text-center" name="orderStatus" onChange={handleFilterChange} value={filters.orderStatus}>
 
-                                    <option value="">Tất cả</option>
-                                    <option value="cash">Tiền mặt</option>
-                                    <option value="momo">Momo</option>
-                                    <option value="zalopay">ZaloPay</option>
-                                </select>
-                            </th>
-                            <th>
-                                <select className="text-center" name="paymentStatus" onChange={handleFilterChange} value={filters.paymentStatus}>
-
-                                    <option value="">Tất cả</option>
-                                    <option value="pending">Chưa thanh toán</option>
-                                    <option value="success">Đã thanh toán</option>
-                                </select>
-                            </th>
-                            <th>
-                                <select className="text-center" name="orderStatus" onChange={handleFilterChange} value={filters.orderStatus}>
-
-                                    <option value="">Tất cả</option>
-                                    <option value="pending">Đang chờ</option>
-                                    <option value="confirm">Đã xác nhận</option>
-                                    <option value="shipping">Đang vận chuyển</option>
-                                    <option value="completed">Hoàn thành</option>
-                                    <option value="failed">Thất bại</option>
-                                </select>
-                            </th>
-                            <th></th>
-                        </thead>
-                        <tbody>
-                            {/* Render danh sách thanh toán từ state payments */}
-                            {Array.isArray(payments) && payments.length === 0 ? (
-                                <tr>
-                                    <td colSpan="7" className="text-center">
-                                        <span>Không có đơn hàng nào phù hợp</span>
-                                    </td>
-                                </tr>
-                            ) : (
-                                payments.map((payment, index) => (
-                                    <tr key={payment._id}>
-                                        <td className="text-center">
-
-                                            <span>{index + 1}</span>
-                                        </td>
-                                        <td >
-                                            <div>{payment.userId.fullName}</div>
-                                            <div className="text-primary">{payment.userId.email}</div>
-                                            <div className="text-muted">{payment.userId.phone}</div>
-                                        </td>
-                                        <td className="text-center text-danger">{formatCurrency(payment.orderId.finalAmount)}</td>
-                                        <td className="text-center">{payment.paymentMethod === 'cash' ? 'Tiền mặt' : payment.paymentMethod === 'zalopay' ? 'Zalo Pay' : 'Momo'}</td>
-                                        <td className="text-center">
-                                            <span className={`badge ${payment.paymentStatus === 'success' ? 'bg-success' : 'bg-warning'}`}>
-                                                {payment.paymentStatus === 'success' ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                                            </span>
-                                        </td>
-                                        <td className="text-center">
-                                            <span className={`badge 
-                                                ${payment.orderId.orderStatus === 'completed' ? 'bg-success' :
-                                                    payment.orderId.orderStatus === 'shipping' ? 'bg-info' :
-                                                        payment.orderId.orderStatus === 'confirm' ? 'bg-primary' :
-                                                            payment.orderId.orderStatus === 'failed' ? 'bg-danger' :
-                                                                'bg-warning'}`}>
-
-                                                <i className={`fas me-1 
-                                                    ${payment.orderId.orderStatus === 'completed' ? 'fa-check-circle' :
-                                                        payment.orderId.orderStatus === 'shipping' ? 'fa-truck' :
-                                                            payment.orderId.orderStatus === 'confirm' ? 'fa-thumbs-up' :
-                                                                payment.orderId.orderStatus === 'failed' ? 'fa-times-circle' :
-                                                                    'fa-clock'}`}>
-                                                </i>
-
-                                                {/* Hiển thị tên trạng thái */}
-                                                {payment.orderId.orderStatus === 'completed' ? 'Hoàn Thành' :
-                                                    payment.orderId.orderStatus === 'shipping' ? 'Đang Vận Chuyển' :
-                                                        payment.orderId.orderStatus === 'confirm' ? 'Đã Xác Nhận' :
-                                                            payment.orderId.orderStatus === 'failed' ? 'Thất Bại' :
-                                                                'Đang chờ'}
-                                            </span>
-                                        </td>
-
-                                        <td className="text-center">
-                                            <button className="btn btn-primary" onClick={() => handleViewDetails(payment.orderId._id)}>Xem chi tiết</button>
+                                        <option value="">Tất cả</option>
+                                        <option value="pending">Đang chờ</option>
+                                        <option value="confirm">Đã xác nhận</option>
+                                        <option value="shipping">Đang vận chuyển</option>
+                                        <option value="shipped">Đã vận chuyển</option>
+                                        <option value="completed">Hoàn thành</option>
+                                        <option value="failed">Thất bại</option>
+                                    </select>
+                                </th>
+                                <th></th>
+                            </thead>
+                            <tbody>
+                                {/* Render danh sách thanh toán từ state payments */}
+                                {Array.isArray(payments) && payments.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="7" className="text-center">
+                                            <span>Không có đơn hàng nào phù hợp</span>
                                         </td>
                                     </tr>
-                                )))}
-                        </tbody>
-                    </table>
+                                ) : (
+                                    payments.map((payment, index) => (
+                                        <tr key={payment._id}>
+                                            <td className="text-center">
+
+                                                <span>{index + 1}</span>
+                                            </td>
+                                            <td>{payment.orderId._id}</td>
+
+                                            <td>
+                                                <div>{payment.userId.fullName}</div>
+                                                <div className="text-primary">{payment.userId.email.slice(0, 15)}...</div>
+                                                <div className="text-muted">{payment.userId.phone}</div>
+                                            </td>
+                                            <td className="text-center text-danger">{formatCurrency(payment.orderId.finalAmount)}</td>
+                                            <td className="text-center">{payment.paymentMethod === 'cash' ? 'Tiền mặt' : payment.paymentMethod === 'zalopay' ? 'Zalo Pay' : 'Momo'}</td>
+                                            <td className="text-center">
+                                                <span className={`badge ${payment.paymentStatus === 'success' ? 'bg-success' : 'bg-warning'}`}>
+                                                    {payment.paymentStatus === 'success' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                                                </span>
+                                            </td>
+                                            <td className="text-center" style={{ width: '100px' }}>
+                                                <span className={`badge 
+                                                ${payment.orderId.orderStatus === 'completed' ? 'bg-success' :
+                                                        payment.orderId.orderStatus === 'shipped' ? 'bg-info' :
+                                                            payment.orderId.orderStatus === 'shipping' ? 'bg-info' :
+                                                                payment.orderId.orderStatus === 'confirm' ? 'bg-primary' :
+                                                                    payment.orderId.orderStatus === 'failed' ? 'bg-danger' :
+                                                                        'bg-warning'}`}>
+
+                                                    <i className={`fas me-1 
+                                                    ${payment.orderId.orderStatus === 'completed' ? 'fa-check-circle' :
+                                                            payment.orderId.orderStatus === 'shipped' ? 'fa-truck' :
+                                                                payment.orderId.orderStatus === 'shipping' ? 'fa-truck' :
+                                                                    payment.orderId.orderStatus === 'confirm' ? 'fa-thumbs-up' :
+                                                                        payment.orderId.orderStatus === 'failed' ? 'fa-times-circle' :
+                                                                            'fa-clock'}`}>
+                                                    </i>
+
+                                                    {/* Hiển thị tên trạng thái */}
+                                                    {payment.orderId.orderStatus === 'completed' ? 'Hoàn Thành' :
+                                                        payment.orderId.orderStatus === 'shipped' ? 'Đã Vận Chuyển' :
+                                                            payment.orderId.orderStatus === 'shipping' ? 'Đang Vận Chuyển' :
+                                                                payment.orderId.orderStatus === 'confirm' ? 'Đã Xác Nhận' :
+                                                                    payment.orderId.orderStatus === 'failed' ? 'Thất Bại' :
+                                                                        'Đang chờ'}
+                                                </span>
+                                            </td>
+
+                                            <td className="text-center">
+                                                <button className="btn btn-primary" onClick={() => handleViewDetails(payment.orderId._id)}>Xem chi tiết</button>
+                                            </td>
+                                        </tr>
+                                    )))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
                 {/* Pagination */}
                 <div className="d-flex justify-content-between align-items-center mt-4">

@@ -18,11 +18,11 @@ const AdBook = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [limit, setLimit] = useState(10);
     const [totalItems, setTotalItems] = useState(0); // Tổng số sách
-
+    const [search, setSearch] = useState('');
 
     const fetchBooks = async () => {
         try {
-            const response = await fetch(`${serverUrl}/api/books?page=${currentPage}&limit=${limit}`);
+            const response = await fetch(`${serverUrl}/api/books?page=${currentPage}&limit=${limit}&search=${encodeURIComponent(search)}`);
             const data = await response.json();
             if (response.ok) {
                 setBooks(data.data); // Mảng sách
@@ -36,7 +36,7 @@ const AdBook = () => {
 
     useEffect(() => {
         fetchBooks();
-    }, [currentPage, limit]);
+    }, [currentPage, limit, search]);
 
     const handleDelete = async (bookId) => {
         const response = await fetch(`${serverUrl}/api/books/${bookId}`, { method: 'DELETE' });
@@ -69,10 +69,23 @@ const AdBook = () => {
             <div className="container">
                 {/* Header actions */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <input type="text" placeholder="Search..." className="form-control w-25" />
-                    <button className="btn btn-primary ms-2" onClick={handleCreateBook}>
-                        Thêm mới
-                    </button>
+                    <div className="position-relative">
+                        <input type="text" placeholder="Tìm kiếm..." className="form-control"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    setCurrentPage(1);
+                                    fetchBooks(); // Tìm kiếm khi nhấn Enter
+                                }
+                            }}
+                        />
+                        <i className="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                    </div>
+                    <div className="d-flex">
+
+                        <button className="btn btn-primary ms-2" onClick={handleCreateBook}>Thêm</button>
+                    </div>
                 </div>
 
                 {/* Book Table */}

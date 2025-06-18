@@ -75,7 +75,7 @@ exports.createOrder = async (req, res) => {
 exports.getOrderById = async (req, res) => {
     try {
         const { orderId } = req.params;
-        const order = await Order.findById(orderId).populate('userId').populate('itemsPayment.bookId');
+        const order = await Order.findById(orderId).populate('userId')
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
@@ -91,7 +91,7 @@ exports.getOrderById = async (req, res) => {
 exports.getOrdersByUser = async (req, res) => {
     try {
         const userId = req.params.userId;
-        const orders = await Order.find({ userId }).sort({ createdAt: -1 }).populate('itemsPayment.bookId');
+        const orders = await Order.find({ userId }).sort({ createdAt: -1 })
 
         res.status(200).json({ success: true, data: orders });
     } catch (error) {
@@ -122,6 +122,9 @@ exports.updateOrderStatus = async (req, res) => {
 
         // Nếu trạng thái đơn hàng là 'completed' thì thêm thời gian giao hàng
         const updateData = { orderStatus, deliveryAt };
+        if (orderStatus === 'shipped') {
+            updateData.deliveryAt = Date.now();
+        }
         if (orderStatus === 'completed') {
             updateData.deliveryAt = Date.now();
         }
@@ -171,7 +174,24 @@ exports.updateOrderStatus = async (req, res) => {
             if (receiverSocketId) {
                 io.to(receiverSocketId).emit("getNotification", notification);
             }
-        } else if (updatedOrder.orderStatus === 'completed') {
+        } else if (updatedOrder.orderStatus === 'shipped') {
+            const notification = await Notification.create({
+                receiverId: updatedOrder.userId,
+                content: `Đơn hàng ${updatedOrder._id} đã được giao. Vui lòng xác nhận hoàn thành để nhận điểm thưởng nhé.`,
+                link: `/account/orders#`,
+                image: book.images[0],
+            });
+
+            const receiverSocketId = getReceiverSocketId(updatedOrder.userId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("getNotification", notification);
+            }
+        }
+        else if (updatedOrder.orderStatus === 'completed') {
+            const gradePlus = (updatedOrder.finalAmount / 1000) * 0.1
+            user.grade += gradePlus;
+            await user.save();
+            
             const notification = await Notification.create({
                 receiverId: updatedOrder.userId,
                 content: `Đơn hàng ${updatedOrder._id} đã hoàn tất. Bạn hãy đánh giá sản phẩm để nhận điểm thưởng nhé.`,
@@ -183,7 +203,8 @@ exports.updateOrderStatus = async (req, res) => {
             if (receiverSocketId) {
                 io.to(receiverSocketId).emit("getNotification", notification);
             }
-        } else if (updatedOrder.orderStatus === 'failed') {
+        }
+        else if (updatedOrder.orderStatus === 'failed') {
             const notification = await Notification.create({
                 receiverId: updatedOrder.userId,
                 content: `Đơn hàng ${updatedOrder._id} đã bị hủy. Vui lòng kiểm tra lại thông tin đơn hàng.`,
@@ -249,6 +270,69 @@ exports.updatePaymentStatus = async (req, res) => {
 
         res.status(200).json({ success: true, data: updatedOrder });
     } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.userUpdateOrder = async (req, res) => {
+    try {
+        const { userId, orderId, orderStatus } = req.body;
+
+        if (orderStatus === 'cancel') {
+            const deleteOrder = await Order.findByIdAndDelete(orderId);
+
+            const notification = await Notification.create({
+                receiverId: userId,
+                content: `Đơn hàng ${orderId} đã được hủy.`,
+                link: `/`,
+                image: null,
+            });
+
+            const receiverSocketId = getReceiverSocketId(userId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("getNotification", notification);
+            }
+            await logAction(
+                'Huỷ đơn hàng',
+                userId,
+                `Người dùng ${userId} hủy đơn hàng: ${orderId} `,
+                { deleteOrder }
+            );
+            return res.status(200).json({ success: true, data: deleteOrder });
+
+        }
+
+        if (orderStatus === 'completed') {
+            const updateOrder = await Order.findById(orderId);
+            updateOrder.orderStatus = 'completed';
+            await updateOrder.save();
+
+            const gradePlus = (updateOrder.finalAmount / 1000) * 0.1
+            const user = await User.findById(userId);
+            user.grade += gradePlus;
+            await user.save();
+            
+            const notification = await Notification.create({
+                receiverId: userId,
+                content: `Đơn hàng ${orderId} đã thành công vui lòng đánh giá để nhận điểm thưởng.`,
+                link: `/account/orders#`,
+                image: null,
+            });
+
+            const receiverSocketId = getReceiverSocketId(userId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("getNotification", notification);
+            }
+             await logAction(
+                'Xác nhận đơn hàng',
+                userId,
+                `Người dùng ${userId} xác nhận đơn: ${orderId} `,
+                { updateOrder }
+            );
+            return res.status(200).json({ success: true, data: updateOrder });
+        }
+    } catch (error) {
+        console.log(error)
         res.status(500).json({ success: false, message: error.message });
     }
 };
