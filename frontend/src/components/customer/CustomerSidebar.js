@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStateContext } from '../../context/UserContext';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../actions/UserAction';
-
+import ConfirmDialog from '../customer/BookExchange/ConfirmDialog';
 const CustomerSidebar = () => {
 
   const { users, setUser } = useStateContext()
@@ -11,11 +11,16 @@ const CustomerSidebar = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
+  const [showConfirm, setShowConfirm] = useState(false);
   const logoutFunc = () => {
-    dispatch(logout())
-    setUser(null)
-    navigate('/')
-  }
+    setShowConfirm(true); // Hiển thị dialog khi bấm logout
+  };
+
+  const handleLogoutConfirmed = () => {
+    dispatch(logout());
+    setUser(null);
+    navigate('/');
+  };
 
   return (
     <div className="d-flex">
@@ -33,7 +38,7 @@ const CustomerSidebar = () => {
         </div>
         <nav className="mt-3">
           <ul className="nav flex-column" style={{ padding: '0' }}>
-          <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
+            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
               <Link to="/account" className="nav-link text-dark d-flex align-items-center">
                 <i className="fas fa-cog me-2"></i> <span>Tài khoản của tôi</span>
               </Link>
@@ -48,15 +53,29 @@ const CustomerSidebar = () => {
                 <i className="fas fa-star me-2"></i> <span>Đánh giá</span>
               </Link>
             </li>
-            
-            <li onClick={logoutFunc} className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
-              <Link to="/logout" className="nav-link text-dark d-flex align-items-center">
-                <i className="fas fa-sign-out-alt me-2"></i> <span>Đăng xuát</span>
+
+            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
+              <Link
+                to="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  logoutFunc();
+                }}
+                className="nav-link text-dark d-flex align-items-center"
+              >
+                <i className="fas fa-sign-out-alt me-2"></i> <span>Đăng xuất</span>
               </Link>
             </li>
           </ul>
         </nav>
       </aside>
+      {showConfirm && (
+        <ConfirmDialog
+          handleClose={() => setShowConfirm(false)}
+          content="Bạn có chắc chắn muốn đăng xuất không?"
+          onConfirm={handleLogoutConfirmed}
+        />
+      )}
     </div>
   );
 };

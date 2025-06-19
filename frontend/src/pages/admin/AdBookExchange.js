@@ -16,6 +16,8 @@ const AdBookExchange = () => {
     const [totalItems, setTotalItems] = useState(0);
     const [status, setStatus] = useState("pending");
 
+    const [searchTerm, setSearchTerm] = useState('');
+
     const navigate = useNavigate();
 
     const fetchExchangeBooks = async () => {
@@ -24,6 +26,7 @@ const AdBookExchange = () => {
                 page: String(currentPage),
                 limit: String(limit),
                 status: String(status),
+                search: searchTerm.trim(),
             });
             const response = await getBookExchanges(params.toString());
             console.log("response", response);
@@ -38,7 +41,7 @@ const AdBookExchange = () => {
     };
     useEffect(() => {
         fetchExchangeBooks();
-    }, [currentPage, limit, status]);
+    }, [currentPage, limit, status, searchTerm]);
 
     const handleViewDetails = (exchangeId) => {
         navigate(`/admin/exchange-books/detail/${exchangeId}`)
@@ -69,18 +72,32 @@ const AdBookExchange = () => {
             <div className="container">
                 {/* Header actions */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <input type="text" placeholder="Search..." className="form-control w-25" />
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm theo tên sách hoặc tác giả..."
+                        className="form-control"
+                        style={{ maxWidth: '310px' }}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                setCurrentPage(1);
+                                fetchExchangeBooks();
+                            }
+                        }}
+                    />
+
                     <select className="form-select w-auto rounded-pill shadow-sm border-0 bg-light text-dark"
-                            onChange={(e) => setStatus(e.target.value)}
-                            style={{ minWidth: '180px' }}
-                        >
-                            
-                            <option value="pending">🕒 Chưa duyệt</option>
-                            <option value="available">✅ Đã duyệt</option>
-                            <option value="processing">🔄 Đang trao đổi</option>
-                            <option value="completed">🌟 Hoàn thành</option>
-                            <option value="">Tất cả</option>
-                        </select>
+                        onChange={(e) => setStatus(e.target.value)}
+                        style={{ minWidth: '180px' }}
+                    >
+
+                        <option value="pending">🕒 Chưa duyệt</option>
+                        <option value="available">✅ Đã duyệt</option>
+                        <option value="processing">🔄 Đang trao đổi</option>
+                        <option value="completed">🌟 Hoàn thành</option>
+                        <option value="">Tất cả</option>
+                    </select>
 
                 </div>
 
