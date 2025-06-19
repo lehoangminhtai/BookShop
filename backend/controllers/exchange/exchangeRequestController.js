@@ -677,36 +677,110 @@ const completeExchangeRequest = async (req, res) => {
 
 const getExchangeRequests = async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1; 
-    const limit = parseInt(req.query.limit) || 8; 
-    const skip = (page - 1) * limit; 
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 8;
+        const skip = (page - 1) * limit;
 
-    const query = {};
+        const searchTerm = req.query.search ? req.query.search.trim() : "";
+        const status = req.query.status;
 
-    if (req.query.status) {
-        query.status = req.query.status;
-    }
+        const pipeline = [];
 
-    const totalExchanges = await ExchangeRequest.countDocuments(query); // Tổng số yêu cầu trao đổi
-    const exchanges = await ExchangeRequest.find(query)
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 });
+        // Join với Book Requested
+        pipeline.push({
+            $lookup: {
+                from: 'bookexchanges', // collection sách
+                localField: 'bookRequestedId',
+                foreignField: '_id',
+                as: 'bookRequested'
+            }
+        });
 
-    res.status(200).json({
-        success: true,
-        data: exchanges,
-        pagination: {
-            currentPage: page,
-            totalPages: Math.ceil(totalExchanges / limit),
-            totalExchanges,
+        // Join với Book Exchange nếu có
+        pipeline.push({
+            $lookup: {
+                from: 'bookexchanges',
+                localField: 'exchangeBookId',
+                foreignField: '_id',
+                as: 'exchangeBook'
+            }
+        });
+
+        // Join với User requester
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'requesterId',
+                foreignField: '_id',
+                as: 'requester'
+            }
+        });
+
+        // Join với chủ sách (owner của bookRequested)
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'bookRequested.ownerId',
+                foreignField: '_id',
+                as: 'bookOwner'
+            }
+        });
+
+        // Unwind để dễ truy xuất
+        pipeline.push({ $unwind: { path: '$bookRequested', preserveNullAndEmptyArrays: true } });
+        pipeline.push({ $unwind: { path: '$requester', preserveNullAndEmptyArrays: true } });
+        pipeline.push({ $unwind: { path: '$bookOwner', preserveNullAndEmptyArrays: true } });
+        pipeline.push({ $unwind: { path: '$exchangeBook', preserveNullAndEmptyArrays: true } });
+
+        // Điều kiện tìm kiếm
+        const match = {};
+
+        if (searchTerm) {
+            const searchRegex = new RegExp(searchTerm, 'i');
+            match.$or = [
+                { 'bookRequested.title': { $regex: searchRegex } }, // Tên sách yêu cầu
+                { 'exchangeBook.title': { $regex: searchRegex } }, // Tên sách trao đổi
+                { 'requester.fullName': { $regex: searchRegex } }, // Người yêu cầu
+                { 'bookOwner.fullName': { $regex: searchRegex } } // Chủ sách
+            ];
         }
-    });
+
+        if (status) {
+            match.status = status;
+        }
+
+        if (Object.keys(match).length > 0) {
+            pipeline.push({ $match: match });
+        }
+
+        // Đếm tổng số kết quả
+        const totalExchangesPipeline = [...pipeline, { $count: 'total' }];
+        const totalResult = await ExchangeRequest.aggregate(totalExchangesPipeline);
+        const totalExchanges = totalResult[0]?.total || 0;
+
+        // Phân trang và sắp xếp
+        pipeline.push({ $sort: { createdAt: -1 } });
+        pipeline.push({ $skip: skip });
+        pipeline.push({ $limit: limit });
+
+        // Lấy kết quả
+        const exchanges = await ExchangeRequest.aggregate(pipeline);
+
+        res.status(200).json({
+            success: true,
+            data: exchanges,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalExchanges / limit),
+                totalExchanges,
+            }
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: error.message ||'Lỗi khi lấy yêu cầu trao đổi' });
+        res.status(500).json({ success: false, message: error.message || 'Lỗi khi lấy yêu cầu trao đổi' });
     }
-}
+};
+
 
 module.exports = {
     createExchangeRequest, checkExchangeRequest, deleteRequest,

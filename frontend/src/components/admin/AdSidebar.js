@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useStateContext } from '../../context/UserContext';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../actions/UserAction';
-
+import ConfirmDialog from '../customer/BookExchange/ConfirmDialog';
 const AdSidebar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [exchangeOpen, setExchangeOpen] = useState(false);
@@ -14,7 +14,13 @@ const AdSidebar = () => {
   const dispatch = useDispatch();
   const location = useLocation();
 
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const logoutFunc = () => {
+    setShowConfirm(true); // Hiển thị dialog khi bấm logout
+  };
+
+  const handleLogoutConfirmed = () => {
     dispatch(logout());
     setUser(null);
     navigate('/');
@@ -198,18 +204,32 @@ const AdSidebar = () => {
               )}
             </li>
 
-            <li className="nav-item" onClick={logoutFunc} style={{ borderBottom: '1px solid #e0e0e0' }}>
+            <li className="nav-item" style={{ borderBottom: '1px solid #e0e0e0' }}>
               <Link
-                to="/logout"
+                to="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  logoutFunc();
+                }}
                 className="nav-link text-dark d-flex align-items-center"
               >
                 <i className="fas fa-sign-out-alt me-2"></i> <span>Đăng xuất</span>
               </Link>
             </li>
+
           </ul>
         </nav>
       </aside>
+      {showConfirm && (
+        <ConfirmDialog
+          handleClose={() => setShowConfirm(false)}
+          content="Bạn có chắc chắn muốn đăng xuất không?"
+          onConfirm={handleLogoutConfirmed}
+        />
+      )}
+
     </div>
+
   );
 };
 
