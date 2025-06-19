@@ -2,12 +2,17 @@ import { Link } from "react-router-dom";
 import ReviewForm from "./ReviewForm";
 import React, { useState, useEffect } from "react";
 import { checkReview } from "../../services/reviewService";
-import { updateStatusOrder, userUpdateOrder } from "../../services/orderService";
+import { updateStatusOrder, userUpdateOrder, updateOrderStatusWithoutPayment } from "../../services/orderService";
 import { toast, ToastContainer } from "react-toastify";
 import { useStateContext } from '../../context/UserContext';
 import { useChatStore } from '../../store/useChatStore';
 import { useNavigate } from "react-router-dom";
 import { getUser } from "../../services/accountService";
+import { getPaymentByOrderId } from '../../services/paymentService';
+import { updatePaymentStatus } from "../../services/paymentService";
+import { updateBookSale } from "../../services/bookSaleService";
+import { getBookSaleByBookId } from '../../services/bookSaleService';
+import { refundZaloPay } from "../../services/zaloPayService";
 
 const AdminId = '6730ed8eb4d8865f974afcf5'
 
@@ -18,13 +23,108 @@ const Order = ({ orders, userId }) => {
     const [reviewStatus, setReviewStatus] = useState({});
     const [orderList, setOrderList] = useState([]);
     const { setSelectedUser } = useChatStore();
+    const [ordersWithPayments, setOrdersWithPayments] = useState([]);
+    const [ordersWithContinuePayment, setOrdersWithContinuePayment] = useState({});
+
     const navigate = useNavigate();
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
 
+    useEffect(() => {
+        const fetchOrdersWithPayments = async () => {
+            const now = new Date();
+            const updatedOrders = await Promise.all(
+                orderList.map(async (order) => {
+                    try {
+                        const response = await getPaymentByOrderId(order._id);
+
+                        const payment = response.data;
+
+                        // Tính thời gian cách hiện tại
+                        const createdAt = new Date(order.createdAt);
+                        const diffInMinutes = Math.floor((now - createdAt) / (1000 * 60));
+
+                        // Nếu quá 15 phút, thanh toán chưa thành công, thì hủy đơn
+                        if (
+                            diffInMinutes >= 15 &&
+                            payment &&
+                            payment.paymentMethod !== 'cash' &&
+                            payment.paymentStatus === 'pending'
+                        ) {
+
+                            await updatePaymentStatus({
+                                paymentId: payment._id,
+                                status: 'canceled'
+                            })
+                            const data = { orderId: order._id, orderStatus: 'failed' }
+                            await updateOrderStatusWithoutPayment(data)
+
+                            await updateQuantityBookSale(order);
+
+                            return { ...order, orderStatus: 'failed', payment };
+                        }
+
+                        return { ...order, payment };
+                    } catch (error) {
+                        console.error(`Lỗi khi xử lý đơn ${order._id}:`, error);
+                        return { ...order, payment: null };
+                    }
+                })
+            );
+
+            setOrdersWithPayments(updatedOrders);
+        };
+
+        fetchOrdersWithPayments();
+    }, [orderList]);
+
+    const checkShouldShowContinuePaymentButton = async (order) => {
+        try {
+            const now = new Date();
+            const createdAt = new Date(order.createdAt);
+            const diffInMinutes = Math.floor((now - createdAt) / (1000 * 60));
+
+            const res = await getPaymentByOrderId(order._id);
+            const payment = res.data;
+
+            if (
+                diffInMinutes < 15 &&
+                payment &&
+                payment.paymentMethod !== 'cash' &&
+                payment.paymentStatus === 'pending'
+            ) {
+                return true; // Điều kiện đủ để hiển thị nút "Tiếp tục thanh toán"
+            }
+
+            return false;
+        } catch (error) {
+            console.error("Lỗi khi kiểm tra điều kiện hiển thị nút thanh toán:", error);
+            return false;
+        }
+    };
+
+    useEffect(() => {
+        const fetchPaymentStatuses = async () => {
+            const result = {};
+
+            for (const order of orderList) {
+                const shouldShow = await checkShouldShowContinuePaymentButton(order);
+                result[order._id] = shouldShow;
+            }
+
+            setOrdersWithContinuePayment(result);
+        };
+
+        if (orderList.length > 0) {
+            fetchPaymentStatuses();
+        }
+    }, [orderList]);
+
+
     const handleShowModal = (order) => {
+        console.log('111',order)
         setSelectedOrder(order);
         setShowModal(true);
     };
@@ -64,9 +164,9 @@ const Order = ({ orders, userId }) => {
             const statusMap = {};
             for (const order of orders) {
                 for (const item of order.itemsPayment) {
-                    const bookId = item.bookId._id;
+                    const bookId = item.bookId;
                     const orderId = order._id;
-
+                    console.log(bookId, orderId)
                     const res = await checkReview({ bookId, userId, orderId });
                     statusMap[`${orderId}_${bookId}`] = res?.data?.exists || false;
                 }
@@ -92,7 +192,11 @@ const Order = ({ orders, userId }) => {
             const response = await userUpdateOrder(data);
             if (response.data.success) {
                 if (orderStatus === 'cancel') {
-                    setOrderList(prev => prev.filter(order => order._id !== orderId));
+                    setOrderList(prev =>
+                        prev.map(order =>
+                            order._id === orderId ? { ...order, orderStatus: 'failed' } : order
+                        )
+                    );
                     toast.success(<div className="d-flex justify-content-center align-items-center gap-2">
                         Sản phẩm đã được hủy
 
@@ -131,18 +235,18 @@ const Order = ({ orders, userId }) => {
                 }
             } else {
                 toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
-                      Hệ thống lỗi!
-                    </div>,
-                        {
-                            position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
-                            autoClose: 1500, // Đóng sau 3 giây
-                            hideProgressBar: true, // Ẩn thanh tiến độ
-                            closeButton: false, // Ẩn nút đóng
-                            className: "custom-toast", // Thêm class để tùy chỉnh CSS
-                            draggable: false, // Tắt kéo di chuyển
-                            rtl: false, // Không hỗ trợ RTL
-                        }
-                    );
+                    Hệ thống lỗi!
+                </div>,
+                    {
+                        position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                        autoClose: 1500, // Đóng sau 3 giây
+                        hideProgressBar: true, // Ẩn thanh tiến độ
+                        closeButton: false, // Ẩn nút đóng
+                        className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                        draggable: false, // Tắt kéo di chuyển
+                        rtl: false, // Không hỗ trợ RTL
+                    }
+                );
             }
         } catch (error) {
             console.log(error)
@@ -150,17 +254,80 @@ const Order = ({ orders, userId }) => {
         }
     }
 
-     const handleClickChatButton = async () => {
+    const handleClickChatButton = async () => {
         const admin = await getUser(AdminId)
-        console.log('admin',admin.data.user)
+        console.log('admin', admin.data.user)
         setSelectedUser(admin.data.user);
         navigate(`/exchange/chat`);
     }
 
+    const updateQuantityBookSale = async (order) => {
+        for (const item of order.itemsPayment) {
+            const bookSale = await getBookSaleByBookId(item.bookId);
+            const bookSaleId = bookSale.data._id
+            const quantityBookSale = bookSale.data.quantity;
+            const quantityOrder = item.quantity
+
+            const quantity = quantityBookSale + quantityOrder;
+            const dataUpdate = { quantity }
+            if (await updateBookSale(bookSaleId, dataUpdate))
+                return true
+            else
+                return false
+
+        }
+    }
+
+    const handleContinuePayment = async (order) => {
+        try {
+            const now = new Date();
+            const createdAt = new Date(order.createdAt);
+            const diffInMinutes = Math.floor((now - createdAt) / (1000 * 60));
+
+            const res = await getPaymentByOrderId(order._id);
+            const payment = res.data;
+
+            if (
+                diffInMinutes < 15 &&
+                payment &&
+                payment.paymentMethod !== 'cash' &&
+                payment.paymentStatus === 'pending'
+            ) {
+                window.location.href = order.url_checkout;
+            }
+            else {
+                toast.error(<div className="d-flex justify-content-center align-items-center gap-2">
+                    Đã quá hạn thanh toán!
+                </div>,
+                    {
+                        position: "top-center", // Hiển thị toast ở vị trí trung tâm trên
+                        autoClose: 1500, // Đóng sau 3 giây
+                        hideProgressBar: true, // Ẩn thanh tiến độ
+                        closeButton: false, // Ẩn nút đóng
+                        className: "custom-toast", // Thêm class để tùy chỉnh CSS
+                        draggable: false, // Tắt kéo di chuyển
+                        rtl: false, // Không hỗ trợ RTL
+                    }
+                );
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+
+
+            }
+
+
+        } catch (error) {
+            console.error("Lỗi khi kiểm tra điều kiện hiển thị nút thanh toán:", error);
+            return false;
+        }
+    }
+
     return (
         <div className="container mt-5">
-            {orderList.map((order) => (
+            {ordersWithPayments.map((order) => (
                 <Link to={`/payment/success?orderId=${order._id}`}>
+                    {console.log(order)}
                     <div className="card shadow-sm border-0 mb-4" key={order._id}>
                         <div className="card-body">
                             <h5 className="fw-bold mb-3">
@@ -209,30 +376,35 @@ const Order = ({ orders, userId }) => {
                                         <p className="mb-0 text-primary">
                                             Trạng thái: {getOrderStatusText(order.orderStatus)}
                                         </p>
-                                        <p className="text-muted">
+                                        <p className="text-muted mt-1">
                                             Ngày đặt hàng: {new Date(order.createdAt).toLocaleDateString()}
                                         </p>
+                                        {!order?.deliveryAt ? <></> : 
+                                        <p className="text-muted">
+                                            Ngày giao hàng dự kiến: { new Date(order.deliveryAt).toLocaleDateString()}
+                                        </p>
+                                        }
                                     </div>
                                     <div className="d-flex gap-2">
                                         {order.orderStatus === 'pending' && (
                                             <>
                                                 <button className="btn btn-danger"
-                                                onClick={(event) => {
-                                                                event.preventDefault();
-                                                                event.stopPropagation();
-                                                               handleUpdateStatus(order._id, 'cancel');
-                                                            }}
-                                                 >Hủy đơn hàng</button>
+                                                    onClick={(event) => {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                        handleUpdateStatus(order._id, 'cancel');
+                                                    }}
+                                                >Hủy đơn hàng</button>
                                             </>
                                         )}
                                         {order.orderStatus === 'shipped' && (
                                             <>
                                                 <button className="btn btn-primary"
-                                                onClick={(event) => {
-                                                                event.preventDefault();
-                                                                event.stopPropagation();
-                                                               handleUpdateStatus(order._id, 'completed');
-                                                            }}>Xác nhận thành công</button>
+                                                    onClick={(event) => {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                        handleUpdateStatus(order._id, 'completed');
+                                                    }}>Xác nhận thành công</button>
                                             </>
                                         )}
 
@@ -240,7 +412,7 @@ const Order = ({ orders, userId }) => {
                                             <>
                                                 {/* Kiểm tra nếu còn sách chưa đánh giá */}
                                                 {order.itemsPayment.some(item =>
-                                                    !reviewStatus[`${order._id}_${item.bookId._id}`]
+                                                    !reviewStatus[`${order._id}_${item.bookId}`]
                                                 ) && (
                                                         <button
                                                             className="btn btn-danger"
@@ -256,12 +428,24 @@ const Order = ({ orders, userId }) => {
                                                 <button className="btn btn-outline-secondary">Mua Lại</button>
                                             </>
                                         )}
-
+                                        {order.orderStatus === 'pending' && ordersWithContinuePayment[order._id] && (
+                                            <button
+                                                className="btn btn-warning"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    // Logic chuyển hướng đến trang thanh toán tiếp
+                                                    handleContinuePayment(order);
+                                                }}
+                                            >
+                                                Tiếp tục thanh toán
+                                            </button>
+                                        )}
                                         <button className="btn btn-outline-secondary" onClick={(event) => {
-                                                                event.preventDefault();
-                                                                event.stopPropagation();
-                                                                handleClickChatButton();
-                                                            }}>
+                                            event.preventDefault();
+                                            event.stopPropagation();
+                                            handleClickChatButton();
+                                        }}>
                                             Liên Hệ Người Bán
                                         </button>
                                     </div>

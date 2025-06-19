@@ -16,24 +16,24 @@ const config = {
 };
 exports.payment = async (req, res) => {
     const { orderId } = req.body
-     const orderBook = await Order.findById(orderId)
+    const orderBook = await Order.findById(orderId)
     if (!orderBook) {
         return res.status(404).json({ message: 'Order not found' });
-     }
+    }
 
-    const payment = await Payment.findOne({orderId:orderId})
-    if(!payment){
+    const payment = await Payment.findOne({ orderId: orderId })
+    if (!payment) {
         return res.status(404).json({ message: 'Order not found' });
-     }
+    }
 
-     const embed_data = {
-         redirecturl: `http://localhost:3000/payment/success?orderId=${orderId}`,
-     };
-    
+    const embed_data = {
+        redirecturl: `http://localhost:3000/payment/success?orderId=${orderId}`,
+    };
 
-      const transID = Math.floor(Math.random() * 1000000);
-    
-      const order = {
+
+    const transID = Math.floor(Math.random() * 1000000);
+
+    const order = {
         app_id: config.app_id,
         app_trans_id: `${moment().format('YYMMDD')}_ZaloPay_${transID}`, // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
         app_user: orderBook.userId,
@@ -47,10 +47,10 @@ exports.payment = async (req, res) => {
         description: `Lazada - Payment for the order #${orderBook.itemsPayment.bookId}`,
         bank_code: '',
 
-      };
-    
-      // appid|app_trans_id|appuser|amount|apptime|embeddata|item
-      const data =
+    };
+
+    // appid|app_trans_id|appuser|amount|apptime|embeddata|item
+    const data =
         config.app_id +
         '|' +
         order.app_trans_id +
@@ -64,19 +64,19 @@ exports.payment = async (req, res) => {
         order.embed_data +
         '|' +
         order.item;
-      order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
-    
-      try {
+    order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
+
+    try {
         const result = await axios.post(config.endpoint, null, { params: order });
-    
+
         return res.status(200).json(result.data);
-      } catch (error) {
+    } catch (error) {
         console.log(error);
-      }
+    }
 }
 
 exports.callback = async (req, res) => {
-    const {transactionId} = req.params
+    const { transactionId } = req.params
     let result = {};
     try {
         let dataStr = req.body.data;
@@ -91,14 +91,21 @@ exports.callback = async (req, res) => {
             result.return_code = -1;
             result.return_message = 'mac not equal';
         } else {
-            
+
             let dataJson = JSON.parse(dataStr, config.key2);
             console.log(
                 "update order's status = success where app_trans_id =",
                 dataJson['app_trans_id'],
+                dataJson['zp_trans_id'],
             );
             await PaymentController.updatePaymentStatus(
-                { params: { transactionId: transactionId }, body: { paymentStatus: 'success',finalAmount: 0 } },
+                { params: { transactionId: transactionId }, body: { paymentStatus: 'success', finalAmount: 0 } },
+                {
+                    status: (code) => ({ json: (message) => console.log('Update response:', message) }),
+                }
+            );
+            await PaymentController.updatePaymentZaloTransId(
+                { params: { transactionId: transactionId }, body: { zp_trans_id: dataJson['zp_trans_id'] } },
                 {
                     status: (code) => ({ json: (message) => console.log('Update response:', message) }),
                 }
@@ -159,3 +166,57 @@ exports.checkStatusOrder = async (req, res) => {
         console.log(error);
     }
 }
+
+exports.refund = async (req, res) => {
+    const { orderId, amount } = req.body;
+
+    try {
+        // Lấy payment từ DB
+        const payment = await Payment.findOne({ orderId });
+        if (!payment || !payment.zp_trans_id) {
+            return res.status(404).json({ message: 'Không tìm thấy payment hợp lệ để hoàn tiền' });
+        }
+        const config = {
+            app_id: "2553",
+            key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
+            key2: "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz",
+            refund_url: "https://sb-openapi.zalopay.vn/v2/refund"
+        };
+        const zp_trans_id = payment.zp_trans_id; // Ví dụ: 240619000000123
+        const timestamp = Date.now();
+        const uid = `${timestamp}${Math.floor(100 + Math.random() * 900)}`;
+
+        const m_refund_id = `${moment().format('YYMMDD')}_${config.app_id}_${uid}`;
+        const description = `Refund for order ${orderId}`;
+
+        // Tạo chuỗi MAC
+        const rawData = `${config.app_id}|${zp_trans_id}|${amount}|${description}|${timestamp}`;
+        const mac = CryptoJS.HmacSHA256(rawData, config.key1).toString();
+
+        // Gửi request hoàn tiền
+        const response = await axios.post(config.refund_url, null, {
+            params: {
+                app_id: config.app_id,
+                zp_trans_id,
+                amount: amount,
+                description,
+                timestamp,
+                m_refund_id,
+                mac
+            }
+        });
+
+        // (Tuỳ chọn) cập nhật trạng thái trong DB nếu thành công
+        if (response.data.return_code === 1) {
+            await PaymentController.updatePaymentStatus(
+                { params: { transactionId: payment.transactionId }, body: { paymentStatus: 'refunded' } },
+                { status: () => ({ json: () => { } }) }
+            );
+        }
+
+        return res.status(200).json(response.data);
+    } catch (error) {
+        console.error('Lỗi hoàn tiền:', error.response?.data || error.message);
+        return res.status(500).json({ error: 'Hoàn tiền thất bại', detail: error.response?.data || error.message });
+    }
+};

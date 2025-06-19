@@ -3,7 +3,10 @@ import AdSidebar from "../../components/admin/AdSidebar";
 import { getAllPayments } from "../../services/paymentService";
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
-
+import { getPaymentByOrderId, updatePaymentStatus } from '../../services/paymentService';
+import { updateOrderStatusWithoutPayment, updateQuantityBookSale } from '../../services/orderService';
+import { updateBookSale } from "../../services/bookSaleService";
+import { getBookSaleByBookId } from '../../services/bookSaleService';
 
 const AdOrder = () => {
     const [payments, setPayments] = useState([]);
@@ -38,16 +41,56 @@ const AdOrder = () => {
                 search: search.trim(),
                 ...filters,
             });
-            console.log("Fetching payments with params:", params.toString());
             const response = await getAllPayments(params.toString());
-            console.log("Response from API:", response);
             if (response.success) {
-                setPayments(response.data);
-                setCurrentPage(response.currentPage);
-                setTotalPages(response.totalPages);
-                setTotalItems(response.totalItems);
-                setLoading(false);
-            }
+            let paymentList = response.data;
+            const now = new Date();
+
+            // Kiểm tra các đơn chưa thanh toán đã quá thời gian
+            const updatedList = await Promise.all(paymentList.map(async (payment) => {
+                try {
+                    const createdAt = new Date(payment.orderId.createdAt);
+                    const diffInMinutes = Math.floor((now - createdAt) / (1000 * 60));
+
+                    if (
+                        diffInMinutes >= 15 &&
+                        payment &&
+                        payment.paymentMethod !== 'cash' &&
+                        payment.paymentStatus === 'pending'
+                    ) {
+                        // Cập nhật trạng thái thanh toán và đơn hàng
+                        await updatePaymentStatus({
+                            paymentId: payment._id,
+                            status: 'canceled'
+                        });
+
+                        const data = { orderId: payment.orderId._id, orderStatus: 'failed' };
+                        await updateOrderStatusWithoutPayment(data);
+                        await updateQuantityBookSale(payment.orderId);
+
+                        // Trả về bản ghi đã cập nhật
+                        return {
+                            ...payment,
+                            paymentStatus: 'canceled',
+                            orderId: {
+                                ...payment.orderId,
+                                orderStatus: 'failed'
+                            }
+                        };
+                    }
+
+                    return payment;
+                } catch (err) {
+                    console.error("Lỗi xử lý payment:", err);
+                    return payment;
+                }
+            }));
+            setPayments(updatedList);
+            setCurrentPage(response.currentPage);
+            setTotalPages(response.totalPages);
+            setTotalItems(response.totalItems);
+            setLoading(false);
+        }
         } catch (error) {
             console.error("Lỗi khi lấy danh sách thanh toán:", error);
         }
@@ -65,6 +108,23 @@ const AdOrder = () => {
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
+
+    const updateQuantityBookSale = async (order) => {
+            for (const item of order.itemsPayment) {
+                const bookSale = await getBookSaleByBookId(item.bookId);
+                const bookSaleId = bookSale.data._id
+                const quantityBookSale = bookSale.data.quantity;
+                const quantityOrder = item.quantity
+    
+                const quantity = quantityBookSale + quantityOrder;
+                const dataUpdate = { quantity }
+                if (await updateBookSale(bookSaleId, dataUpdate))
+                    return true
+                else
+                    return false
+    
+            }
+        }
     return (
         <div className="d-flex">
             <AdSidebar />
@@ -153,49 +213,49 @@ const AdOrder = () => {
                                     </tr>
                                 ) : (
                                     payments.map((payment, index) => (
-                                        <tr key={payment._id}>
+                                        <tr key={payment?._id}>
                                             <td className="text-center">
 
                                                 <span>{index + 1}</span>
                                             </td>
-                                            <td>{payment.orderId._id}</td>
+                                            <td>{payment.orderId?._id}</td>
 
                                             <td>
                                                 <div>{payment.userId.fullName}</div>
                                                 <div className="text-primary">{payment.userId.email.slice(0, 15)}...</div>
                                                 <div className="text-muted">{payment.userId.phone}</div>
                                             </td>
-                                            <td className="text-center text-danger">{formatCurrency(payment.orderId.finalAmount)}</td>
-                                            <td className="text-center">{payment.paymentMethod === 'cash' ? 'Tiền mặt' : payment.paymentMethod === 'zalopay' ? 'Zalo Pay' : 'Momo'}</td>
+                                            <td className="text-center text-danger">{formatCurrency(payment.orderId?.finalAmount)}</td>
+                                            <td className="text-center">{payment?.paymentMethod === 'cash' ? 'Tiền mặt' : payment?.paymentMethod === 'zalopay' ? 'Zalo Pay' : 'Momo'}</td>
                                             <td className="text-center">
-                                                <span className={`badge ${payment.paymentStatus === 'success' ? 'bg-success' : 'bg-warning'}`}>
+                                                <span className={`badge ${payment?.paymentStatus === 'success' ? 'bg-success' : 'bg-warning'}`}>
                                                     {payment.paymentStatus === 'success' ? 'Đã thanh toán' : 'Chưa thanh toán'}
                                                 </span>
                                             </td>
                                             <td className="text-center" style={{ width: '100px' }}>
                                                 <span className={`badge 
-                                                ${payment.orderId.orderStatus === 'completed' ? 'bg-success' :
-                                                        payment.orderId.orderStatus === 'shipped' ? 'bg-info' :
-                                                            payment.orderId.orderStatus === 'shipping' ? 'bg-info' :
-                                                                payment.orderId.orderStatus === 'confirm' ? 'bg-primary' :
-                                                                    payment.orderId.orderStatus === 'failed' ? 'bg-danger' :
+                                                ${payment.orderId?.orderStatus === 'completed' ? 'bg-success' :
+                                                        payment.orderId?.orderStatus === 'shipped' ? 'bg-info' :
+                                                            payment.orderId?.orderStatus === 'shipping' ? 'bg-info' :
+                                                                payment.orderId?.orderStatus === 'confirm' ? 'bg-primary' :
+                                                                    payment.orderId?.orderStatus === 'failed' ? 'bg-danger' :
                                                                         'bg-warning'}`}>
 
                                                     <i className={`fas me-1 
-                                                    ${payment.orderId.orderStatus === 'completed' ? 'fa-check-circle' :
-                                                            payment.orderId.orderStatus === 'shipped' ? 'fa-truck' :
-                                                                payment.orderId.orderStatus === 'shipping' ? 'fa-truck' :
-                                                                    payment.orderId.orderStatus === 'confirm' ? 'fa-thumbs-up' :
-                                                                        payment.orderId.orderStatus === 'failed' ? 'fa-times-circle' :
+                                                    ${payment.orderId?.orderStatus === 'completed' ? 'fa-check-circle' :
+                                                            payment.orderId?.orderStatus === 'shipped' ? 'fa-truck' :
+                                                                payment.orderId?.orderStatus === 'shipping' ? 'fa-truck' :
+                                                                    payment.orderId?.orderStatus === 'confirm' ? 'fa-thumbs-up' :
+                                                                        payment.orderId?.orderStatus === 'failed' ? 'fa-times-circle' :
                                                                             'fa-clock'}`}>
                                                     </i>
 
                                                     {/* Hiển thị tên trạng thái */}
-                                                    {payment.orderId.orderStatus === 'completed' ? 'Hoàn Thành' :
-                                                        payment.orderId.orderStatus === 'shipped' ? 'Đã Vận Chuyển' :
-                                                            payment.orderId.orderStatus === 'shipping' ? 'Đang Vận Chuyển' :
-                                                                payment.orderId.orderStatus === 'confirm' ? 'Đã Xác Nhận' :
-                                                                    payment.orderId.orderStatus === 'failed' ? 'Thất Bại' :
+                                                    {payment.orderId?.orderStatus === 'completed' ? 'Hoàn Thành' :
+                                                        payment.orderId?.orderStatus === 'shipped' ? 'Đã Vận Chuyển' :
+                                                            payment.orderId?.orderStatus === 'shipping' ? 'Đang Vận Chuyển' :
+                                                                payment.orderId?.orderStatus === 'confirm' ? 'Đã Xác Nhận' :
+                                                                    payment.orderId?.orderStatus === 'failed' ? 'Thất Bại' :
                                                                         'Đang chờ'}
                                                 </span>
                                             </td>

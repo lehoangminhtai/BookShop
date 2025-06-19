@@ -20,11 +20,13 @@ def preprocess_data(data):
     # Normalize click_count
     scaler = MinMaxScaler()
     df[['click_norm']] = scaler.fit_transform(df[['click_count']])
+    df[['wishlist_norm']] = scaler.fit_transform(df[['wishlist']])
+    df[['cart_norm']] = scaler.fit_transform(df[['cart']])
 
-    df['rating'] = pd.to_numeric(df['rating'], errors='coerce')
+    
 
     # Tính toán điểm đánh giá cuối cùng
-    df['final_rating'] = 0.7 * df['rating'] + 0.1 * df['click_norm']
+    df['final_rating'] = 1 * df['cart_norm']+ 1 * df['wishlist_norm'] + 0.1 * df['click_norm']
     df['final_rating'] = df['final_rating'].clip(1, 5)
 
     return df

@@ -23,4 +23,8 @@ router.put('/:id/payment-status', orderController.updatePaymentStatus);
 
 router.post('/user/update-order', orderController.userUpdateOrder)
 
+router.post('/update-order-url', orderController.updateUrlCheckoutOrder)
+
+router.post('/update-order-status', orderController.updateStatusOrderWithoutPayment)
+
 module.exports = router;

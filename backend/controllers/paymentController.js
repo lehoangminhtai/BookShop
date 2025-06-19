@@ -82,7 +82,7 @@ exports.updatePaymentStatus = async (req, res) => {
             return res.status(404).json({ message: 'Payment not found' });
         }
 
-        res.status(200).json({ message: 'Payment status updated', payment });
+        res.status(200).json({success: true, message: 'Payment status updated', payment });
     } catch (error) {
         res.status(500).json({ message: 'Error updating payment status', error: error.message });
     }
@@ -207,4 +207,40 @@ exports.getAllPayments = async (req, res) => {
 
 };
 
+exports.updateStatusPayment = async (req, res) => {
+    try {
+        const { paymentId, status } = req.body;
+
+        const updatePayment = await Payment.findById(paymentId);
+        updatePayment.paymentStatus = status
+        await updatePayment.save();
+
+        return res.status(200).json({ success: true, data: updatePayment });
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.updatePaymentZaloTransId = async (req, res) => {
+    try {
+        const { transactionId } = req.params;
+        const { zp_trans_id } = req.body;
+
+        const payment = await Payment.findOneAndUpdate(
+            { transactionId },
+            { zp_trans_id },
+            { new: true }
+        );
+
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment not found' });
+        }
+
+        res.status(200).json({success: true, message: 'Payment status updated', payment });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating payment status', error: error.message });
+    }
+};
 

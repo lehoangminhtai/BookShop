@@ -65,7 +65,7 @@ const getLatestInteractions = async (req, res) => {
     try {
         // Lấy 100 tương tác gần nhất của userId, sắp xếp theo last_visit_date (mới nhất trước)
         const interactions = await Interaction.find()
-            .sort({ last_visit_date: -1 }) // Sắp xếp theo ngày truy cập gần nhất
+            .sort({ createdAt: -1 }) // Sắp xếp theo ngày truy cập gần nhất
             .limit(200); // Giới hạn 100 kết quả
 
         if (!interactions || interactions.length === 0) {
@@ -79,7 +79,37 @@ const getLatestInteractions = async (req, res) => {
     }
 };
 
+const updateInteractionWishlistOrCart = async (req, res) => {
+  try {
+    const { userId, bookId } = req.params;
+    const { wishlist, cart } = req.body;
+
+    // Kiểm tra ít nhất một trong hai field được cung cấp
+    if (wishlist === undefined && cart === undefined) {
+      return res.status(400).json({ message: 'Vui lòng cung cấp wishlist hoặc cart để cập nhật.' });
+    }
+
+    // Tìm interaction theo userId và bookId
+    const interaction = await Interaction.findOne({ userId, bookId });
+
+    if (!interaction) {
+      return res.status(404).json({ message: 'Không tìm thấy tương tác tương ứng.' });
+    }
+
+    // Cập nhật các field nếu có
+    if (wishlist) interaction.wishlist = wishlist;
+    if (cart) interaction.cart = cart;
+
+    await interaction.save();
+
+    return res.status(200).json({ message: 'Cập nhật thành công', interaction });
+  } catch (error) {
+    console.error('Lỗi khi cập nhật interaction:', error);
+    return res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
+  }
+};
 module.exports = {
     handleBookClick,
-    getLatestInteractions
+    getLatestInteractions,
+    updateInteractionWishlistOrCart
 };

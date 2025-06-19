@@ -9,4 +9,7 @@ router.post('/callback/:transactionId', zaloPayController.callback)
 
 router.post('/check-status-order/:app_trans_id',zaloPayController.checkStatusOrder)
 
+router.post('/refund', zaloPayController.refund);
+
+
 module.exports = router

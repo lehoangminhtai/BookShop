@@ -17,3 +17,7 @@ export const getAllPayments = async (queryParams = "") => {
 export const getPaymentByTransactionId = async (transactionId) => await API.get(`/${transactionId}`)
 
 export const getPaymentByOrderId = async (orderId) => await API.get(`/order/${orderId}`)
+
+export const updatePaymentStatus = async (data) => await API.post(`update-status`, data)
+
+export const confirmPayment = async (transactionId, data) => await API.patch(`/${transactionId}/status`, data)

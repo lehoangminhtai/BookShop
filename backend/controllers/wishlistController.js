@@ -16,6 +16,7 @@ const getWishlist = async (req, res) => {
 // POST: Thêm sách vào wishlist
 const addToWishlist = async (req, res) => {
     const { userId, bookId } = req.body;
+    let save = false;
     try {
         let wishlist = await Wishlist.findOne({ userId });
 
@@ -31,6 +32,7 @@ const addToWishlist = async (req, res) => {
 
             if (!alreadyExists) {
                 wishlist.items.push({ bookId });
+                save = true;
             }
             else {
                 wishlist.items = wishlist.items.filter(
@@ -40,7 +42,7 @@ const addToWishlist = async (req, res) => {
         }
 
         await wishlist.save();
-        res.status(200).json({ success: true, data: wishlist });
+        res.status(200).json({ success: true, data: wishlist, save });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi server khi thêm sách' });
         console.error('Error adding to wishlist:', error);

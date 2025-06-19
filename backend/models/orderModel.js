@@ -65,6 +65,9 @@ const orderSchema = new mongoose.Schema({
     },
 
     deliveryAt: Date,
+    url_checkout:{
+        type: String
+    },
     createdAt: {
         type: Date,
         default: Date.now

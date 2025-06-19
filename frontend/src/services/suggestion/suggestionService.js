@@ -12,3 +12,12 @@ export const clickInteractionSer = async (userId, bookId) => {
         throw error;
     }
 }
+export const updateInteractionSer = async (userId, bookId,data) => {
+    try {
+        const response = await API.patch(`/update/${userId}/${bookId}`, { data });
+        return response.data;
+    } catch (error) {
+        console.error("Error handling book click:", error);
+        throw error;
+    }
+}

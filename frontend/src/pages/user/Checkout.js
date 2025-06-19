@@ -11,6 +11,9 @@ import { createMomoPay } from '../../services/momoService';
 import { createOrder } from '../../services/orderService';
 import { searchDiscountForUser } from '../../services/discountService';
 import { addAddressForUser, getAddressForUser, updateAddressForUser, deleteAddressForUser } from '../../services/addressService';
+import { updateOrderUrl } from '../../services/orderService';
+import { updateBookSale } from "../../services/bookSaleService";
+import { getBookSaleByBookId } from '../../services/bookSaleService';
 
 //component
 import Discount from '../../components/customer/Discount';
@@ -594,6 +597,7 @@ function Checkout() {
             if (response.data.success) {
 
                 const orderId = response.data.data._id
+                updateQuantityBookSale();
 
                 if (selectedPayment === 'cash') {
                     navigate(`/payment/success?orderId=${orderId}`)
@@ -603,14 +607,24 @@ function Checkout() {
                     const response = await createZaloPay(zaloPayData);
 
                     const { order_url } = response.data;
-                    window.location.href = order_url;
+                    const data = { orderId, url: order_url }
+                    const responseUpdateUrl = await updateOrderUrl(data)
+                    if (responseUpdateUrl.data.success) {
+                        window.location.href = order_url;
+                    }
+
                 }
                 if (selectedPayment === 'momo') {
                     const momoData = { orderId: orderId }
                     const response = await createMomoPay(momoData);
 
                     const { payUrl } = response.data;
-                    window.location.href = payUrl;
+                    const data = { orderId, url: payUrl }
+                    const responseUpdateUrl = await updateOrderUrl(data)
+                    if (responseUpdateUrl.data.success) {
+                        window.location.href = payUrl;
+                    }
+
                 }
 
             } else {
@@ -657,6 +671,23 @@ function Checkout() {
             getShippingFee(selectedProvince)
     }, [selectedProvince])
     //********** *//
+
+    const updateQuantityBookSale = async () => {
+        for (const item of items) {
+            const bookSale = await getBookSaleByBookId(item.bookId._id);
+            const bookSaleId = bookSale.data._id
+            const quantityBookSale = bookSale.data.quantity;
+            const quantityOrder = item.quantity
+
+            const quantity = quantityBookSale - quantityOrder;
+            const dataUpdate = { quantity }
+            if (await updateBookSale(bookSaleId, dataUpdate))
+                return true
+            else
+                return false
+
+        }
+    }
 
     return (
         <div className="container mt-5">

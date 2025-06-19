@@ -321,7 +321,7 @@ const Auth = () => {
                             Tôi đồng ý về{" "}
                             <a
                               className="tw-font-medium tw-text-blue-600 tw-hover:underline tw-dark:text-blue-500"
-                              href="#"
+                              href="/terms"
                             >
                               Điều kiện và thỏa thuận
                             </a>

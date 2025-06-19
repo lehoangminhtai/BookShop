@@ -9,6 +9,7 @@ import { useStateContext } from "../../../context/UserContext";
 //service
 import { createBookExchange } from "../../../services/exchange/bookExchangeService";
 import { getListCategoryBooks } from "../../../services/categoryBookService";
+import Input from '../../../components/Input'
 
 const PostForm = ({ handleCloseModal }) => {
     const { user } = useStateContext();
@@ -26,6 +27,9 @@ const PostForm = ({ handleCloseModal }) => {
         images: []
     });
 
+
+
+    const [isCheckTerm, setIsCheckTerm] = useState(false)
     const [errors, setErrors] = useState({})
     const [categories, setCategories] = useState([]);
     const [provinces, setProvinces] = useState([]);
@@ -127,7 +131,7 @@ const PostForm = ({ handleCloseModal }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         const newErrors = {};
         Object.keys(formData).forEach((key) => {
             if (!formData[key].toString().trim()) {
@@ -367,7 +371,30 @@ const PostForm = ({ handleCloseModal }) => {
                                     </div>
                                     <hr />
                                 </div>
+                                <div className="tw-flex tw-items-center tw-gap-2 tw-mt-4 tw-mb-4">
+                                    <Input
+                                        id="terms"
+                                        aria-describedby="terms"
+                                        attribute="condition"
+                                        type="checkbox"
+                                        className="tw-w-4 tw-h-4 tw-border tw-border-gray-300 tw-rounded tw-bg-gray-50 tw-focus:ring-3 tw-focus:ring-blue-300 tw-dark:bg-gray-700 tw-dark:border-gray-600 tw-dark:focus:ring-blue-600 tw-dark:ring-offset-gray-800"
+                                        required
 
+
+                                    />
+                                    <label
+                                        htmlFor="terms"
+                                        className="tw-text-gray-500 tw-dark:text-gray-300 tw-text-sm"
+                                    >
+                                        Tôi đồng ý về{" "}
+                                        <a
+                                            className="tw-font-medium tw-text-blue-600 tw-hover:underline tw-dark:text-blue-500"
+                                            href="/terms"
+                                        >
+                                            Điều kiện và thỏa thuận
+                                        </a>
+                                    </label>
+                                </div>
                                 <button type="submit" className="mt-3 btn btn-primary col-sm-12">Chia sẻ sách ngay!!</button>
                             </form>
                         </div>
@@ -378,10 +405,10 @@ const PostForm = ({ handleCloseModal }) => {
                     </div>
                 </div>
             </div>
-            { openProgress && <Backdrop
+            {openProgress && <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={openProgress}
-              
+
             >
                 <CircularProgress color="inherit" />
             </Backdrop>}

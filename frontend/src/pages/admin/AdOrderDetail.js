@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 //Service
 import { fetchBook } from "../../services/bookService";
 import { updateStatusOrder } from "../../services/orderService"
-import { getPaymentByOrderId } from "../../services/paymentService";
+import { getPaymentByOrderId, confirmPayment } from "../../services/paymentService";
 import { updateBookSale } from "../../services/bookSaleService";
 import { getBookSaleByBookId } from "../../services/bookSaleService";
 //Component
@@ -20,6 +20,7 @@ const AdOrderDetail = () => {
     const [payment, setPayment] = useState(null);
     const [orderConfirmed, setOrderConfirmed] = useState(false);
     const [orderFailed, setOrderFailed] = useState(false);
+    const [isPaymentStatus, setIsPaymentStatus] = useState(false);
     const { orderId } = useParams();
     const [showModal, setShowModal] = useState(false);
     const [showModalCancelOrder, setShowModalCancelOrder] = useState(false);
@@ -123,6 +124,10 @@ const AdOrderDetail = () => {
         if (payment && payment.orderId.orderStatus === 'failed') {
             setOrderFailed(true);
         }
+        if(payment?.paymentStatus === 'success')
+        {
+            setIsPaymentStatus(true);
+        }
         
     }, [payment]);
 
@@ -161,7 +166,7 @@ const AdOrderDetail = () => {
     }
 
     const handleConfirmOrder = async () => {
-        if (await confirmOrder() && updateQuantityBookSale('minus')) { 
+        if (await confirmOrder()) { 
           
             setPayment(prevPayment => ({
                 ...prevPayment,
@@ -234,6 +239,29 @@ const AdOrderDetail = () => {
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
+    const handleConfirmPayment = async () =>{
+        const transactionId = payment.transactionId;
+        const data = {paymentStatus: 'success', finalAmount: 0}
+        const response = await confirmPayment(transactionId, data);
+
+        if(response.data.success){
+            setIsPaymentStatus(true)
+            toast.success('Xác nhận đã thanh toán!', {
+                    autoClose: 1000,
+                    onClose: () => {
+                       closeCancelOrder();
+                    }
+                })
+        }
+        else{
+            toast.error('Có lỗi trong quá trình xác nhận!', {
+                    autoClose: 1000,
+                    onClose: () => {
+                       closeCancelOrder();
+                    }
+                })
+        }
+    }
     return (
         <div className="d-flex" >
             <AdSidebar />
@@ -310,7 +338,7 @@ const AdOrderDetail = () => {
                                             </tr>
                                             <tr>
                                                 <td>Trạng thái thanh toán</td>
-                                                <td className={`fw-bold fb-1 text-end ${payment.paymentStatus === 'success' ? 'text-success' : 'text-warning'}`}> {payment.paymentStatus === 'success' ? 'Đã thanh toán' : 'Chưa thanh toán'}</td>
+                                                <td className={`fw-bold fb-1 text-end ${isPaymentStatus ? 'text-success' : 'text-warning'}`}> {isPaymentStatus ? 'Đã thanh toán' : 'Chưa thanh toán'}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -390,28 +418,62 @@ const AdOrderDetail = () => {
                             <div className="border-bottom pb-4 mb-4">
                                 <div className="border-bottom mb-3">
                                     <div className="d-flex align-items-center mb-3">
-                                        <i className={`fas ${orderConfirmed ? 'fa-check text-success' : 'fa-shopping-cart text-secondary'} me-2`}></i>
-                                        <h5 className="mb-0 fw-bold">{orderConfirmed ? 'ĐƠN HÀNG ĐÃ ĐƯỢC XÁC NHẬN' : 'XÁC NHẬN ĐƠN HÀNG'}</h5>
-                                        {!orderConfirmed && (
-                                            <button className="btn btn-warning ms-auto" onClick={handleConfirmOrder}>
-                                                Xác Nhận <i className="fas fa-check me-2"></i>
-                                            </button>
-                                        )}
-                                    </div>
+    <i className={`fas me-2
+        ${orderFailed ? 'fa-times-circle text-danger' :
+            orderConfirmed ? 'fa-check-circle text-success' :
+                'fa-shopping-cart text-secondary'}`}>
+    </i>
+
+    <h5 className="mb-0 fw-bold">
+        {orderFailed
+            ? 'ĐƠN HÀNG ĐÃ BỊ HỦY'
+            : orderConfirmed
+                ? 'ĐƠN HÀNG ĐÃ ĐƯỢC XÁC NHẬN'
+                : 'XÁC NHẬN ĐƠN HÀNG'}
+    </h5>
+
+    {/* Nút xác nhận chỉ hiển thị nếu đơn chưa bị hủy và chưa được xác nhận */}
+    {!orderConfirmed && !orderFailed && (
+        <button className="btn btn-warning ms-auto" onClick={handleConfirmOrder}>
+            Xác Nhận <i className="fas fa-check me-2"></i>
+        </button>
+    )}
+</div>
+
                                 </div>
                                 <div className="d-flex align-items-center mb-3">
-                                    <i className={`fas ${payment.paymentStatus !== 'success' ? 'fa-credit-card text-secondary' : 'fa-check text-success'} me-2`}></i>
-                                    <h5 className="mb-0 fw-bold">
-                                        {payment.paymentStatus !== 'success' ? 'CHƯA THANH TOÁN' : 'ĐÃ THANH TOÁN'}
-                                    </h5>
-                                    
-                                </div>
+    <i className={`fas ${payment.paymentStatus !== 'success' ? 'fa-credit-card text-secondary' : 'fa-check-circle text-success'} me-2`}></i>
+    <h5 className="mb-0 fw-bold">
+        {!isPaymentStatus ? 'CHƯA THANH TOÁN' : 'ĐÃ THANH TOÁN'}
+    </h5>
+
+    {/* Điều kiện hiển thị nút hành động */}
+    {(() => {
+        const orderStatus = payment?.orderId?.orderStatus;
+
+        const paymentMethod = payment?.paymentMethod;
+
+        if (!isPaymentStatus && orderStatus !== 'failed'  && paymentMethod ==='cash') {
+            // Trường hợp đơn chưa bị hủy và chưa thanh toán
+            return (
+                <button className="btn btn-success ms-auto"
+                 onClick={handleConfirmPayment}
+                 >
+                    Xác nhận thanh toán <i className="fas fa-check ms-1"></i>
+                </button>
+            );
+        }
+
+        return null; // Không hiển thị gì
+    })()}
+</div>
+
 
                             </div>
                             <div>
                                 <div className="d-flex align-items-center mb-3">
-                                    {!orderFailed ?  <i className="fas fa-check text-success me-2"></i>:<i className="fas fa-times text-danger me-2"></i>}
-                                   
+                                    
+                                   <i class="text-success me-2 fa-solid fa-truck"></i>
                                     <h5 className="mb-0 fw-bold">GIAO HÀNG</h5>
                                 </div>
                                 <div className="row g-4 mb-4">

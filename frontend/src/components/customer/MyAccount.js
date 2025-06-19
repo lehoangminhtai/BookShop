@@ -5,6 +5,8 @@ import { useStateContext } from '../../context/UserContext'
 import { useDropzone } from 'react-dropzone'
 import { updateUser, getUser } from '../../services/accountService' // Import service update user
 import { useEffect } from 'react';
+import { elements } from 'chart.js';
+import { useNavigate } from 'react-router-dom';
 
 const MyAccount = () => {
     const { user } = useStateContext();
@@ -12,7 +14,7 @@ const MyAccount = () => {
 
     const [images, setImages] = useState(user?.image || null); // Lưu ảnh
     const [errors, setErrors] = useState({}); // Lưu lỗi
-
+    const navigate = useNavigate();
     const fetchUser = async () => {
         try {
             const response = await getUser(user?._id);
@@ -32,7 +34,13 @@ const MyAccount = () => {
     });
 
     useEffect(() => {
-        fetchUser();
+        if(user){
+            fetchUser();
+        }
+        else{
+             navigate('/auth?redirect=/account, { replace: true });');
+        }
+        
     }, []);
     useEffect(() => {
         if (userSelected) {

@@ -46,6 +46,7 @@ import UserProfile from './pages/exchange/UserProfile';
 import Chat from './pages/exchange/Message/Chat';
 import ExchangeInfoDetail from './pages/exchange/ExchangeInfoDetail';
 import MyExchangeOverview from './pages/exchange/MyExchangeOverview';
+import TermsAndConditions from './pages/TermsAndConditions';
 
 import React, { useEffect } from 'react';
 import { useStateContext } from './context/UserContext';
@@ -120,9 +121,11 @@ function AppContent() {
           <Route path="/exchange/chat" element={<Chat />} />
           <Route path="/exchange/exchange-info-detail/:requestId" element={<ExchangeInfoDetail />} />
           <Route path="/my-exchange" element={<MyExchangeOverview />} />
-
+          <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/not-found" element={<Page404 />} />
           <Route path="*" element={<Page404 />} />
+          
+
 
           {/* admin */}
           {AdminRoutes.map(({ path, element }) => (

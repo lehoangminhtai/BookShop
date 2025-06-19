@@ -6,6 +6,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { getExchangeInforSer, updateExchangeInforSer } from '../../../services/exchange/exchangeInforService';
 //format
 import { formatDate } from '../../../lib/utils';
+import Input from '../../../components/Input'
 
 const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
 
@@ -215,6 +216,30 @@ const ExchangeInfoConfirmForm = ({ requestId, onClose }) => {
                                                         Lưu ý: Sau khi xác nhận, điểm tích lũy của bạn sẽ bị trừ tương ứng với số điểm chênh lệch (nếu sách của bạn có giá trị thấp hơn) và bạn không thể hủy giao dịch sau xác nhận thông tin.
                                                     </label>
                                                 </div>
+                                                <div className="tw-flex tw-items-center tw-gap-2 tw-mt-4 tw-mb-4">
+                                    <Input
+                                        id="terms"
+                                        aria-describedby="terms"
+                                        attribute="condition"
+                                        type="checkbox"
+                                        className="tw-w-4 tw-h-4 tw-border tw-border-gray-300 tw-rounded tw-bg-gray-50 tw-focus:ring-3 tw-focus:ring-blue-300 tw-dark:bg-gray-700 tw-dark:border-gray-600 tw-dark:focus:ring-blue-600 tw-dark:ring-offset-gray-800"
+                                        required
+
+
+                                    />
+                                    <label
+                                        htmlFor="terms"
+                                        className="tw-text-gray-500 tw-dark:text-gray-300 tw-text-sm"
+                                    >
+                                        Tôi đồng ý về{" "}
+                                        <a
+                                            className="tw-font-medium tw-text-blue-600 tw-hover:underline tw-dark:text-blue-500"
+                                            href="/terms"
+                                        >
+                                            Điều kiện và thỏa thuận
+                                        </a>
+                                    </label>
+                                </div>
 
                                                 <div className="text-center">
                                                     <button type="submit" className="btn btn-primary w-100" disabled={loading || !agreed}>

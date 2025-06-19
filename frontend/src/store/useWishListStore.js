@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import axios from 'axios';
 
 import { getWishlistSer, addToWishlistSer } from '../services/wishListService';
+import { updateInteractionSer } from '../services/suggestion/suggestionService';
 
 const useWishlistStore = create((set, get) => ({
   wishlist: [], // Lưu bookSaleId
@@ -47,7 +48,15 @@ const useWishlistStore = create((set, get) => ({
     set({ wishlist: updated });
 
     try {
-      await addToWishlistSer(userId, bookId);
+      const response  = await addToWishlistSer(userId, bookId);
+      if(response.data.save){
+        const data = {wishlist: 1}
+        await updateInteractionSer(userId,bookId,data)
+      }
+      else{
+        const data = {wishlist: 0}
+        await updateInteractionSer(userId,bookId,data)
+      }
     } catch (err) {
       console.error('Failed to update wishlist:', err);
     }

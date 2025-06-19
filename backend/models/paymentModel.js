@@ -23,7 +23,7 @@ const paymentSchema = new mongoose.Schema({
     paymentStatus: {
         type: String,
         required: true,
-        enum: ['pending', 'success', 'failed', 'canceled'],
+        enum: ['pending', 'success', 'failed', 'canceled','refunded'],
         default: 'pending'
     },
     finalAmount: {
@@ -39,6 +39,10 @@ const paymentSchema = new mongoose.Schema({
         required: false
     },
     mac: {
+        type: String,
+        required: false
+    },
+    zp_trans_id: {
         type: String,
         required: false
     }

@@ -279,7 +279,9 @@ exports.userUpdateOrder = async (req, res) => {
         const { userId, orderId, orderStatus } = req.body;
 
         if (orderStatus === 'cancel') {
-            const deleteOrder = await Order.findByIdAndDelete(orderId);
+            const updateOrder = await Order.findById(orderId);
+            updateOrder.orderStatus = 'failed';
+            await updateOrder.save();
 
             const notification = await Notification.create({
                 receiverId: userId,
@@ -296,9 +298,9 @@ exports.userUpdateOrder = async (req, res) => {
                 'Huỷ đơn hàng',
                 userId,
                 `Người dùng ${userId} hủy đơn hàng: ${orderId} `,
-                { deleteOrder }
+                { updateOrder }
             );
-            return res.status(200).json({ success: true, data: deleteOrder });
+            return res.status(200).json({ success: true, data: updateOrder });
 
         }
 
@@ -336,3 +338,36 @@ exports.userUpdateOrder = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+exports.updateUrlCheckoutOrder = async (req, res) => {
+    try {
+        const { orderId, url } = req.body;
+
+        const updateOrder = await Order.findById(orderId);
+        updateOrder.url_checkout = url;
+        await updateOrder.save();
+
+        return res.status(200).json({ success: true, data: updateOrder });
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+exports.updateStatusOrderWithoutPayment = async (req, res) => {
+    try {
+        const { orderId, orderStatus } = req.body;
+
+        const updateOrder = await Order.findById(orderId);
+        updateOrder.orderStatus = orderStatus;
+        await updateOrder.save();
+
+        return res.status(200).json({ success: true, data: updateOrder });
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+

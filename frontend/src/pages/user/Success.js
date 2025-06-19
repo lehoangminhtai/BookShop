@@ -6,6 +6,25 @@ import { getPaymentByOrderId } from "../../services/paymentService";
 import { fetchBook } from "../../services/bookService";
 import { Link } from "react-router-dom";
 
+const getOrderStatusText = (status) => {
+        switch (status) {
+            case 'pending':
+                return 'Chờ xác nhận';
+            case 'confirm':
+                return 'Chờ lấy hàng';
+            case 'shipping':
+                return 'Đang giao hàng';
+            case 'shipped':
+                return 'Đã giao hàng';
+            case 'completed':
+                return 'Hoàn thành';
+            case 'failed':
+                return 'Đã hủy';
+            default:
+                return status;
+        }
+    };
+
 const SuccessPage = () => {
     const navigate = useNavigate();
     const { user } = useStateContext();
@@ -82,18 +101,21 @@ const SuccessPage = () => {
                             <p className="mb-3"><span className="fw-semibold">Họ tên:</span> <span className="text-primary">{user?.fullName}</span></p>
                             <p className="mb-3"><span className="fw-semibold">Điện thoại:</span> <span className="text-primary">{user?.phone}</span></p>
                             <p className="mb-3"><span className="fw-semibold">Email:</span> <span className="text-primary">{user?.email}</span></p>
-                            <p className="mb-3"><span className="fw-semibold">Địa chỉ:</span> <span className="text-primary">{payment.orderId.address}</span></p>
-                            <p className="mb-3"><span className="fw-semibold">Phương thức thanh toán:</span> <span className="text-primary">{payment.paymentMethod} </span><span className="badge bg-warning text-white">{payment.paymentStatus === 'success' ? "Đã thanh toán" : "Chưa thanh toán"}</span></p>
-                            <p className="mb-3"><span className="fw-semibold">Trạng thái đơn hàng:</span> <span className="badge bg-warning text-white">{payment.orderId.orderStatus === 'pending' ? "Chờ xác nhận" : ""}</span></p>
-                        </div>
+                            <p className="mb-3"><span className="fw-semibold">Địa chỉ:</span> <span className="text-primary">{payment.orderId?.address}</span></p>
+                            <p className="mb-3"><span className="fw-semibold">Phương thức thanh toán:</span> <span className="text-primary">{payment?.paymentMethod} </span><span className="badge bg-warning text-white">{payment?.paymentStatus === 'success' ? "Đã thanh toán" : "Chưa thanh toán"}</span></p>
+                            <p className="mb-3"><span className="fw-semibold">Trạng thái đơn hàng:</span> <span className="badge bg-warning text-white">{getOrderStatusText(payment.orderId?.orderStatus) }</span></p>
+                            {payment?.orderId.deliveryAt &&
+                            <p className="mb-3"><span className="fw-semibold">Ngày giao hàng dự kiến: </span> <span className="badge bg-warning text-white">{new Date(payment.orderId?.deliveryAt).toLocaleDateString()}</span></p>
+                        }
+                            </div>
                     </div>
 
                     {/* Order Information Section */}
                     <div className="col-6 ps-3" style={{ maxHeight: "16rem", overflowY: "auto" }}>
-                        <h3 className="h5 fw-semibold mb-3">Mã vận đơn: {payment.orderId._id}</h3>
+                        <h3 className="h5 fw-semibold mb-3">Mã vận đơn: {payment.orderId?._id}</h3>
 
                         {/* Lặp qua itemsPayment để hiển thị sách */}
-                        {payment.orderId.itemsPayment.map((item, index) => (
+                        {payment.orderId?.itemsPayment.map((item, index) => (
                             <div className="d-flex align-items-center mb-3" key={index}>
                                 <img src={item.bookImage || "https://placehold.co/50x50"} alt={item.bookTitle || "Book"} className="me-3" style={{ height: "50px", width: "50px" }} />
                                 <div>
@@ -107,23 +129,23 @@ const SuccessPage = () => {
                         {/* Shipping and Total */}
                         <div className="d-flex justify-content-between text-secondary mb-1">
                             <p className="mb-0">Phí vận chuyển:</p>
-                            <p className="mb-0">{formatCurrency(payment.orderId.shippingFee)}</p>
+                            <p className="mb-0">{formatCurrency(payment.orderId?.shippingFee)}</p>
                         </div>
                         <div className="d-flex justify-content-between text-secondary fw-semibold">
                             <p className="mb-0">Tổng tiền:</p>
-                            <p className="mb-0">{formatCurrency(payment.orderId.totalPrice)}</p>
+                            <p className="mb-0">{formatCurrency(payment.orderId?.totalPrice)}</p>
                         </div>
                         <div className="d-flex justify-content-between text-secondary fw-semibold">
                             <p className="mb-0">Giảm giá:</p>
-                            <p className="mb-0">{formatCurrency(payment.orderId.totalPrice + payment.orderId.shippingFee - payment.orderId.finalAmount)}</p>
+                            <p className="mb-0">{formatCurrency(payment.orderId?.totalPrice + payment.orderId?.shippingFee - payment.orderId?.finalAmount)}</p>
                         </div>
                         <div className="d-flex justify-content-between text-secondary fw-semibold">
                             <p className="mb-0">Thanh toán:</p>
-                            <p className="mb-0">{formatCurrency(payment.orderId.finalAmount - payment.finalAmount)}</p>
+                            <p className="mb-0">{formatCurrency(payment.orderId?.finalAmount - payment?.finalAmount)}</p>
                         </div>
                         <div className="d-flex justify-content-between text-secondary fw-semibold">
                             <p className="mb-0">Còn lại:</p>
-                            <p className="mb-0">{formatCurrency(payment.finalAmount)}</p>
+                            <p className="mb-0">{formatCurrency(payment?.finalAmount)}</p>
                         </div>
                     </div>
                 </div>

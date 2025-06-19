@@ -31,6 +31,15 @@ const interactionSchema = new Schema({
         type: Number,
         min: 0,
     },
+    wishlist: {
+        type: Number,
+        min: 0,
+        default: 0
+    },
+    cart: {
+        type: Number,
+        min: 0,
+    },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Interaction', interactionSchema);

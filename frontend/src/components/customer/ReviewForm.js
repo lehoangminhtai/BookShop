@@ -8,7 +8,7 @@ import { clickInteractionSer } from "../../services/suggestion/suggestionService
 const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
     const [reviews, setReviews] = useState(
         orderBooks.map((book) => ({
-            bookId: book.bookId._id,
+            bookId: book.bookId,
             rating: 5,
             comment: "",
         }))
@@ -48,18 +48,15 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
             rating,
             comment,
         }));
+        console.log(reviewData)
         let error = false;
         try {
             // Gửi từng đánh giá đến API
             for (const review of reviewData) {
                 if (await createReview(review)) {
                     error = false
-                    const bookSaleResponse = await fetch(`${serverUrl}/api/bookSales/${review.bookId}`);
-                    const bookSale = await bookSaleResponse.json();
-                    const bookSaleId = bookSale._id;
-                    if(bookSaleId){
-                        await clickInteractionSer(userId, bookSaleId);
-                    }
+                  
+                   
                 }
                 else {
                     error = true
@@ -101,14 +98,14 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
                     <div key={index} className="mb-4">
                         <div className="d-flex mb-3">
                             <img
-                                src={book.bookId.images[0]}
-                                alt={book.bookId.title}
+                                src={book.bookImage}
+                                alt={book?.bookTitle}
                                 className="img-thumbnail me-3"
                                 style={{ width: 100, height: 100, objectFit: "cover" }}
                             />
                             <div>
-                                <h5>{book.bookId.title}</h5>
-                                <h5 style={{ color: "gray" }}>Tác giả: {book.bookId.author}</h5>
+                                <h5>{book.bookTitle}</h5>
+                                
                             </div>
                         </div>
                         <div className="form-group">
@@ -117,12 +114,12 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <i
                                         key={star}
-                                        className={`bi bi-star${reviews.find((r) => r.bookId === book.bookId._id).rating >= star
+                                        className={`bi bi-star${reviews.find((r) => r.bookId === book.bookId).rating >= star
                                             ? "-fill text-warning"
                                             : ""
                                             }`}
                                         style={{ fontSize: "1.5rem", cursor: "pointer" }}
-                                        onClick={() => handleStarClick(book.bookId._id, star)}
+                                        onClick={() => handleStarClick(book.bookId, star)}
                                     ></i>
                                 ))}
                             </div>
@@ -132,9 +129,9 @@ const ReviewForm = ({ onClose, onSubmit, orderBooks, userId, orderId }) => {
                             <textarea
                                 className="form-control"
                                 rows="4"
-                                value={reviews.find((r) => r.bookId === book.bookId._id).comment}
+                                value={reviews.find((r) => r.bookId === book.bookId).comment}
                                 onChange={(e) =>
-                                    handleCommentChange(book.bookId._id, e.target.value)
+                                    handleCommentChange(book.bookId, e.target.value)
                                 }
                             ></textarea>
                         </div>

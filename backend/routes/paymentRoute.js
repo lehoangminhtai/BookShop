@@ -18,4 +18,6 @@ router.get('/user/:userId', paymentController.getUserPayments);
 // Cập nhật trạng thái thanh toán
 router.patch('/:transactionId/status', paymentController.updatePaymentStatus);
 
+router.post('/update-status', paymentController.updateStatusPayment);
+
 module.exports = router;
